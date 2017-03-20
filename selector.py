@@ -455,6 +455,7 @@ class PointsSelector(object):
                 selection_data)
             self.selection_history.append([ax, self.cprojection,
                                            selection_data])
+            self.interface.activate_undo()
 
             print("\nSelected points: (%3.f, %3.2f) --> (%3.2f, %3.2f)" %
                   (x1, y1, x2, y2))
@@ -478,6 +479,32 @@ class PointsSelector(object):
                 #        ['selected'][proj])) > 0:
                 out_dict[name][proj] = layer_dict['selected'][proj]
         return out_dict
+
+    def undo(self):
+        """
+        Undoes the previous selection.
+        """
+        ax = self.selection_history[-1][0]
+        cprojection = self.selection_history[-1][1]
+        self.undo_history.append(
+            [ax, cprojection,
+             self.axs_layer_dict[ax]['selected'][cprojection][-1]])
+        del self.axs_layer_dict[ax]['selected'][cprojection][-1]
+        del self.selection_history[-1]
+        self.update_selected_points(ax)
+
+    def redo(self):
+        """
+        Redoes the selection that was previously undone.
+        """
+        ax = self.undo_history[-1][0]
+        cprojection = self.undo_history[-1][1]
+        selected = self.undo_history[-1][2]
+        self.axs_layer_dict[ax]['selected'][cprojection].append(
+            selected)
+        self.selection_history.append([ax, cprojection, selected])
+        del self.undo_history[-1]
+        self.update_selected_points(ax)
 
     def get_selections(self):
         """
@@ -536,7 +563,28 @@ class SelectorInteraction(object):
         self.selector = selector
 
     def get_net_elements(self):
+        """
+        Gets the element types in the network.
+
+        :returns: List of element types
+        """
         return self.selector.get_net_elements()
+
+    def get_selection_history(self):
+        """
+        Gets the selection history.
+
+        :returns: List of the selection history
+        """
+        return self.selector.selection_history
+
+    def get_undo_history(self):
+        """
+        Gets the undo history.
+
+        :returns: List of the undo history
+        """
+        return self.selector.undo_history
 
     def change_mask_type(self, mask_type):
         """
@@ -587,27 +635,13 @@ class SelectorInteraction(object):
         """
         Undoes the previous selection.
         """
-        ax = self.selector.selection_history[-1][0]
-        cprojection = self.selector.selection_history[-1][1]
-        self.selector.undo_history.append(
-            [ax, cprojection,
-             self.selector.axs_layer_dict[ax]['selected'][cprojection][-1]])
-        del self.selector.axs_layer_dict[ax]['selected'][cprojection][-1]
-        del self.selector.selection_history[-1]
-        self.selector.update_selected_points(ax)
+        self.selector.undo()
 
     def redo(self):
         """
         Redoes the selection that was previously undone.
         """
-        ax = self.selector.undo_history[-1][0]
-        cprojection = self.selector.undo_history[-1][1]
-        selected = self.selector.undo_history[-1][2]
-        self.selector.axs_layer_dict[ax]['selected'][cprojection].append(
-            selected)
-        self.selector.selection_history.append([ax, cprojection, selected])
-        del self.selector.undo_history[-1]
-        self.selector.update_selected_points(ax)
+        self.selector.redo()
 
     # def connect_to_nest(self):
     #     """
@@ -650,11 +684,11 @@ class SelectorInteraction(object):
         """
         Resets the selections in all layers and removes found GIDs in the
         NEST interface.
-
-        :todo: Undoing after reseting creates unexpected behaviour.
         """
 
         self.selector.reset()
+        self.selector.selection_history = []
+        self.selector.undo_history = []
 
         if self.selector.connection_type != 'source':
             # TODO: button should also be reset
