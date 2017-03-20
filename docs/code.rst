@@ -7,9 +7,8 @@ Documentation for the code
 The App core
 ************
 
-.. automodule:: NESTConnectionApp.plot_layers
+.. automodule:: NESTConnectionApp.selector
    :members:
-   :private-members:
 
 
 Graphical User Interface
@@ -21,13 +20,10 @@ Graphical User Interface
 
 .. automodule:: NESTConnectionApp.GUI.app_ui
    :members:
-   :private-members:
 
 
 Connection to NEST
 ******************
 
-.. automodule:: NESTConnectionApp.layer_select_and_connect
+.. automodule:: NESTConnectionApp.nest_interface
    :members:
-   :private-members:
-

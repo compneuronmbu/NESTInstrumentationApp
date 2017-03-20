@@ -498,11 +498,11 @@ class PointsSelector(object):
                 elements = layer[1]['elements']
             except KeyError:  # for synapse model
                 continue
-            if type(elements) is str:
+            if type(elements) is str and elements not in element_list:
                 element_list.append(elements)
             elif type(elements) is list:
                 for item in elements:
-                    if type(item) is str:
+                    if type(item) is str and item not in element_list:
                         element_list.append(item)
         return element_list
 
