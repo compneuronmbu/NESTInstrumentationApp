@@ -518,18 +518,19 @@ class NESTInterface(object):
                 # Find the GIDs
                 gids = tp.SelectNodesByMask(self.layer_dict[layer_name],
                                             cntr, mask)
-
+                
                 # Ignore GIDs if they are of unwanted neuron type
-                if len(gids) > 0:
-                    if (source_target[mask][1] != 'all' and
-                        source_target[mask][1] != nest.GetStatus(
-                            [gids[0]])[0]['model']):
-                        gids = ()  # do not add any of the gids to output
+                if ((source_target[mask][1] != 'all') and
+                    'generator' not in layer_name.lower() and
+                    'detector' not in layer_name.lower() and
+                    'meter' not in layer_name.lower()):
+                    gids = [gid for gid in gids if source_target[mask][1] == nest.GetStatus([gid])[0]['model']]
+                    gids = tuple(gids)
 
-                    if source_target[mask][0] == 'source':
-                        source_gid_dict[layer_name] += gids
-                    else:
-                        target_gid_dict[layer_name] += gids
+                if source_target[mask][0] == 'source':
+                    source_gid_dict[layer_name] += gids
+                else:
+                    target_gid_dict[layer_name] += gids
 
             self.mask_number[layer_name] = len(mask_list)
 
