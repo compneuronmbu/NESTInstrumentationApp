@@ -414,33 +414,23 @@ class PointsSelector(object):
         ax = eclick.inaxes
 
         # test if layer contains selected neuron type
-        neuron_types = {'ex': 0, 'in': 0}
-        for layer in self.layer_spec:
-            if layer[0] == self.axs_layer_dict[ax]['name']:
-                if type(layer[1]['elements']) is str:
-                    elements = [layer[1]['elements']]
-                else:
+        if self.neuron_type == 'all':
+            valid_selection = True
+        else:
+            valid_selection = False
+            for layer in self.layer_spec:
+                if ('generator' in layer[0].lower() or
+                    'detector' in layer[0].lower() or
+                        'meter' in layer[0].lower()):
+                    continue
+                if layer[0] == self.axs_layer_dict[ax]['name']:
                     elements = layer[1]['elements']
-                for element in elements:
-                    if type(element) is int:
-                        continue
-                    if element[-3:] == 'pyr':
-                        neuron_types['ex'] += 1
-                    elif element[-2:] == 'in':
-                        neuron_types['in'] += 1
-                    else:
-                        neuron_types['ex'] += 1
-                        neuron_types['in'] += 1
-                if (self.neuron_type == 'excitatory' and
-                        neuron_types['ex'] == 0):
-                    print("Only inhibitory neurons in this layer.")
-                    valid_selection = False
-                elif (self.neuron_type == 'inhibitory' and
-                        neuron_types['in'] == 0):
-                    print("Only excitatory neurons in this layer.")
-                    valid_selection = False
-                else:
-                    valid_selection = True
+                    if type(elements) is str:
+                        elements = [elements]
+                    if (self.neuron_type == 'all' or
+                        self.neuron_type in elements):
+                        valid_selection = True
+                    break
         if valid_selection:
             # Collect selected upper_right and lower_left points in list.
             # Used when finding the GIDs in the selected areas, as well as when
@@ -463,6 +453,10 @@ class PointsSelector(object):
                   (x1, y1, x2, y2, self.axs_layer_dict[ax]['name'],
                    self.mask_type, self.neuron_type))
             self.update_selected_points(ax)
+        else:
+            self.interface.warning_message(
+                "No '%s' in %s" % (self.neuron_type,
+                                   self.axs_layer_dict[ax]['name']))
 
     def _make_out_dict(self):
         """
@@ -517,9 +511,9 @@ class PointsSelector(object):
     def get_net_elements(self):
         element_list = []
         for layer in self.layer_spec:
-            if ('Generator' in layer[0] or
-                'Detector' in layer[0] or
-                    'meter' in layer[0]):
+            if ('generator' in layer[0].lower() or
+                'detector' in layer[0].lower() or
+                    'meter' in layer[0].lower()):
                 continue
             try:
                 elements = layer[1]['elements']

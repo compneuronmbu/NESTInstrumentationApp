@@ -115,6 +115,9 @@ class QtGUI(object):
     def activate_undo(self):
         self.ui_window.undo_button.setEnabled(True)
 
+    def warning_message(self, message):
+        self._show_status_message(message, 5000, "red")
+
     def _show_status_message(self, message, timeout=0, colour="black"):
         self.ui_window.statusbar.clearMessage()
         self.ui_window.statusbar.setStyleSheet("color: %s" % colour)
@@ -433,6 +436,9 @@ class NotebookGUI(object):
 
     def activate_undo(self):
         self.undo_button.disabled = False
+
+    def warning_message(self, message):
+        print(message)
 
     def _dropdown_proj_on_change(self, label):
         self.selector_interaction.change_projection(label['new'])
