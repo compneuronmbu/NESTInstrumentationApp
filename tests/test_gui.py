@@ -3,7 +3,7 @@ import unittest
 from matplotlib.backend_bases import MouseEvent
 from ..selector import PointsSelector, RectangleSelector, EllipseSelector
 from .define_layers_for_testing import make_layers, np
-from ..GUI.guis import QtGUI
+from ..GUI.qt_gui import QtGUI
 import nest
 
 """

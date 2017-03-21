@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure as mplFig
 import math
-from .GUI.guis import QtGUI
+from .GUI.qt_gui import QtGUI
 from matplotlib.widgets import RectangleSelector, EllipseSelector
 
 
