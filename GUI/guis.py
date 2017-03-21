@@ -106,8 +106,17 @@ class QtGUI(object):
         nest_status_text = "Found" if self.have_nest else "Not found"
         self.ui_window.nest_connected_label.setText(nest_status_text)
 
+        self.ui_window.undo_button.setEnabled(False)  # Nothing to undo or
+        self.ui_window.redo_button.setEnabled(False)  # redo at initialization
+
         self.ui_window.connect_button.setEnabled(self.have_nest)
         self.ui_window.simulate_button.setEnabled(self.have_nest)
+
+    def activate_undo(self):
+        self.ui_window.undo_button.setEnabled(True)
+
+    def warning_message(self, message):
+        self._show_status_message(message, 5000, "red")
 
     def _show_status_message(self, message, timeout=0, colour="black"):
         self.ui_window.statusbar.clearMessage()
@@ -159,10 +168,16 @@ class QtGUI(object):
     def _undo_button_on_clicked(self, event):
         print("Undo button clicked")
         self.selector_interaction.undo()
+        self.ui_window.redo_button.setEnabled(True)
+        if len(self.selector_interaction.get_selection_history()) == 0:
+            self.ui_window.undo_button.setEnabled(False)
 
     def _redo_button_on_clicked(self, event):
         print("Redo button clicked")
         self.selector_interaction.redo()
+        self.ui_window.undo_button.setEnabled(True)
+        if len(self.selector_interaction.get_undo_history()) == 0:
+            self.ui_window.redo_button.setEnabled(False)
 
     # def _connect_to_nest_button_on_clicked(self, event):
     #     print("Connect to NEST button")
@@ -176,7 +191,7 @@ class QtGUI(object):
     def _connect_button_on_clicked(self, event):
         print("\nConnect button\n")
 
-        self._show_status_message("Connecting..")
+        self._show_status_message("Connecting ...")
         self.nest_interface.connect(
             self.selector_interaction.selector.get_selections(),
             self.selector_interaction.selector.connections)
@@ -189,8 +204,9 @@ class QtGUI(object):
             self._show_status_message("Cannot simulate;" +
                                       " No connections!", 5000, "red")
         else:
-            self._show_status_message("Simulating..")
-            self.nest_interface.simulate(simtime=100, make_plot=True)
+            self._show_status_message("Simulating ...")
+            self.nest_interface.simulate(simtime=100, make_plot=True,
+                                         print_time=True)
             self._show_status_message("Simulation finished!", 2000)
 
     def _save_selection_on_clicked(self, event):
@@ -218,6 +234,7 @@ class QtGUI(object):
         print("pressed reset button")
         print("")
 
+        nest_reset = " "
         self.selector_interaction.reset()
         if self.nest_interface is not None:
             self.nest_interface.reset()
@@ -227,6 +244,9 @@ class QtGUI(object):
         if self.selector_interaction.selector.connection_type != 'source':
             # self._source_button_clicked()
             self.ui_window.radio_type_source.click()
+
+        self.ui_window.undo_button.setEnabled(False)
+        self.ui_window.redo_button.setEnabled(False)
         self._show_status_message("App" + nest_reset + "is reset!", 2000)
 
 
@@ -330,6 +350,9 @@ class NotebookGUI(object):
         self.done_button = widgets.Button(description='Done')
         self.done_button.on_click(self._done_button_on_clicked)
 
+        self.undo_button.disabled = True  # Nothing to undo or
+        self.redo_button.disabled = True  # redo at initialization
+
         self.dropdown_neurons.options += self.selector_interaction.get_net_elements()
 
         self.all_buttons = [self.dropdown_proj,
@@ -412,8 +435,11 @@ class NotebookGUI(object):
                                justify_content='space-between'
                                )))
 
-    # def _radio_proj_on_clicked(self, label):
-    #     self.selector_interaction.change_projection(label['new'])
+    def activate_undo(self):
+        self.undo_button.disabled = False
+
+    def warning_message(self, message):
+        print(message)
 
     def _dropdown_proj_on_change(self, label):
         self.selector_interaction.change_projection(label['new'])
@@ -450,9 +476,15 @@ class NotebookGUI(object):
 
     def _undo_button_on_clicked(self, event):
         self.selector_interaction.undo()
+        self.redo_button.disabled = False
+        if len(self.selector_interaction.get_selection_history()) == 0:
+            self.undo_button.disabled = True
 
     def _redo_button_on_clicked(self, event):
         self.selector_interaction.redo()
+        self.undo_button.disabled = False
+        if len(self.selector_interaction.get_undo_history()) == 0:
+            self.redo_button.disabled = True
 
     def _load_button_on_clicked(self, event):
         self.selector_interaction.load()
@@ -460,6 +492,18 @@ class NotebookGUI(object):
     def _reset_button_on_clicked(self, event):
         self.selector_interaction.reset()
         self.nest_interface.reset()
+        self.undo_button.disabled = True
+        self.redo_button.disabled = True
+
+        nest_reset = " "
+        if self.nest_interface is not None:
+            self.nest_interface.reset()
+            self.nest_interface.reset_nest()
+            self.nest_interface.make_layers_and_models()
+            nest_reset = " and NEST "
+
+        print("App" + nest_reset + "is reset!")
+
 
     def _done_button_on_clicked(self, event):
         print("Done button clicked.")

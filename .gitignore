@@ -90,3 +90,6 @@ ENV/
 
 # GitEye
 /.project
+
+# Saved selections
+*.pkl
