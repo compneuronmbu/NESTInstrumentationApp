@@ -6,9 +6,12 @@ import IPython.display as dp
 
 class NotebookGUI(object):
     """
-    iPython graphical user interface.
+    iPython graphical user interface. At initialization the class
+    checks if NEST is available, and if so connects to the
+    NESTInterface class.
 
-    :param Selector: The PointsSelector class to connect to.
+    :param selector_interaction: The PointsSelector interface class to
+                                 connect to.
     """
 
     def __init__(self, selector_interaction):

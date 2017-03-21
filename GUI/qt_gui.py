@@ -16,6 +16,8 @@ class AppUI(QMainWindow, Ui_AppUI):
     """
     Class handling the PyQt5 graphical user interface. Uses specifications from
     a ui-file to create a graphical user interface with PyQt5.
+
+    :param guiclass: The QtGUI class that initialized this class.
     """
 
     def __init__(self, guiclass):
@@ -76,9 +78,11 @@ class AppUI(QMainWindow, Ui_AppUI):
 
 class QtGUI(object):
     """
-    PyQt5 user interface.
+    PyQt5 user interface. At initialization the class checks if NEST is
+    available, and if so connects to the NESTInterface class.
 
-    :param Selector: The PointsSelector class to connect to.
+    :param selector_interaction: The PointsSelector interface class to
+                                 connect to.
     """
 
     def __init__(self, selector_interaction):

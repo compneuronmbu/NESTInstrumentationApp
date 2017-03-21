@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 
 class NESTInterface(object):
     """
-    Class for creating layers, finding GIDs, connecting selections and running
-    simulations.
+    Class for creating layers and models, finding GIDs, connecting
+    selections and running simulations.
 
     :param layer_spec: From user, dictionary with layer specifications.
     :param models: Optional dictionary with model specifications.
@@ -60,6 +60,8 @@ class NESTInterface(object):
         Makes connections from selections specified by the user.
 
         :param selection_dict: Dictionary of the selections.
+        :param all_connections: List with connection specifications for the
+                                internal network.
         """
         for conn in all_connections:
             tp.ConnectLayers(self.layer_dict[conn[0]],
@@ -129,11 +131,13 @@ class NESTInterface(object):
 
     def simulate(self, simtime=100, make_plot=False, print_time=False):
         """
-        Run simulation.
+        Simulate the network.
 
         :param simtime: Time to run the simulation, in ms.
-        :param make_plot: If ``True``, makes a plot of the spiketrain.
-        :param print_time: Turn printing on or off for the simulation.
+        :param make_plot: If ``True``, make plots from the recorders
+                          and detectors.
+        :param print_time: If ``True``, turns on printing of status of
+                           the simulation.
         """
 
         nest.SetKernelStatus({'print_time': print_time})
@@ -397,8 +401,9 @@ class NESTInterface(object):
 
         :param selection_dict: Dictionary of the selections.
         :param projection: Projection in which to find the GIDs.
-        :returns: Dictionary containing selected source GIDs for each layer,
-                  dictionary containing selected target GIDs for each layer.
+        :returns: List of two dictionaries:
+                  the first containing selected source GIDs for each layer,
+                  the other containing selected target GIDs for each layer.
         """
 
         source_gid_dict = {}
@@ -547,7 +552,7 @@ class NESTInterface(object):
 
     def get_gids(self, selection_dict, projection):
         """
-        Function used to find GIDs.
+        Finds GIDs.
 
         :param selection_dict: Dictionary of the selections.
         :param projection: Projection in which to find the GIDs.
@@ -556,11 +561,14 @@ class NESTInterface(object):
 
     def find_gids(self, selections, projection):
         """
-        Finds the GIDs in the selected area(s).
+        Finds the GIDs in the selected area(s) and prints them out with the
+        layer name, type, and projection.
 
-        :returns: Dictionary containing selected source GIDs for each layer,
-                  dictionary containing selected target GIDs for each layer.
-
+        :param selections: Dictionary of the selections.
+        :param projection: Projection in which to find the GIDs.
+        :returns: List of two dictionaries:
+                  the first containing selected source GIDs for each layer,
+                  the other containing selected target GIDs for each layer.
         """
 
         source_gid_dict, target_gid_dict = self.get_gids(selections,

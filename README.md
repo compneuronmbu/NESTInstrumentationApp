@@ -44,3 +44,7 @@ the `/docs` directory run
 $ make html
 ```
 The documentation will then be the output in `docs/_build/html`.
+
+Note that Sphinx uses *autodoc*, which imports the modules to be documented. 
+NEST must therefore be in the `PYTHONPATH` if documentation for the class 
+`NESTInterface` is to be generated.

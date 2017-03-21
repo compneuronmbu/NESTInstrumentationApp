@@ -12,11 +12,14 @@ from matplotlib.widgets import RectangleSelector, EllipseSelector
 class PointsSelector(object):
     """
     Class for plotting layers, and then selecting areas in the layers. The
-    selections specifies connections to be created by NEST. This class can act
-    independent of NEST, or be connected to NEST.
+    selections specifies connections to be created by NEST. This class acts
+    independent of NEST.
 
     :param layer_spec: From user, dictionary with layer specifications.
     :param models: Optional dictionary with model specifications.
+    :param syn_models: Optional dictionary with synapse model specifications.
+    :param connections: Optional list with connection specifications for the
+                        internal network.
     :param nodesize: Optional specification of the size of the plotted nodes.
                      Default is 20.
     """
@@ -554,7 +557,7 @@ class SelectorInteraction(object):
     """
     This class interfaces with PointsSelector, acting as a bridge for the GUI.
 
-    :param Selector: The PointsSelector class to connect to.
+    :param selector: The PointsSelector class to connect to.
     """
 
     def __init__(self, selector):
@@ -586,7 +589,7 @@ class SelectorInteraction(object):
 
     def get_if_changes_made(self):
         """
-        Gets the switch for changes made in the selector
+        Gets if a change is made in the selector.
 
         :returns: ``True`` if changes are made, else ``False``
         """
@@ -612,8 +615,8 @@ class SelectorInteraction(object):
 
     def change_neuron_selection(self, neuron_type):
         """
-        Changes the neuron type. Valid types are ``all``, ``excitatory``, and
-        ``inhibitory``.
+        Changes the neuron type. Valid types are those returned by the
+        ``get_net_elements()`` method.
 
         :param neuron_type: Neuron type to select.
         """
@@ -689,8 +692,7 @@ class SelectorInteraction(object):
 
     def reset(self):
         """
-        Resets the selections in all layers and removes found GIDs in the
-        NEST interface.
+        Resets the selections in all layers.
         """
 
         self.selector.reset()

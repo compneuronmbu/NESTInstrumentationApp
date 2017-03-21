@@ -20,8 +20,6 @@ The collection of selected areas, each with their selected specifications, can t
 
 When using the selections to create connections in NEST, we should make masks from the selection specifications. Overlapping selections with otherwise same specifications, such as projection and source/target, are merged into a single mask. These masks can then be used to efficiently create the connections.
 
-.. todo:: mål er å koble til netverk
-
 
 Implementation
 **************
