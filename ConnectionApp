@@ -47,4 +47,9 @@ nodesize = 20 if args.nodesize is None else args.nodesize
 
 models += syn_models
 
-PointsSelector(layers[:no_layers], models=models, syn_models=syn_models, connections=connections, nodesize=nodesize).run()
+PointsSelector(layers[:no_layers],
+               models=models,
+               syn_models=syn_models,
+               connections=connections,
+               nodesize=nodesize
+               ).run()

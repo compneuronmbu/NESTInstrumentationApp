@@ -44,7 +44,7 @@ class NotebookGUI(object):
         Sets up the GUI by initializing the selectors and connecting
         callbacks for the buttons.
         """
-        self.selector_interaction.selector._choose_mask_shape()
+        self.selector_interaction.selector.set_mask_shape()
 
         # Making buttons and connecting them to functions
         self.dropdown_proj = widgets.Dropdown(

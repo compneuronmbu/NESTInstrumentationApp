@@ -167,11 +167,11 @@ class PointsSelector(object):
             name = layer[0]
             try:
                 ext = layer[1]['extent']
-            except:
+            except KeyError:
                 ext = [1., 1.]  # extent is one unless otherwise specified
             try:
                 cntr = layer[1]['center']
-            except:
+            except KeyError:
                 cntr = [0., 0.]  # Center in origo unless otherwise specified
 
             try:
@@ -195,7 +195,7 @@ class PointsSelector(object):
                 # positive axis upwards, and its negative downwards
                 ypos_single = np.linspace(y_end, y_start, rows, endpoint=True)
                 ypos = [x for i in range(rows) for x in ypos_single]
-            except:
+            except KeyError:
                 # Positions through positions vector
                 xpos = [x[0] for x in layer[1]['positions']]
                 ypos = [y[1] for y in layer[1]['positions']]
@@ -258,10 +258,10 @@ class PointsSelector(object):
 
         return synapse_models
 
-    def _choose_mask_shape(self):
+    def set_mask_shape(self):
         """
-        Creates selection objects for all subplots. Creates either rectangle or
-        ellipse selectors.
+        Creates selection objects for all subplots. Creates either
+        rectangle or ellipse selectors.
         """
         self.subplot_selector_objects = []
         if self.mask_type == 'rectangle':
@@ -319,9 +319,9 @@ class PointsSelector(object):
 
                 # Get the nodes in the selected area
                 if sel[0] == 'rectangle':
-                    selected = self.get_selected_rect(ax, sel[1], sel[2])
+                    self.get_selected_rect(ax, sel[1], sel[2])
                 else:
-                    selected = self.get_selected_ellipse(ax, sel[1], sel[2])
+                    self.get_selected_ellipse(ax, sel[1], sel[2])
 
         self.fig2[ax].set_facecolor(self.ax_color[ax])
         try:
@@ -432,7 +432,7 @@ class PointsSelector(object):
                     if type(elements) is str:
                         elements = [elements]
                     if (self.neuron_type == 'all' or
-                        self.neuron_type in elements):
+                            self.neuron_type in elements):
                         valid_selection = True
                     break
         if valid_selection:
@@ -609,7 +609,7 @@ class SelectorInteraction(object):
         :param shape: Shape of the mask.
         """
         self.selector.mask_type = shape
-        self.selector._choose_mask_shape()
+        self.selector.set_mask_shape()
 
     def change_neuron_selection(self, neuron_type):
         """

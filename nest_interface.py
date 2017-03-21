@@ -62,7 +62,9 @@ class NESTInterface(object):
         :param selection_dict: Dictionary of the selections.
         """
         for conn in all_connections:
-            tp.ConnectLayers(self.layer_dict[conn[0]], self.layer_dict[conn[1]], conn[2])
+            tp.ConnectLayers(self.layer_dict[conn[0]],
+                             self.layer_dict[conn[1]],
+                             conn[2])
 
         # TODO: there is a more efficient way to do this..
         self.connection_selection_dict = selection_dict
@@ -77,12 +79,12 @@ class NESTInterface(object):
         recorder_name_list = []
         for layer in self.layer_spec:
             if not isinstance(layer[1]['elements'], list):
-                elements = [layer[1]['elements'],]
+                elements = [layer[1]['elements'], ]
             else:
                 elements = layer[1]['elements']
             for model in elements:
                 if (isinstance(model, str) and
-                    'record_from' in nest.GetDefaults(model)):
+                        'record_from' in nest.GetDefaults(model)):
                     recorder_name_list.append(layer[0])
 
         # For each projection, make the connections
@@ -100,16 +102,22 @@ class NESTInterface(object):
             print("Connecting..")
             for pre_layer_name in source_gid_dict:
                 if pre_layer_name in recorder_name_list:
-                    self.recorders.append((pre_layer_name, source_gid_dict[pre_layer_name]))
+                    self.recorders.append(
+                        (pre_layer_name, source_gid_dict[pre_layer_name]))
                 for post_layer_name in target_gid_dict:
-                    syn_spec = selection_dict[post_layer_name][projection][0][5] if not( pre_layer_name in recorder_name_list) else 'static_synapse'
+                    syn_spec = (
+                        selection_dict[post_layer_name][projection][0][5]
+                        if not(pre_layer_name in recorder_name_list)
+                        else 'static_synapse')
                     if post_layer_name in recorder_name_list:
                         print(post_layer_name, " must be source, switching "
                               "source and target!")
-                        self.recorders.append((post_layer_name, target_gid_dict[post_layer_name]))
+                        self.recorders.append((
+                            post_layer_name,
+                            target_gid_dict[post_layer_name]))
                         nest.Connect(target_gid_dict[post_layer_name],
-                                 source_gid_dict[pre_layer_name],
-                                 syn_spec='static_synapse')
+                                     source_gid_dict[pre_layer_name],
+                                     syn_spec='static_synapse')
                     else:
                         print("%s and %s" %
                               (pre_layer_name, post_layer_name))
@@ -151,7 +159,7 @@ class NESTInterface(object):
 
         for recorder in self.recorders:
             if make_plot:
-                fig = plt.figure(fig_counter)
+                plt.figure(fig_counter)
                 self._plot_recorder(recorder[1])
                 plt.title("Membrane potential given by %s" % recorder[0])
                 plt.show()
@@ -208,7 +216,7 @@ class NESTInterface(object):
             except KeyError:
                 print("INFO: Wrong ID: {0}".format(neuron))
 
-        #plt.title("Membrane potential")
+        # plt.title("Membrane potential")
         plt.ylabel("Membrane potential [mV]")
         if nest.GetStatus(recorder_gid)[0]['time_in_steps']:
             plt.xlabel("Steps")
@@ -406,12 +414,12 @@ class NESTInterface(object):
                 if spec[0] == layer_name:
                     try:
                         cntr = spec[1]['center']
-                    except:
+                    except KeyError:
                         # Center in origo unless otherwise specified
                         cntr = [0.0, 0.0]
                     try:
                         ext = spec[1]['extent']
-                    except:
+                    except KeyError:
                         # Extent is one unless otherwise specified
                         ext = [1., 1.]
 
@@ -518,13 +526,14 @@ class NESTInterface(object):
                 # Find the GIDs
                 gids = tp.SelectNodesByMask(self.layer_dict[layer_name],
                                             cntr, mask)
-                
+
                 # Ignore GIDs if they are of unwanted neuron type
                 if ((source_target[mask][1] != 'all') and
                     'generator' not in layer_name.lower() and
                     'detector' not in layer_name.lower() and
-                    'meter' not in layer_name.lower()):
-                    gids = [gid for gid in gids if source_target[mask][1] == nest.GetStatus([gid])[0]['model']]
+                        'meter' not in layer_name.lower()):
+                    gids = [gid for gid in gids if source_target[mask][1] ==
+                            nest.GetStatus([gid])[0]['model']]
                     gids = tuple(gids)
 
                 if source_target[mask][0] == 'source':

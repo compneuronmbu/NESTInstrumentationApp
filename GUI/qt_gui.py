@@ -96,7 +96,8 @@ class QtGUI(object):
         self.ui_app = QApplication([])
         self.ui_window = AppUI(self)
 
-        self.syn_models = self.selector_interaction.selector.get_synapse_models()
+        self.syn_models = (
+            self.selector_interaction.selector.get_synapse_models())
 
         if self.have_nest:
             self.nest_interface = NESTInterface(
@@ -123,7 +124,7 @@ class QtGUI(object):
         callbacks for the buttons.
         """
         self.ui_window.add_plot(self.selector_interaction.selector.fig)
-        self.selector_interaction.selector._choose_mask_shape()  # TODO: fix private method
+        self.selector_interaction.selector.set_mask_shape()
 
         self.ui_window.combo_proj.activated.connect(
             self._proj_combo_on_activation)
