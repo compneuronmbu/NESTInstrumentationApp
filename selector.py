@@ -109,6 +109,20 @@ class PointsSelector(object):
         self.fig = fig
         layer_spec = self.layer_spec
 
+        if self.fig is None:
+            self.fig = mplFig.Figure()
+
+        # Name the different columns of the plot
+        ax_title = self.fig.add_subplot(111, frameon=False)
+        ax_title.set_position([0.08, 0.93, 0.87, 0.02])
+        ax_title.tick_params(labelcolor='none', top='off', bottom='off',
+                             left='off', right='off')
+        ax_title.set_title('Network', fontsize=17, fontweight='bold')
+        ax_title.set_title('Stimulation', fontsize=17, fontweight='bold',
+                           loc='left')
+        ax_title.set_title('Recording', fontsize=17, fontweight='bold',
+                           loc='right')
+
         number_of_layers = len(layer_spec)
 
         if number_of_layers == 2 and isinstance(layer_spec, tuple):
@@ -185,9 +199,6 @@ class PointsSelector(object):
                 xpos = [x[0] for x in layer[1]['positions']]
                 ypos = [y[1] for y in layer[1]['positions']]
 
-            if self.fig is None:
-                self.fig = mplFig.Figure()
-
             # The placement of the layer in the plot depends on whether it is
             # a stimulation device, recording device or normal network layer:
             lower_name = name.lower()
@@ -237,14 +248,6 @@ class PointsSelector(object):
             # created so we don't plot over the subplot unnecessary many times.
             self.ax_chosen[ax] = False
             self.ax_color[ax] = []
-
-        # Name the different columns of the plot
-        self.fig.text(0.05, 0.95, 'Stimulation', fontsize=16,
-                      fontweight='bold')
-        self.fig.text(0.45, 0.95, 'Network', fontsize=16,
-                      fontweight='bold')
-        self.fig.text(0.80, 0.95, 'Recording', fontsize=16,
-                      fontweight='bold')
 
     def get_synapse_models(self):
         """"""
