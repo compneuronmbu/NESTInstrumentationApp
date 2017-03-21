@@ -535,80 +535,8 @@ class TestWithNEST(unittest.TestCase):
             self.assertNotEqual(sorted_gid_list[i], sorted_gid_list[i + 1])
 
 
-class TestWithNESTSmallSystem(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        nest.ResetKernel()
-        nest.set_verbosity('M_WARNING')
-        n_multiplier = 0.1
-        n_layers = 4
-        Params = {
-            'Np': int(40 * n_multiplier),
-            'Ns': int(30 * n_multiplier),
-            'visSize': 8.0,
-            'ret_rate': 45.0,
-            'ret_amplitude': 0.0,
-            'temporal_frequency': 2.0,  # (Hz)
-        }
-        np.random.seed(12345)
-        cls.layers, cls.models, cls.syn_models = make_layers(Params)
-
-        cls.models += cls.syn_models
-
-        cls.points_selector = PointsSelector(cls.layers[:n_layers], cls.models, cls.syn_models)
-        cls.points_selector._plot_layers()
-
-        cls.points_selector.set_GUI(QtGUI)
-        cls.points_selector.interface.make_GUI()
-
-    def setUp(self):
-        nest.ResetKernel()
-        nest_interface = self.points_selector.interface.nest_interface
-        nest_interface.make_layers_and_models()
-
-    def _make_mouse_event(self, x_data, y_data, layer_name):
-        # Simulating a click or release of the mouse
-        for ax in self.points_selector.axs_layer_dict:
-            if self.points_selector.axs_layer_dict[ax]['name'] == layer_name:
-                break
-        m_event = MouseEvent('mouse_event', self.points_selector.fig.canvas,
-                             0, 0, button=1)
-        m_event.xdata = x_data
-        m_event.ydata = y_data
-        m_event.inaxes = ax
-        return m_event
-
-    def _find_gids(self):
-        return(self.points_selector.interface.nest_interface.find_gids(
-            self.points_selector.get_selections(),
-            self.points_selector.cprojection))
-
-    def _connect(self):
-        self.points_selector.interface.nest_interface.connect(
-            self.points_selector.get_selections(), [])
-
-    def test_simulate(self):
-        # Connecting two rectangular areas in different layers and simulating
-        self.points_selector.mask_type = 'rectangle'
-        click_list = [[-3.78, -3.52, 3.43, 3.51, 'Input Ret', 'source'],
-                      [-1.72, -1.69, 1.70, 1.86, 'Tp', 'target']]
-        for xc, yc, xr, yr, layer, conn_type in click_list:
-            self.points_selector.connection_type = conn_type
-            mclick = self._make_mouse_event(xc, yc, layer)
-            mrelease = self._make_mouse_event(xr, yr, layer)
-            self.points_selector.store_selection(mclick, mrelease)
-
-        self._connect()
-        self.points_selector.interface.nest_interface.simulate()
-        sd = self.points_selector.interface.nest_interface.spike_detectors
-       # n_spikes = nest.GetStatus(sd['spike_detector'])[0]['n_events']
-        #self.assertEqual(n_spikes, 0)
-        self.assertEqual(sd, {})
-
-
 def suite():
-    test_classes_to_run = [TestWithNEST, TestWithNESTSmallSystem]
+    test_classes_to_run = [TestWithNEST]
     loader = unittest.TestLoader()
     suites_list = []
     for test_class in test_classes_to_run:
