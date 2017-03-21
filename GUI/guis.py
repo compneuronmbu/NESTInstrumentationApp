@@ -234,6 +234,7 @@ class QtGUI(object):
         print("pressed reset button")
         print("")
 
+        nest_reset = " "
         self.selector_interaction.reset()
         if self.nest_interface is not None:
             self.nest_interface.reset()
@@ -494,6 +495,7 @@ class NotebookGUI(object):
         self.undo_button.disabled = True
         self.redo_button.disabled = True
 
+        nest_reset = " "
         if self.nest_interface is not None:
             self.nest_interface.reset()
             self.nest_interface.reset_nest()
