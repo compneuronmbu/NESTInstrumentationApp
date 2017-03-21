@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import pickle
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure as mplFig
@@ -250,14 +249,6 @@ class PointsSelector(object):
             self.ax_chosen[ax] = False
             self.ax_color[ax] = []
 
-    def get_synapse_models(self):
-        """"""
-        synapse_models = []
-        for syn_model in self.syn_models:
-            synapse_models.append(syn_model[1])
-
-        return synapse_models
-
     def set_mask_shape(self):
         """
         Creates selection objects for all subplots. Creates either
@@ -319,9 +310,9 @@ class PointsSelector(object):
 
                 # Get the nodes in the selected area
                 if sel[0] == 'rectangle':
-                    self.get_selected_rect(ax, sel[1], sel[2])
+                    self._get_selected_rect(ax, sel[1], sel[2])
                 else:
-                    self.get_selected_ellipse(ax, sel[1], sel[2])
+                    self._get_selected_ellipse(ax, sel[1], sel[2])
 
         self.fig2[ax].set_facecolor(self.ax_color[ax])
         try:
@@ -349,7 +340,7 @@ class PointsSelector(object):
 
         self.interface.show()
 
-    def get_selected_rect(self, ax, lower_left, upper_right):
+    def _get_selected_rect(self, ax, lower_left, upper_right):
         """
         Get positions of nodes when rectangular shape is chosen.
 
@@ -374,7 +365,7 @@ class PointsSelector(object):
 
         return selected
 
-    def get_selected_ellipse(self, ax, lower_left, upper_right):
+    def _get_selected_ellipse(self, ax, lower_left, upper_right):
         """
         Get positions of nodes when elliptical shape is chosen.
 
@@ -505,6 +496,14 @@ class PointsSelector(object):
         del self.undo_history[-1]
         self.update_selected_points(ax)
 
+    # def connect_to_nest(self, print_time=False):
+    #     """
+    #     Connects to the LayerSelectAndConnect class that interfaces with
+    #     NEST.
+    #     """
+    #     from .nest_interface import NESTInterface
+    #     self.LSC = NESTInterface(self.layer_spec, self.models)
+
     def get_selections(self):
         """
         Gets the selection dictionary.
@@ -532,13 +531,13 @@ class PointsSelector(object):
                         element_list.append(item)
         return element_list
 
-    # def connect_to_nest(self, print_time=False):
-    #     """
-    #     Connects to the LayerSelectAndConnect class that interfaces with
-    #     NEST.
-    #     """
-    #     from .nest_interface import NESTInterface
-    #     self.LSC = NESTInterface(self.layer_spec, self.models)
+    def get_synapse_models(self):
+        """"""
+        synapse_models = []
+        for syn_model in self.syn_models:
+            synapse_models.append(syn_model[1])
+
+        return synapse_models
 
     def reset(self):
         """
@@ -704,7 +703,3 @@ class SelectorInteraction(object):
 
         self.selector.fig.canvas.draw_idle()
         self.selector.changes_made = False
-
-    def close(self):
-        sys.exit()
-        # TODO: dialog
