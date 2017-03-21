@@ -23,9 +23,8 @@ class QtGUI(object):
             print("NEST not found")
 
         self.selector_interaction = selector_interaction
-        # self.selector_interaction = SelectorInteraction(self.Selector)  #
         self.ui_app = QApplication([])
-        self.ui_window = AppUI()
+        self.ui_window = AppUI(self)
 
         self.syn_models = self.selector_interaction.selector.get_synapse_models()
 
@@ -249,14 +248,12 @@ class QtGUI(object):
         self.ui_window.redo_button.setEnabled(False)
         self._show_status_message("App" + nest_reset + "is reset!", 2000)
 
-
     def _close_fig_button_on_clicked(self, event):
         """Closes figure when button is clicked"""
 
         print("")
         print("pressed close figure button")
-        self.selector_interaction.close()
-
+        self.ui_window.close()
 
 class NotebookGUI(object):
     """
