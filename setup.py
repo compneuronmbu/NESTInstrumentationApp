@@ -9,6 +9,7 @@ setup(name='NESTConnectionApp',
       author_email='hans.ekkehard.plesser@nmbu.no',
       url='http://www.nest-simulator.org',
       packages=['NESTConnectionApp', 'NESTConnectionApp.GUI',
+                'NESTConnectionApp.examples',
                 'NESTConnectionApp.tests'],
       package_dir={'NESTConnectionApp': ''},
       package_data={'NESTConnectionApp': ['GUI/Qt_App_GUI.ui']}
