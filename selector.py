@@ -61,6 +61,7 @@ class PointsSelector(object):
 
         self.selection_history = []
         self.undo_history = []
+        self.changes_made = False
 
         self.subplot_selector_objects = None
 
@@ -449,6 +450,7 @@ class PointsSelector(object):
             self.selection_history.append([ax, self.cprojection,
                                            selection_data])
             self.interface.activate_undo()
+            self.changes_made = True
 
             print("\nSelected points: (%3.f, %3.2f) --> (%3.2f, %3.2f)" %
                   (x1, y1, x2, y2))
@@ -583,6 +585,14 @@ class SelectorInteraction(object):
         """
         return self.selector.undo_history
 
+    def get_if_changes_made(self):
+        """
+        Gets the switch for changes made in the selector
+
+        :returns: ``True`` if changes are made, else ``False``
+        """
+        return self.selector.changes_made
+
     def change_mask_type(self, mask_type):
         """
         Changes the mask type. Valid types are ``source`` and ``target``.
@@ -653,6 +663,7 @@ class SelectorInteraction(object):
         out_dict = self.selector.get_selections()
         with open('outfile.pkl', 'wb') as outfile:
             pickle.dump(out_dict, outfile)
+        self.selector.changes_made = False
 
     def load(self):
         """
@@ -692,6 +703,7 @@ class SelectorInteraction(object):
             self.selector.connection_type = 'source'
 
         self.selector.fig.canvas.draw_idle()
+        self.selector.changes_made = False
 
     def close(self):
         sys.exit()

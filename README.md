@@ -25,11 +25,11 @@ There are two ways to run the NESTConnectionApp.
 
 The first is to use `ConnectionApp.py`. For the Brunel example it can be run with
 ```
-$ ./ConnectionApp.py define_brunel.py
+$ ./ConnectionApp define_brunel.py
 ```
 And for the Hill-Tononi example it can be run with
 ```
-$ ./ConnectionApp.py define_hill_tononi.py
+$ ./ConnectionApp define_hill_tononi.py
 ```
 
 Another way to run the App is in an interactive Jupyter Notebook, 
