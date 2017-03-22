@@ -309,8 +309,8 @@ class NESTInterface(object):
             ur_A = upper_right_list[i]
             ur_B = ur
 
-            # Source or target and mask_type of mask we currently tests for
-            # overlap
+            # Source or target, mask_type and node_type (exchitatory etc.) of
+            # mask we currently test for overlap
             source_target = source_target_list[i]
             mask_type = mask_type_list[i]
             node_type = node_type_list[i]
@@ -327,13 +327,17 @@ class NESTInterface(object):
                     present_node_type == node_type):
                 indx.append(i)
             # Test if we have overlap if both masks are ellipse type and
-            # have same source/target type. Currently don't have this
-            # implemented.
+            # have same source/target type. Currently use the boundary boxes of
+            # the ellipses to check for overlap.
             elif ((present_mask_type == 'ellipse') and
                   (mask_type == 'ellipse') and
+                  (ll_A[0] < ur_B[0]) and
+                  (ll_A[1] < ur_B[1]) and
+                  (ur_A[0] > ll_B[0]) and
+                  (ur_A[1] > ll_B[1]) and
                   (present_source_target == source_target) and
                   present_node_type == node_type):
-                pass
+                indx.append(i)
             # Test if we have overlap if main mask is rectangle and current
             # loop mask is ellipse, and the source/target type is the same.
             elif ((present_mask_type == 'rectangle') and

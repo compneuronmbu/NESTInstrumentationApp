@@ -133,6 +133,58 @@ class TestBrunel(unittest.TestCase):
                           10667, 10715, 10716, 10717, 10765, 10766, 10767,
                           10815, 10816, 10817))
 
+    def test_overlapping_ellipse(self):
+        # Test that two overlapping ellipses have correct GIDs
+        self.points_selector.mask_type = 'ellipse'
+
+        click_list = [[-4.9886, 4.7210, -4.8419, 4.9867],
+                      [-4.9582, 4.6767, -4.7340, 4.8732]]
+
+        layer = 'Excitatory'
+
+        for xc, yc, xr, yr in click_list:
+            mclick = self._make_mouse_event(xc, yc, layer)
+            mrelease = self._make_mouse_event(xr, yr, layer)
+            self.points_selector.store_selection(mclick, mrelease)
+
+        src_gid_dict, trgt_gid_dict = self._find_gids()
+
+        self.assertEqual(src_gid_dict['Excitatory'],
+                         (4, 5, 6, 105, 106, 206))
+
+        mask_no = (
+            self.points_selector.interface.nest_interface.get_mask_number())
+        self.assertEqual(mask_no['Excitatory'], 1)
+
+        # Test that two overlapping ellipses does not form a single mask if one
+        # is source and one is target.
+
+        self.points_selector.interface.selector_interaction.reset()
+        self.points_selector.interface.nest_interface.reset()
+
+        self.points_selector.mask_type = 'ellipse'
+
+        click_list = [[-4.9886, 4.7210, -4.8419, 4.9867, 'source'],
+                      [-4.9582, 4.6767, -4.7340, 4.8732, 'target']]
+
+        for xc, yc, xr, yr, conn_type in click_list:
+            self.points_selector.connection_type = conn_type
+            mclick = self._make_mouse_event(xc, yc, layer)
+            mrelease = self._make_mouse_event(xr, yr, layer)
+            self.points_selector.store_selection(mclick, mrelease)
+
+        src_gid_dict, trgt_gid_dict = self._find_gids()
+
+        self.assertEqual(src_gid_dict['Excitatory'],
+                         (4, 5, 6, 105))
+
+        self.assertEqual(trgt_gid_dict['Excitatory'],
+                         (6, 105, 106, 206))
+
+        mask_no = (
+            self.points_selector.interface.nest_interface.get_mask_number())
+        self.assertEqual(mask_no['Excitatory'], 2)
+
     def test_spike_detector(self):
         # Test that we have spike detectors only if they are chosen
         click_list = [[-1.8008, -1.0153, 1.0939, 1.8793, 'Input noise',
