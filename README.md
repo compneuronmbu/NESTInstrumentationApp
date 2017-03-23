@@ -1,4 +1,4 @@
-# NESTConnectionApp
+# NEST Connection App
 
 The NESTConnectionApp is a graphical user interface to create connections in [NEST](http://www.nest-simulator.org).
 
