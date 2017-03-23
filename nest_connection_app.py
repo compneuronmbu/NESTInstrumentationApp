@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
-This example shows how to use the NEST Connection App with the PyQt5 interface.
+NEST Connection App
+
+This is the stand-alone version of the NEST Connection App
+with Qt5-based GUI.
 """
+
 import os
 import fnmatch
-import importlib
+import importlib.util
 import argparse
 import textwrap
 from NESTConnectionApp.selector import PointsSelector
-
-
-directory_path = os.path.dirname(os.path.realpath(__file__)) + '/examples'
-model_files = [f for f in os.listdir(directory_path) if fnmatch.fnmatch(
-    f, 'define_*.py')]
 
 # Argument parser
 parser = argparse.ArgumentParser(
@@ -22,9 +22,9 @@ parser = argparse.ArgumentParser(
         Run the App with the selected model.'''),
     epilog=textwrap.dedent('''\
         Examples:
-          python ConnectionAppDemo.py define_hill_tononi.py
-          python ConnectionAppDemo.py define_brunel.py'''))
-parser.add_argument("MODEL", choices=model_files,
+          python nest_connection_app.py examples/define_hill_tononi.py
+          nest_connection_app.py examples/define_brunel.py'''))
+parser.add_argument("MODEL", type=str,
                     help="Model definition file to use.")
 parser.add_argument("-l", "--layers", type=int,
                     help="Number of layers to plot (default is all)",
@@ -34,20 +34,21 @@ parser.add_argument("-s", "--nodesize", type=int,
                     metavar="S")
 args = parser.parse_args()
 
+# import module defining model from arbitrary Python file
+# based on http://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
+module_spec = importlib.util.spec_from_file_location('model_definition', args.MODEL)
+model_definition = importlib.util.module_from_spec(module_spec)
+module_spec.loader.exec_module(model_definition)
 
-mod_path = 'examples.' + os.path.splitext(args.MODEL)[0]
-model_definitions = importlib.import_module(mod_path)
-
-layers, models, syn_models = model_definitions.make_layers()
-
-connections = model_definitions.make_connections()
-
-no_layers = len(layers) if args.layers is None else args.layers
-nodesize = 20 if args.nodesize is None else args.nodesize
-
+# obtain layer an connection specifications
+layers, models, syn_models = model_definition.make_layers()
+connections = model_definition.make_connections()
 models += syn_models
 
-PointsSelector(layers[:no_layers],
+num_layers = len(layers) if args.layers is None else min(args.layers, len(layers))
+nodesize = 20 if args.nodesize is None else args.nodesize
+
+PointsSelector(layers[:num_layers],
                models=models,
                syn_models=syn_models,
                connections=connections,

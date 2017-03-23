@@ -23,13 +23,13 @@ This will build and install it to Python's site-packages folder.
 
 There are two ways to run the NESTConnectionApp. 
 
-The first is to use `ConnectionApp`. For the Brunel example it can be run with
+The first is to use `nest_connection_app`. For the Brunel example it can be run with
 ```
-$ ./ConnectionApp define_brunel.py
+$ ./nest_connection_app.py examples/define_brunel.py
 ```
 And for the Hill-Tononi example it can be run with
 ```
-$ ./ConnectionApp define_hill_tononi.py
+$ ./nest_connection_app.py examples/define_hill_tononi.py
 ```
 
 Another way to run the App is in an interactive Jupyter Notebook, 
