@@ -1,6 +1,6 @@
 # NESTConnectionApp
 
-The NESTConnectionApp is a graphical user interface to create connections in [NEST](https://github.com/nest/nest-simulator).
+The NESTConnectionApp is a graphical user interface to create connections in [NEST](http://www.nest-simulator.org).
 
 ## Installing the App
 
@@ -11,7 +11,11 @@ The NESTConnectionApp requires the following packages to run:
 - PyQt5
 - IPython and ipywidgets
 
-Note that NEST is not required to run the App (it can however be interfaced with the NESTConnectionApp).
+Note that NEST is not required to run the App. If NEST is available,
+you can run simulations directly from the App. You will need the NEST
+developer version with tag
+[`External/TopologySelectNodes`](https://github.com/nest/nest-simulator/tree/External/TopologySelectNodes)
+or later.
 
 To build the NESTConnectionApp you can simply run
 ```
