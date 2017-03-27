@@ -21,7 +21,16 @@ To build the NESTConnectionApp you can simply run
 ```
 $ python setup.py install
 ```
-This will build and install it to Python's site-packages folder.  
+This will build and install it to Python's site-packages folder.
+
+### Running the testsuite
+
+After installing the app, run the following in Python to execute the
+testsuite (requires NEST in `PYTHONPATH`):
+```
+import NESTConnectionApp.tests.test_all as nca_tests
+nca_tests.run()
+```
 
 ## Running the App
 

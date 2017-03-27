@@ -29,7 +29,7 @@ with Qt5-based GUI.
 
 import os
 import fnmatch
-import importlib.util
+import imp
 import argparse
 import textwrap
 from NESTConnectionApp.selector import PointsSelector
@@ -53,11 +53,15 @@ parser.add_argument("-s", "--nodesize", type=int,
                     metavar="S")
 args = parser.parse_args()
 
+if not args.MODEL.endswith('.py'):
+    raise RuntimeError('Model argument must be Python source file!')
+
 # import module defining model from arbitrary Python file
-# based on http://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
-module_spec = importlib.util.spec_from_file_location('model_definition', args.MODEL)
-model_definition = importlib.util.module_from_spec(module_spec)
-module_spec.loader.exec_module(model_definition)
+try:
+    os.remove(args.MODEL + 'c')  # remove pyc file if it exists
+except:
+    pass
+model_definition = imp.load_source('model_definition', args.MODEL)
 
 # obtain layer an connection specifications
 layers, models, syn_models = model_definition.make_layers()
