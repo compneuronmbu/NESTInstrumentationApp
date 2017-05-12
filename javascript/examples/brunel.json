@@ -1,0 +1,12 @@
+{"layer": [["PoissonGenerator", {"columns": 1, "rows": 1, "elements": "stimulator"}],
+           ["Excitatory", {"columns": 40, "rows": 40, "edge_wrap": true, "elements": "excitatory"}],
+           ["Inhibitory", {"columns": 20, "rows": 20, "edge_wrap": true, "elements": "inhibitory"}],
+           ["SpikeDetector", {"columns": 1, "rows": 1, "elements": "spikedet"}],
+           ["Voltmeter_A", {"columns": 1, "rows": 1, "elements": "vmeter"}],
+           ["Voltmeter_B", {"columns": 1, "rows": 1, "elements": "vmeter"}]],
+ "model": [["poisson_generator", "stimulator", {"rate": 20000.0}],
+           ["iaf_psc_alpha", "excitatory", {"tau_m": 20.0, "V_th": 20.0, "C_m": 1.0, "V_reset": 0.0, "V_m": 0.0, "t_ref": 2.0, "E_L": 0.0}],
+           ["iaf_psc_alpha", "inhibitory", {"tau_m": 20.0, "V_th": 20.0, "C_m": 1.0, "V_reset": 0.0, "V_m": 0.0, "t_ref": 2.0, "E_L": 0.0}],
+           ["spike_detector", "spikedet", {}],
+           ["voltmeter", "vmeter", {}]],
+ "syn_model": [["static_synapse", "static_excitatory", {}]]}
