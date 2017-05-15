@@ -10,8 +10,8 @@ var container, stats;
 var marquee = $("#select-square");
 var camera, scene, renderer, geometry, materials;
 
-var positions;
-var colors;
+//var positions;
+//var colors;
 
 var cameraControls;
 var effectController;
@@ -49,8 +49,8 @@ function init()
     
     color = new THREE.Color();
     
-    positions = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
-    colors = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
+    var positions = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
+    var colors = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
     
     color.setRGB( 0.9, 0.9, 0.9 );
     var i = 0;
@@ -78,6 +78,8 @@ function init()
     material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
 
     points = new THREE.Points( geometry, material );
+    
+    
     scene.add( points );
     
     // RENDERER
@@ -97,6 +99,9 @@ function init()
 	document.addEventListener( 'mouseup', onMouseUp );
 	
 	window.addEventListener( 'resize', onWindowResize, false );
+	
+	//GUI
+	setUpGUI();
 
     render();
 }
@@ -191,19 +196,14 @@ function selectPoints()
     mouseDownCorrected.x = mousedowncoords.x;
     mouseDownCorrected.y = renderer.getSize().height - mousedowncoords.y;
 
-    //console.log("mouse down corrected:")
-    //console.log(mouseDownCorrected)
-
-    //units = getUnitVertCoordinates();
     mouseupcoords.x = mRelPos.x + mouseDownCorrected.x;
     mouseupcoords.y = -mRelPos.y + mouseDownCorrected.y;
 
-    //console.log("mouse up coords:")
-    //console.log(mouseupcoords)
     bounds = findBounds(mouseupcoords, mouseDownCorrected);
-    //console.log("ll, ur:")
-    //console.log(bounds.lower_left);
-    //console.log(bounds.upper_right);
+    
+    var colors = points.geometry.getAttribute("color").array;
+    var positions = points.geometry.getAttribute("position").array;    
+    
     for (var i = 0; i < positions.length; i += 3)
     {
         var p = {};
@@ -221,7 +221,7 @@ function selectPoints()
             colors[ i ]     = 1.0;
             colors[ i + 1 ] = 0.4;
             colors[ i + 2 ] = 0.4;
-            //console.log(points.geometry.attributes.color)
+            
             points.geometry.attributes.color.needsUpdate = true;
             nSelected += 1;
         }
@@ -231,7 +231,7 @@ function selectPoints()
 
 function onMouseDown( event )
 {
-    event.preventDefault();
+    //event.preventDefault();
     //if (controls.shiftDown === true) return;
 
     mousedown = true;
@@ -245,7 +245,7 @@ function onMouseDown( event )
 
 function onMouseMove( event )
 {
-    event.preventDefault();
+    //event.preventDefault();
     event.stopPropagation();
 
     // make sure we are in a select mode.
@@ -282,7 +282,7 @@ function onMouseMove( event )
 
 function onMouseUp( event )
 {
-    event.preventDefault();
+    //event.preventDefault();
     event.stopPropagation();
     //if (controls.shiftDown === true) return;
     //console.log("Mouse up");
@@ -302,6 +302,21 @@ function onWindowResize()
 	camera.updateProjectionMatrix();
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function setUpGUI() {
+    effectController = {
+        input: "",
+        output: ""
+        
+    };
+
+    var gui = new dat.GUI();
+
+    gui.add( effectController, "input",
+                [ "", "poisson" ] ).name( "Input" ).onChange( render );
+    gui.add( effectController, "output",
+                [ "", "voltmeter", "multimeter" ] ).name( "Output" ).onChange( render );
 }
 
 function render()
