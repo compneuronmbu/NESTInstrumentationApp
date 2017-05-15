@@ -1,0 +1,12 @@
+{
+    "layers":
+    {
+        "layer1":
+        {
+            "neurons": {
+                "neuron1": {"x": 2., "y": 5, "model": "iaf_psc_alpha"}
+            }
+            "extent"
+        }
+    }
+}
