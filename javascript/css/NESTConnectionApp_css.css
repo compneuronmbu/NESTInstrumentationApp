@@ -1,0 +1,63 @@
+#main_body {
+	background-color: #000000;
+	margin: 0px;
+	width: calc(100% - 180px);
+	height: 100vh;
+	overflow: hidden;
+	font-family:Monospace;
+	font-size:13px;
+	text-align:center;
+	font-weight: bold;
+}
+
+#gui_body {
+	float: right;
+	width: 180px;
+
+}
+
+#gui-box-title
+{
+    text-align: center;
+    padding-top: 3px;
+    padding-bottom:11px;
+    font-weight: bold;
+}
+
+#gui-box
+{
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding-top: 4px;
+    margin-bottom: 10px;
+}
+
+#gui-radio-label
+{
+    font-weight: normal;
+}
+
+#info {
+	color: #fff;
+	position: absolute;
+	top: 5px;
+	width: calc(100% - 180px);
+	padding: 5px;
+	z-index: 100;
+}
+
+#select-square {
+    position:absolute;
+    /* initialize it offscreen */
+    top: -2px;
+    left: -2px;
+    z-index: 50;
+    height: 0px;
+    width: 10px;
+    background-color: #ffccff;
+    opacity: .4;
+    border: dotted 1px #9a9a9a;
+    margin: 0;
+    padding: 0;
+    pointer-events:none;
+}

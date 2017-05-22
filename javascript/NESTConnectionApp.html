@@ -4,52 +4,65 @@
 		<title>NESTConnectionApp</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<style>
-			body {
-				background-color: #000000;
-				margin: 0px;
-				overflow: hidden;
-				font-family:Monospace;
-				font-size:13px;
-				text-align:center;
-				font-weight: bold;
-				text-align:center;
-			}
-			
-			#info {
-				color: #fff;
-				position: absolute;
-				top: 0px; width: 100%;
-				padding: 5px;
-				z-index: 100;
-			}
-			
-			#select-square {
-                position:absolute;
-                /* initialize it offscreen */
-                top: -2px;
-                left: -2px;
-                z-index: 50;
-                height: 0px;
-                width: 10px;
-                background-color: #ffccff;
-                opacity: .4;
-                border: dotted 1px #9a9a9a;
-                margin: 0;
-                padding: 0;
-                pointer-events:none;
-            }
-
-		</style>
+		<link rel="stylesheet" href="css/NESTConnectionApp_css.css" />
 	</head>
+
 	<body>
 
         <div id="select-square"></div>
-		<div id="info">
-			NEST Connection App
-			<div id="infoselected"></div>
-			<div id="layer_name"></div>
+
+		<div id="main_body">
+			<div id="info">
+				NEST Connection App
+				<div id="infoselected"></div>
+				<div id="layer_name"></div>
+			</div>
 		</div>
+
+
+
+		<div id="gui_body" ng-app="myApp" ng-controller="myCtrl" >
+	        <div id="gui-box">
+	            <div id="gui-box-title">
+	                Shape
+	            </div>
+
+	            <div ng-repeat="shape in shapes" style="padding-bottom:1px">
+		            <label id="gui-radio-label" >
+		                <input class="gui-radio" type="radio"
+		                    ng-model="currentValues.currentShape" ng-value="shape" ng-change="setShape(shape)">{{shape}}
+		            </label>
+	            </div>
+	        </div>
+
+	        <div id="gui-box">
+	            <div id="gui-box-title">
+	                Distribution
+	            </div>
+
+	            <div ng-repeat="dist in distributions" style="padding-bottom:1px">
+		            <label id="gui-radio-label" >
+		                <input class="gui-radio" type="radio"
+		                    ng-model="currentValues.currentDistribution" ng-value="dist" ng-change="setDistribution(dist)">{{dist}}
+		            </label>
+	            </div>
+        	</div>
+
+        	<div id="gui-box">
+	            <div id="gui-box-title">
+	                Display
+	            </div>
+
+	            <div ng-repeat="display in displays" style="padding-bottom:1px">
+		            <label id="gui-radio-label" >
+		                <input class="gui-radio" type="radio"
+		                    ng-model="currentValues.currentDisplay" ng-value="display" ng-change="setDisplay(display)">{{display}}
+		            </label>
+	            </div>
+	        </div>
+       	</div>
+
+
 
 		<script src="js/three.js"></script>
 		<script src="js/jquery-3.2.1.min.js"></script>
@@ -58,5 +71,8 @@
 		<script src="js/dat.gui.min.js"></script>
 		<script src="examples/brunel_js.js"></script>
 		<script src="js/plotAndSelect.js"></script>
+
+		<script src="js/angular.js"></script>
+		<script src="js/GUI.js"></script>
 	</body>
-</html>
+</html>s
