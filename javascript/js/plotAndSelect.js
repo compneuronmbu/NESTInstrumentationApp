@@ -8,7 +8,10 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var container, stats;
 var marquee = $("#select-square");
-var camera, scene, renderer, geometry, materials;
+var camera, scene, renderer, materials;
+
+var number_of_layers = 0;
+var offsett = 0.6;
 
 //var positions;
 //var colors;
@@ -37,30 +40,71 @@ function init()
 
     // CAMERA
 	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 1, 8000 );
-	camera.position.set( 0, 0, 2 );
+	camera.position.set( 0, 0, 2.5 );
 
 	scene = new THREE.Scene();
 	
 	// POINTS
-    var layers = JSON.parse(my_json);
-    var exLayer = layers.layers;
-    console.log(exLayer.Excitatory);
-    
-    geometry = new THREE.BufferGeometry();
+    var layers_info = JSON.parse(my_json); // TODO: Er det meningen at model etc, skal være her og?
+    var layers = layers_info.layers;
+    console.log(layers);
+    console.log(layers.Excitatory);
+    console.log(container.clientWidth)
     
     color = new THREE.Color();
-    
-    var positions = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
-    var colors = new Float32Array( Object.keys(exLayer.Excitatory.neurons).length * 3 );
-    
     color.setRGB( 0.9, 0.9, 0.9 );
-    var i = 0;
-    for (var neuron in exLayer.Excitatory.neurons)
+
+    initPoints( layers.Excitatory.neurons, offsett )
+    initPoints( layers.Inhibitory.neurons, -offsett )
+
+    for ( layer in layers )
     {
-        if (exLayer.Excitatory.neurons.hasOwnProperty(neuron))
+        if (layer.toLowerCase().indexOf("generator") === -1 &&
+            layer.toLowerCase().indexOf("detector") === -1 &&
+            layer.toLowerCase().indexOf("meter") === -1 )
         {
-            positions[ i ] = exLayer.Excitatory.neurons[neuron].x;
-            positions[ i + 1 ] = exLayer.Excitatory.neurons[neuron].y;
+            console.log(layer);
+            number_of_layers++;
+        }
+    }
+
+
+    
+    // RENDERER
+	renderer = new THREE.WebGLRenderer();
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( container.clientWidth, container.clientHeight );
+
+	container.appendChild( renderer.domElement );
+	
+	// CONTROLS
+	//cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+	//cameraControls.target.set( 0, 0, 0 );
+	//cameraControls.addEventListener( 'change', render );
+	
+	document.addEventListener( 'mousedown', onMouseDown );
+	document.addEventListener( 'mousemove', onMouseMove );
+	document.addEventListener( 'mouseup', onMouseUp );
+	
+	window.addEventListener( 'resize', onWindowResize, false );
+
+    render();
+}
+
+function initPoints( neurons, offsett )
+{
+    var geometry = new THREE.BufferGeometry();
+    
+    var positions = new Float32Array( Object.keys(neurons).length * 3 );
+    var colors = new Float32Array( Object.keys(neurons).length * 3 );
+    
+    var i = 0;
+    for (var neuron in neurons)
+    {
+        if (neurons.hasOwnProperty(neuron))
+        {
+            positions[ i ] = neurons[neuron].x + offsett;
+            positions[ i + 1 ] = neurons[neuron].y;
             positions[ i + 2 ] = 0;
             
             colors[ i ]     = color.r;
@@ -81,29 +125,6 @@ function init()
     points = new THREE.Points( geometry, material );
     
     scene.add( points );
-    
-    // RENDERER
-	renderer = new THREE.WebGLRenderer();
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( container.clientWidth, container.clientHeight );
-
-	container.appendChild( renderer.domElement );
-	
-	// CONTROLS
-	//cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-	//cameraControls.target.set( 0, 0, 0 );
-	//cameraControls.addEventListener( 'change', render );
-	
-	document.addEventListener( 'mousedown', onMouseDown );
-	document.addEventListener( 'mousemove', onMouseMove );
-	document.addEventListener( 'mouseup', onMouseUp );
-	
-	window.addEventListener( 'resize', onWindowResize, false );
-	
-	//GUI
-	//setUpGUI();
-
-    render();
 }
 
 // Selection
@@ -181,9 +202,6 @@ function selectPoints()
     var dupeCheck = {};
     var mouseUpCoords = {};
     var xypos;
-
-    //currentMouse.x = location.x;
-    //currentMouse.y = location.y;
 
     mouseDownCorrected.x = mouseDownCoords.x;
     mouseDownCorrected.y = renderer.getSize().height - mouseDownCoords.y;
@@ -298,20 +316,6 @@ function onWindowResize()
 	camera.updateProjectionMatrix();
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-function setUpGUI() {
-    effectController = {
-        input: "",
-        output: ""
-    };
-
-    var gui = new dat.GUI();
-
-    gui.add( effectController, "input",
-                [ "", "poisson" ] ).name( "Input" ).onChange( render );
-    gui.add( effectController, "output",
-                [ "", "voltmeter", "multimeter" ] ).name( "Output" ).onChange( render );
 }
 
 function render()

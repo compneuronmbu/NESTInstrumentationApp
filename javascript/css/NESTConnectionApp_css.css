@@ -1,7 +1,11 @@
+:root {
+    --gui_width: 180px;
+}
+
 #main_body {
 	background-color: #000000;
 	margin: 0px;
-	width: calc(100% - 180px);
+	width: calc(100% - var(--gui_width));
 	height: 100vh;
 	overflow: hidden;
 	font-family:Monospace;
@@ -12,7 +16,7 @@
 
 #gui_body {
 	float: right;
-	width: 180px;
+	width: var(--gui_width);
 
 }
 
@@ -41,7 +45,7 @@
 	color: #fff;
 	position: absolute;
 	top: 5px;
-	width: calc(100% - 180px);
+	width: calc(100% - var(--gui_width));
 	padding: 5px;
 	z-index: 100;
 }
