@@ -18,48 +18,9 @@
 		</div>
 
 
-
-		<div id="gui_body" ng-app="myApp" ng-controller="myCtrl" >
-	        <div id="gui-box">
-	            <div id="gui-box-title">
-	                Shape
-	            </div>
-
-	            <div ng-repeat="shape in shapes" style="padding-bottom:1px">
-		            <label id="gui-radio-label" >
-		                <input class="gui-radio" type="radio"
-		                    ng-model="currentValues.currentShape" ng-value="shape" ng-change="setShape(shape)">{{shape}}
-		            </label>
-	            </div>
-	        </div>
-
-	        <div id="gui-box">
-	            <div id="gui-box-title">
-	                Distribution
-	            </div>
-
-	            <div ng-repeat="dist in distributions" style="padding-bottom:1px">
-		            <label id="gui-radio-label" >
-		                <input class="gui-radio" type="radio"
-		                    ng-model="currentValues.currentDistribution" ng-value="dist" ng-change="setDistribution(dist)">{{dist}}
-		            </label>
-	            </div>
-        	</div>
-
-        	<div id="gui-box">
-	            <div id="gui-box-title">
-	                Display
-	            </div>
-
-	            <div ng-repeat="display in displays" style="padding-bottom:1px">
-		            <label id="gui-radio-label" >
-		                <input class="gui-radio" type="radio"
-		                    ng-model="currentValues.currentDisplay" ng-value="display" ng-change="setDisplay(display)">{{display}}
-		            </label>
-	            </div>
-	        </div>
+		<div id="gui_body">
+			<!-- Contents will be filled by React. -->
        	</div>
-
 
 
 		<script src="js/three.js"></script>
@@ -70,7 +31,86 @@
 		<script src="examples/brunel_js.js"></script>
 		<script src="js/plotAndSelect.js"></script>
 
-		<script src="js/angular.js"></script>
-		<script src="js/GUI.js"></script>
+
+       	<script src="https://unpkg.com/react@15/dist/react.js"></script>
+       	<script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+    	<!-- The GUI script is here for now, until the App runs on a server. 
+    	Having the script in a separate file causes errors with Babel because 
+    	cross origin requests are disallowed.
+    	See https://stackoverflow.com/a/20578692 
+    	-->
+		<script type="text/babel">
+			class GuiButtons extends React.Component{
+			    constructor() {
+			    super();
+			    }
+			    render() {
+			        return (
+			          <div>
+			            <div id="gui-box">
+			                <div id="gui-box-title">
+			                    Mask shape
+			                </div>
+			                <RadioButtons items={['Rectangle', 'Ellipse']} />
+			            </div>
+			            <div id="gui-box">
+			              <div id="gui-box-title">
+			                Neuron type
+			              </div>
+			              <DropDown items={['All', 'Excitatory', 'Inhibitory']} />
+			            </div>
+			            <div id="gui-box">
+			              <div id="gui-box-title">
+			                Synapse model
+			              </div>
+			              <DropDown items={['static_excitatory']} />
+			            </div>
+			          </div>
+			        );
+			    }
+			}
+
+			class RadioButtons extends React.Component {
+			    constructor() {
+			    super();
+			    }
+			    render() {
+			        return ( 
+			            <div>
+			            {this.props.items.map(function(item){
+			              return (
+			                <label id={item}>{item}
+			                  <input type="radio"></input>
+			                </label>
+			              );
+			            })}
+			            </div>
+			        );
+			    }
+			}
+
+			class DropDown extends React.Component {
+			    constructor() {
+			    super();
+			    }
+			    render() {
+			        return ( 
+			            <select>
+			            {this.props.items.map(function(item){
+			              return (
+			                <option value={item}>{item}</option>
+			              );
+			            })}
+			            </select>
+			        );
+			    }
+			}
+
+			ReactDOM.render(
+			    <GuiButtons/>,
+			    document.getElementById('gui_body')
+			);
+		</script>
 	</body>
 </html>
