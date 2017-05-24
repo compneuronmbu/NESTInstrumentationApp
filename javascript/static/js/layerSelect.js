@@ -32,8 +32,7 @@ function init()
 	document.body.appendChild( container );
 
     // CAMERA
-	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 1, 8000 );
-
+	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
 	scene = new THREE.Scene();
 	
 	// POINTS
