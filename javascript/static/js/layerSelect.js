@@ -93,7 +93,7 @@ function init()
         }
     }
 
-    console.log(layer_points);
+//    console.log(layer_points);
 
     camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
     
