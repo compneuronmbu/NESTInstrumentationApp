@@ -32,7 +32,7 @@ function init()
 	document.body.appendChild( container );
 
     // CAMERA
-	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 1, 8000 );
+	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
 
 	scene = new THREE.Scene();
 	
@@ -53,6 +53,8 @@ function init()
         }
     }
 
+    number_of_layers = 7;
+
     if ( number_of_layers >12 )
     {
         window.alert( "Please reconsider the number of layers. The app is constructed to properly display at most 12 layers." );
@@ -65,18 +67,19 @@ function init()
     var offsett_y = 0.0;
     var i = 1;
 
-    for ( layer in layers )
+    // for ( layer in layers )
+    for (var j = 1; j <= number_of_layers; ++j)
     {
-        if (layer.toLowerCase().indexOf("generator") === -1 &&
-            layer.toLowerCase().indexOf("detector") === -1 &&
-            layer.toLowerCase().indexOf("meter") === -1 )
-        {
+        // if (layer.toLowerCase().indexOf("generator") === -1 &&
+        //     layer.toLowerCase().indexOf("detector") === -1 &&
+        //     layer.toLowerCase().indexOf("meter") === -1 )
+        // {
             // Not sure if this is the best way. Could also do
             // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
             // but then I think we would have to rewrite some of the code below.
-            layer_points[layer] =
+            layer_points[j] =
             {
-                points: initPoints( layers[layer].neurons, offsett_x, offsett_y ),
+                points: initPoints( layers.Excitatory.neurons, offsett_x, offsett_y ),
                 offsetts: {x: offsett_x, y: offsett_y}
             };
 
@@ -90,7 +93,7 @@ function init()
                 offsett_x += 0.6*2;
             }
             ++i;
-        }
+        // }
     }
 
     console.log(layer_points);
@@ -258,7 +261,6 @@ function toScreenXY (point_pos) {
 
 function selectPoints()
 {
-    var currentMouse = {};
     var mouseDownCorrected = {};
     var units;
     var bounds;
@@ -275,12 +277,11 @@ function selectPoints()
     mouseUpCoords.y = -mRelPos.y + mouseDownCorrected.y;
 
     bounds = findBounds(mouseUpCoords, mouseDownCorrected);
-
     for ( layer_name in layer_points )
     {
         var points = layer_points[layer_name].points;
         var colors = points.geometry.getAttribute("color").array;
-        var positions = points.geometry.getAttribute("position").array;    
+        var positions = points.geometry.getAttribute("position").array;
         
         for (var i = 0; i < positions.length; i += 3)
         {

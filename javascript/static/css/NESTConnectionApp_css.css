@@ -2,6 +2,11 @@
     --gui_width: 180px;
 }
 
+body {
+    display: block;
+    margin: 0px; /* A margin larger than zero here will mess up selection. */
+}
+
 #main_body {
 	background-color: #000000;
 	margin: 0px;
