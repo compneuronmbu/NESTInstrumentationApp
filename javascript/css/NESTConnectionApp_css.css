@@ -34,6 +34,7 @@
     border-radius: 4px;
     padding-top: 4px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 #gui-radio-label
@@ -64,4 +65,10 @@
     margin: 0;
     padding: 0;
     pointer-events:none;
+}
+
+.dropdown{
+    font-size: 14px;
+    height: 25px;
+    width: 150px;
 }
