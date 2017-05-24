@@ -17,7 +17,8 @@
 #gui_body {
 	float: right;
 	width: var(--gui_width);
-
+    height: 100vh;
+    background-color: #80B2B2;
 }
 
 #gui-box-title
@@ -30,7 +31,6 @@
 
 #gui-box
 {
-    background-color: #ffffff;
     border-radius: 4px;
     padding-top: 4px;
     margin-bottom: 10px;

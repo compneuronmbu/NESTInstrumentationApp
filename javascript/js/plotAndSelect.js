@@ -8,16 +8,13 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 var container, stats;
 var marquee = $("#select-square");
-var camera, scene, renderer, materials;
+var camera, scene, renderer, material;
 
 var number_of_layers = 0;
-var offsett = 0.6;
 
-//var positions;
-//var colors;
+var layer_points = {};
 
 var cameraControls;
-var effectController;
 
 var mouseUp = true;
 var mouseDown = false;
@@ -26,36 +23,25 @@ var mRelPos = { x: 0, y: 0 };
 
 var nSelected = 0;
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
 
 init();
 
 function init()
 {
-    //container = document.createElement( 'div' );
     container = document.getElementById( 'main_body' );
 	document.body.appendChild( container );
 
     // CAMERA
 	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 1, 8000 );
-	camera.position.set( 0, 0, 2.5 );
 
 	scene = new THREE.Scene();
 	
 	// POINTS
     var layers_info = JSON.parse(my_json); // TODO: Er det meningen at model etc, skal være her og?
     var layers = layers_info.layers;
-    console.log(layers);
-    console.log(layers.Excitatory);
-    console.log(container.clientWidth)
     
     color = new THREE.Color();
     color.setRGB( 0.9, 0.9, 0.9 );
-
-    initPoints( layers.Excitatory.neurons, offsett )
-    initPoints( layers.Inhibitory.neurons, -offsett )
 
     for ( layer in layers )
     {
@@ -63,12 +49,53 @@ function init()
             layer.toLowerCase().indexOf("detector") === -1 &&
             layer.toLowerCase().indexOf("meter") === -1 )
         {
-            console.log(layer);
             number_of_layers++;
         }
     }
 
+    if ( number_of_layers >12 )
+    {
+        window.alert( "Please reconsider the number of layers. The app is constructed to properly display at most 12 layers." );
+    }
 
+    var no_rows = Math.round(Math.sqrt(number_of_layers));
+    var no_cols = Math.ceil(Math.sqrt(number_of_layers));
+
+    var offsett_x = ( number_of_layers > 1 ) ? -0.6*(no_cols - 1) : 0.0;
+    var offsett_y = 0.0;
+    var i = 1;
+
+    for ( layer in layers )
+    {
+        if (layer.toLowerCase().indexOf("generator") === -1 &&
+            layer.toLowerCase().indexOf("detector") === -1 &&
+            layer.toLowerCase().indexOf("meter") === -1 )
+        {
+            // Not sure if this is the best way. Could also do
+            // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
+            // but then I think we would have to rewrite some of the code below.
+            layer_points[layer] =
+            {
+                points: initPoints( layers[layer].neurons, offsett_x, offsett_y ),
+                offsetts: {x: offsett_x, y: offsett_y}
+            };
+
+            if ( i % no_cols == 0 )
+            {
+                offsett_x = -0.6*(no_cols - 1);
+                offsett_y += -1.2;
+            }
+            else
+            {
+                offsett_x += 0.6*2;
+            }
+            ++i;
+        }
+    }
+
+    console.log(layer_points);
+
+    camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
     
     // RENDERER
 	renderer = new THREE.WebGLRenderer();
@@ -89,9 +116,45 @@ function init()
 	window.addEventListener( 'resize', onWindowResize, false );
 
     render();
+
+    make_layer_names();
 }
 
-function initPoints( neurons, offsett )
+function make_layer_names()
+{
+    var center;
+    var bounding_radius;
+    var name_pos;
+    var screenCenter;
+
+    for (layer_name in layer_points)
+    {
+        center = layer_points[layer_name].points.geometry.boundingSphere.center;
+        bounding_radius = layer_points[layer_name].points.geometry.boundingSphere.radius;
+
+        name_pos = {
+            x: center.x,
+            y: center.y + bounding_radius - 0.1,
+            z: 0
+        };
+
+        screenCenter = toScreenXY(name_pos);
+        screenCenter.y = container.clientHeight - screenCenter.y;
+
+        var text = document.createElement('div');
+        text.style.position = 'absolute';
+        text.style.width = 100;
+        text.style.height = 100;
+        text.style.color = "white";
+        text.style.fontSize = 18 + 'px'
+        text.innerHTML = layer_name;
+        text.style.top = screenCenter.y + 'px';
+        text.style.left = screenCenter.x + 'px';
+        document.body.appendChild(text);
+    }
+}
+
+function initPoints( neurons, offsett_x, offsett_y )
 {
     var geometry = new THREE.BufferGeometry();
     
@@ -103,8 +166,8 @@ function initPoints( neurons, offsett )
     {
         if (neurons.hasOwnProperty(neuron))
         {
-            positions[ i ] = neurons[neuron].x + offsett;
-            positions[ i + 1 ] = neurons[neuron].y;
+            positions[ i ] = neurons[neuron].x + offsett_x;
+            positions[ i + 1 ] = neurons[neuron].y + offsett_y;
             positions[ i + 2 ] = 0;
             
             colors[ i ]     = color.r;
@@ -125,6 +188,8 @@ function initPoints( neurons, offsett )
     points = new THREE.Points( geometry, material );
     
     scene.add( points );
+
+    return points;
 }
 
 // Selection
@@ -138,42 +203,42 @@ function resetMarquee ()
   mouseDownCoords.y = 0;
 }
 
-// takes the mouse up and mouse down positions and calculates an origin
-// and delta for the square.
-// this is compared to the unprojected XY centroids of the cubes.
+// Finds the lower_left and upper_right coordinates of the selected square
 function findBounds (pos1, pos2)
 {
-    // calculating the origin and vector.
-    //var origin = {},
-    //delta = {};
     var lower_left = {};
     var upper_right = {};
 
-    if(pos1.x < pos2.x) {
+    if( pos1.x < pos2.x )
+    {
         lower_left.x = pos1.x;
         upper_right.x = pos2.x;
-    } else {
+    }
+    else
+    {
         lower_left.x = pos2.x;
         upper_right.x = pos1.x;
     }
 
-    if (pos1.y < pos2.y) {
+    if ( pos1.y < pos2.y )
+    {
         lower_left.y = pos1.y;
         upper_right.y = pos2.y;
-    } else {
+    } else
+    {
         lower_left.y = pos2.y;
         upper_right.y = pos1.y;
     }
     return ({lower_left: lower_left, upper_right: upper_right});
 }
 
-// Takes a position and detect if it is within delta of the origin defined by findBounds ({origin, delta})
+// Takes a position and detect if it is within the boundary box defined by findBounds(..)
 function withinBounds(pos, bounds)
 {
     var ll = bounds.lower_left;
     var ur = bounds.upper_right;
 
-    if ((pos.x >= ll.x) && (pos.x <= ur.x) && (pos.y >= ll.y) && (pos.y <= ur.y))
+    if ( (pos.x >= ll.x) && (pos.x <= ur.x) && (pos.y >= ll.y) && (pos.y <= ur.y) )
     {
         return true;
     }
@@ -210,31 +275,35 @@ function selectPoints()
     mouseUpCoords.y = -mRelPos.y + mouseDownCorrected.y;
 
     bounds = findBounds(mouseUpCoords, mouseDownCorrected);
-    
-    var colors = points.geometry.getAttribute("color").array;
-    var positions = points.geometry.getAttribute("position").array;    
-    
-    for (var i = 0; i < positions.length; i += 3)
-    {
-        var p = {};
-        p.x = positions[i];
-        p.y = positions[i + 1];
-        p.z = positions[i + 2];
-        xypos = toScreenXY(p);
 
-        inside = withinBounds(xypos, bounds);
-        if (inside)
+    for ( layer_name in layer_points )
+    {
+        var points = layer_points[layer_name].points;
+        var colors = points.geometry.getAttribute("color").array;
+        var positions = points.geometry.getAttribute("position").array;    
+        
+        for (var i = 0; i < positions.length; i += 3)
         {
-            //color.setRGB(0.7, 0.0, 0.0);
-            colors[ i ]     = 1.0;
-            colors[ i + 1 ] = 0.4;
-            colors[ i + 2 ] = 0.4;
-            
-            points.geometry.attributes.color.needsUpdate = true;
-            nSelected += 1;
+            var p = {};
+            p.x = positions[i];
+            p.y = positions[i + 1];
+            p.z = positions[i + 2];
+            xypos = toScreenXY(p);
+
+            inside = withinBounds(xypos, bounds);
+            if (inside)
+            {
+                //color.setRGB(0.7, 0.0, 0.0);
+                colors[ i ]     = 1.0;
+                colors[ i + 1 ] = 0.4;
+                colors[ i + 2 ] = 0.4;
+                
+                points.geometry.attributes.color.needsUpdate = true;
+                nSelected += 1;
+            }
         }
+        $("#infoselected").html( nSelected.toString() + " selected" );
     }
-    $("#infoselected").html( nSelected.toString() + " selected" );
 }
 
 function onMouseDown( event )
@@ -309,13 +378,10 @@ function onMouseUp( event )
 
 function onWindowResize()
 {
-	windowHalfX = window.innerWidth / 2;
-	windowHalfY = window.innerHeight / 2;
-
-	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.aspect = container.clientWidth / container.clientHeight;
 	camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( container.clientWidth, container.clientHeight );
 }
 
 function render()
