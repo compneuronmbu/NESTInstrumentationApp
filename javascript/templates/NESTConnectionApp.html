@@ -4,7 +4,7 @@
 		<title>NESTConnectionApp</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/NESTConnectionApp_css.css') }}"/>
+		<link rel="stylesheet" href="static/css/NESTConnectionApp_css.css"/>
 	</head>
 
 	<body>
@@ -26,17 +26,17 @@
        	Remember to change to production versions ("*.min.js") of library
    	    scripts before deploying.
    	     -->
-		<script type='text/javascript' src="{{ url_for('static', filename='js/lib/three.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='js/lib/jquery-3.2.1.min.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='js/lib/Detector.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='js/lib/OrbitControls.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='js/lib/dat.gui.min.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='examples/brunel_js.js') }}"></script>
-		<script type='text/javascript' src="{{ url_for('static', filename='js/layerSelect.js') }}"></script>
+		<script type='text/javascript' src="static/js/lib/three.js"></script>
+		<script type='text/javascript' src="static/js/lib/jquery-3.2.1.min.js"></script>
+		<script type='text/javascript' src="static/js/lib/Detector.js"></script>
+		<script type='text/javascript' src="static/js/lib/OrbitControls.js"></script>
+		<script type='text/javascript' src="static/js/lib/dat.gui.min.js"></script>
+
+		<script type='text/javascript' src="static/js/layerSelect.js"></script>
 
        	<script type='text/javascript' src="https://unpkg.com/react@15/dist/react.js"></script>
        	<script type='text/javascript' src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
     	<script src="http://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
-		<script type="text/jsx" src="{{ url_for('static', filename='js/GUI.js') }}"></script>
+		<script type="text/jsx" src="static/js/GUI.js"></script>
 	</body>
 </html>
