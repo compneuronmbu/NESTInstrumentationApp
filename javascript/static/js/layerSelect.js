@@ -224,6 +224,7 @@ function resetMarquee ()
   marquee.css({width: 0, height: 0});
   mouseDownCoords.x = 0;
   mouseDownCoords.y = 0;
+  mRelPos = { x: 0, y: 0 };
 }
 
 // Finds the lower_left and upper_right coordinates of the selected square
@@ -290,6 +291,7 @@ function selectPoints()
     var dupeCheck = {};
     var mouseUpCoords = {};
     var xypos;
+    var nSelectedOld = nSelected;
 
     mouseDownCorrected.x = mouseDownCoords.x;
     mouseDownCorrected.y = renderer.getSize().height - mouseDownCoords.y;
@@ -327,7 +329,10 @@ function selectPoints()
                     nSelected += 1;
                 }
             }
-            $("#infoselected").html( nSelected.toString() + " selected" );
+            if (nSelected != nSelectedOld)
+            {
+                $("#infoselected").html( nSelected.toString() + " selected" );
+            }
         }
     }
 }
@@ -338,11 +343,15 @@ function onMouseDown( event )
     //event.preventDefault();
     //if (controls.shiftDown === true) return;
 
-    mouseDown = true;
-    mouseDownCoords = {};
+    if (event.target.localName === "canvas")
+    {
+        mouseDown = true;
+        mouseDownCoords = {};
 
-    mouseDownCoords.x = event.clientX;
-    mouseDownCoords.y = event.clientY;
+        mouseDownCoords.x = event.clientX;
+        mouseDownCoords.y = event.clientY;
+    }
+
 }
 
 function onMouseMove( event )
@@ -398,9 +407,13 @@ function onMouseUp( event )
     event.stopPropagation();
     //if (controls.shiftDown === true) return;
 
-    // reset the marquee selection
-    selectPoints();
-    resetMarquee();
+    if (mouseDown)
+    {
+        // reset the marquee selection
+        selectPoints();
+        resetMarquee();
+        requestAnimationFrame( render );
+    }
 }
 
 function onWindowResize()
@@ -413,6 +426,5 @@ function onWindowResize()
 
 function render()
 {
-    requestAnimationFrame( render );
     renderer.render( scene, camera );
 }
