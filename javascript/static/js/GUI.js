@@ -37,7 +37,7 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <RadioButtons items={[{value:'Rectangle'}, {value:'Ellipse'}]} />
+                <RadioButtons items={[{value:'Rectangle'}]} />
             </div>
 
             <div id="gui-box">
@@ -45,6 +45,10 @@ class GuiButtons extends React.Component{
                     Mask type
                 </div>
                 <RadioButtons items={[{value:'Source'}, {value:'Target'}]} />
+            </div>
+
+            <div id="gui-box">
+                <SelectionsButton/>
             </div>
 
           </div>
@@ -117,6 +121,25 @@ class DropDown extends React.Component {
           </select>
         );
     }
+}
+
+class SelectionsButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleClicked = this.handleClicked.bind(this);
+  }
+
+  handleClicked() {
+    console.log("It's alive!")
+  }
+
+  render() {
+    return ( 
+      <button id="getSelectionsButton" onClick={this.handleClicked}>
+        Get selections
+      </button>
+    );
+  }
 }
 
 ReactDOM.render(

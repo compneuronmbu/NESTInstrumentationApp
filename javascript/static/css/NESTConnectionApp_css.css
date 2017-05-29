@@ -47,6 +47,13 @@ body {
     font-weight: normal;
 }
 
+#getSelectionsButton
+{
+    font-size: 14px;
+    height: 25px;
+    width: 150px;
+}
+
 #info {
 	color: #fff;
 	position: absolute;
