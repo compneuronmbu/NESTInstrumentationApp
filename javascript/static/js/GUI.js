@@ -53,37 +53,68 @@ class GuiButtons extends React.Component{
 }
 
 class RadioButtons extends React.Component {
-    constructor() {
-    super();
+    constructor(props) {
+      super(props);
+      this.items = props.items;
+      this.state = {
+        selectedOption: this.items[0].value
+      };
+      // This binding is necessary to make `this` work in the callback
+      this.handleOptionChange = this.handleOptionChange.bind(this);
+      this.makeRadioButton = this.makeRadioButton.bind(this);
     }
+
+    handleOptionChange(changeEvent) {
+      this.setState({
+        selectedOption: changeEvent.target.value
+      });
+    }
+
+    makeRadioButton(item, i) {
+      return (
+        <label key={i}>
+          <input type="radio" value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
+          {item.value}<br/>
+        </label>
+      );
+    }
+
     render() {
-        return ( 
-            <div className="radiobuttons">
-            {this.props.items.map(function(item, i){
-              return (
-                <label id={item.value} key={i}>{item.value}
-                  <input type="radio"></input><br/>
-                </label>
-              );
-            })}
+        return (
+          <form>
+            <div className="radiobutton">
+            {this.props.items.map(this.makeRadioButton)}
             </div>
+          </form>
         );
     }
 }
 
 class DropDown extends React.Component {
-    constructor() {
-    super();
+    constructor(props) {
+      super(props);
+      this.items = props.items;
+      this.state = {
+        selectedOption: this.items[0].value
+      };
+      this.handleOptionChange = this.handleOptionChange.bind(this);
     }
+
+    handleOptionChange(changeEvent) {
+      this.setState({
+        selectedOption : changeEvent.target.value
+      });
+    }
+
     render() {
-        return ( 
-            <select className="dropdown">
-            {this.props.items.map(function(item, i){
-              return (
-                <option value={item.value} key={i}>{item.value}</option>
-              );
-            })}
-            </select>
+        return (
+          <select className="dropdown" onChange={this.handleOptionChange}>
+          {this.props.items.map(function(item, i){
+            return (
+              <option value={item.value} key={i}>{item.value}</option>
+            );
+          })}
+          </select>
         );
     }
 }
