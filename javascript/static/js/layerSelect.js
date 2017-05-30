@@ -22,7 +22,7 @@ var mouseCoords = { x: 0, y: 0 };
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;
-var selections = [];
+var selectionCollection = {selections: []};
 var bounds;
 var layerSelected = "";
 
@@ -42,7 +42,7 @@ function init()
   
   // POINTS
     color = new THREE.Color();
-    color.setRGB( 0.9, 0.9, 0.9 );
+    color.setRGB( 0.5, 0.5, 0.5 );
     
     //var layers_info;
     var xmlReq = new XMLHttpRequest();
@@ -331,9 +331,18 @@ function selectPoints()
                 if (withinBounds(xypos, bounds))
                 {
                     //color.setRGB(0.7, 0.0, 0.0);
-                    colors[ i ]     = 1.0;
-                    colors[ i + 1 ] = 0.4;
-                    colors[ i + 2 ] = 0.4;
+                    if (getSelectedRadio('endpoint') === 'Source')
+                    {
+                      colors[ i ]     = 1.0;
+                      colors[ i + 1 ] = 0.0;
+                      colors[ i + 2 ] = 1.0;
+                    } else
+                    {
+                      colors[ i ]     = 0.5;
+                      colors[ i + 1 ] = 0.7;
+                      colors[ i + 2 ] = 0.7;
+                    }
+                    
                     
                     points.geometry.attributes.color.needsUpdate = true;
                     nSelected += 1;
@@ -511,10 +520,10 @@ function onMouseUp( event )
           return;
         }
         var selectionInfo = makeSelectionInfo();
-        //selections.push(selectionInfo);
+        selectionCollection.selections.push(selectionInfo);
+        console.log(selectionCollection)
 
         // make network
-        console.log(modelParameters)
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
