@@ -312,8 +312,6 @@ function selectPoints()
 
     bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-    console.log(bounds)
-
     for ( var layer_name in layer_points )
     {
         if (layer_points.hasOwnProperty(layer_name))
@@ -437,7 +435,6 @@ function onMouseDown( event )
 {
     //event.preventDefault();
     //if (controls.shiftDown === true) return;
-
     if (event.target.localName === "canvas")
     {
         mouseDown = true;
@@ -507,6 +504,12 @@ function onMouseUp( event )
     if (mouseDown)
     {
         selectPoints();
+        // If we didn't click on a layer, it will cause problems further down
+        if (layerSelected === "")
+        {
+          resetMarquee();
+          return;
+        }
         var selectionInfo = makeSelectionInfo();
         //selections.push(selectionInfo);
 
