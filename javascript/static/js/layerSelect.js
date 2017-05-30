@@ -28,19 +28,19 @@ var layerSelected = "";
 
 var nSelected = 0;
 
-
 init();
+
 
 function init()
 {
     container = document.getElementById( 'main_body' );
-	document.body.appendChild( container );
+  document.body.appendChild( container );
 
     // CAMERA
-	camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
-	scene = new THREE.Scene();
-	
-	// POINTS
+  camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
+  scene = new THREE.Scene();
+  
+  // POINTS
     color = new THREE.Color();
     color.setRGB( 0.9, 0.9, 0.9 );
     
@@ -57,25 +57,26 @@ function init()
     xmlReq.send();
     
     // RENDERER
-	renderer = new THREE.WebGLRenderer();
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( container.clientWidth, container.clientHeight );
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( container.clientWidth, container.clientHeight );
 
-	container.appendChild( renderer.domElement );
-	
-	// CONTROLS
-	//cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-	//cameraControls.target.set( 0, 0, 0 );
-	//cameraControls.addEventListener( 'change', render );
-	
-	document.addEventListener( 'mousedown', onMouseDown );
-	document.addEventListener( 'mousemove', onMouseMove );
-	document.addEventListener( 'mouseup', onMouseUp );
-	
-	window.addEventListener( 'resize', onWindowResize, false );
+  container.appendChild( renderer.domElement );
+  
+  // CONTROLS
+  //cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+  //cameraControls.target.set( 0, 0, 0 );
+  //cameraControls.addEventListener( 'change', render );
+  
+  document.addEventListener( 'mousedown', onMouseDown );
+  document.addEventListener( 'mousemove', onMouseMove );
+  document.addEventListener( 'mouseup', onMouseUp );
+  
+  window.addEventListener( 'resize', onWindowResize, false );
 
     //render();
 }
+
 
 // Display layers
 function initLayers( layers_info )
@@ -145,6 +146,7 @@ function initLayers( layers_info )
     make_layer_names();
 }
 
+
 function initPoints( neurons, offsett_x, offsett_y )
 {
     var geometry = new THREE.BufferGeometry();
@@ -183,6 +185,7 @@ function initPoints( neurons, offsett_x, offsett_y )
     return points;
 }
 
+
 function make_layer_names()
 {
     var center;
@@ -220,6 +223,7 @@ function make_layer_names()
     }
 }
 
+
 // Selection
 function resetMarquee ()
 {
@@ -232,6 +236,7 @@ function resetMarquee ()
   mRelPos = { x: 0, y: 0 };
   layerSelected = "";
 }
+
 
 // Finds the lower_left and upper_right coordinates of the selected square
 function findBounds (pos1, pos2)
@@ -262,6 +267,7 @@ function findBounds (pos1, pos2)
     return ({lower_left: lower_left, upper_right: upper_right});
 }
 
+
 // Takes a position and detect if it is within the boundary box defined by findBounds(..)
 function withinBounds(pos, bounds)
 {
@@ -275,6 +281,7 @@ function withinBounds(pos, bounds)
     return false;
 }
 
+
 function toScreenXY (point_pos) {
 
     var point_vector = new THREE.Vector3(point_pos.x, point_pos.y, point_pos.z);
@@ -285,6 +292,7 @@ function toScreenXY (point_pos) {
     return { x: ( point_vector.x + 1 ) * renderer.getSize().width / 2,
         y: renderer.getSize().height - ( - point_vector.y + 1) * renderer.getSize().height / 2 };
 }
+
 
 function selectPoints()
 {
@@ -349,6 +357,7 @@ function selectPoints()
     }
 }
 
+
 function toObjectCoordinates( screenPos )
 {
     var vector = new THREE.Vector3();
@@ -369,6 +378,48 @@ function toObjectCoordinates( screenPos )
     return pos
 }
 
+
+function getSelectedDropDown(id)
+{
+    dd = document.getElementById(id);
+    return dd.options[dd.selectedIndex].text;
+}
+
+function makeSelectionInfo()
+{
+    var selectedBBoxXYZ = {
+        "ll": toObjectCoordinates(bounds.lower_left),
+        "ur": toObjectCoordinates(bounds.upper_right) };
+
+    var selectionBox = {
+        "ll": {
+            x: selectedBBoxXYZ.ll.x - layer_points[layerSelected].offsetts.x,
+            y: -(selectedBBoxXYZ.ll.y - layer_points[layerSelected].offsetts.y),
+            z: 0
+        },
+        "ur": {
+            x: selectedBBoxXYZ.ur.x - layer_points[layerSelected].offsetts.x,
+            y: -(selectedBBoxXYZ.ur.y - layer_points[layerSelected].offsetts.y),
+            z: 0
+        }
+    }
+
+    selectedProjection = getSelectedDropDown("projections");
+    selectedNeuronType = getSelectedDropDown("neuronType");
+    selectedSynModel = getSelectedDropDown("synapseModel");
+
+    var selectionInfo = {
+        name: layerSelected,
+        selection: selectionBox,
+        projection: selectedProjection,
+        neuronType: selectedNeuronType,
+        synModel: selectedSynModel
+    }
+
+    return selectionInfo;
+}
+
+
 // Events
 function onMouseDown( event )
 {
@@ -385,6 +436,7 @@ function onMouseDown( event )
     }
 
 }
+
 
 function onMouseMove( event )
 {
@@ -433,41 +485,6 @@ function onMouseMove( event )
     }
 }
 
-function getSelectedDropDown(id)
-{
-    dd = document.getElementById(id);
-    return dd.options[dd.selectedIndex].text;
-}
-
-function findSelectedAreaBounds()
-{
-    var selectionInfo = {};
-
-    var selectedBBoxXYZ = {
-        "ll": toObjectCoordinates(bounds.lower_left),
-        "ur": toObjectCoordinates(bounds.upper_right) };
-
-    var selectionBox = {
-        "ll": {
-            x: selectedBBoxXYZ.ll.x - layer_points[layerSelected].offsetts.x,
-            y: -(selectedBBoxXYZ.ll.y - layer_points[layerSelected].offsetts.y),
-            z: 0
-        },
-        "ur": {
-            x: selectedBBoxXYZ.ur.x - layer_points[layerSelected].offsetts.x,
-            y: -(selectedBBoxXYZ.ur.y - layer_points[layerSelected].offsetts.y),
-            z: 0
-        }
-    }
-
-    selectionInfo = {"name": layerSelected, "selection": selectionBox};
-
-    console.log(selectionInfo)
-
-    return selectionInfo;
-}
-
-
 
 function onMouseUp( event )
 {
@@ -477,25 +494,14 @@ function onMouseUp( event )
 
     if (mouseDown)
     {
-        selectedProjection = getSelectedDropDown("projections");
-        selectedNeuronType = getSelectedDropDown("neuronType");
-        selectedSynModel = getSelectedDropDown("synapseModel");
-
-        var selection = {
-            ll: {},
-            ur: {},
-            projection: selectedProjection,
-            neuronType: selectedNeuronType,
-            synModel: selectedSynModel
-        }
-        selections.push(selection);
-
         selectPoints();
-        var selectionInfo = findSelectedAreaBounds();
+        var selectionInfo = makeSelectionInfo();
+        //selections.push(selection);
+        
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
-            url: "/selecter",
+            url: "/selector",
             data: JSON.stringify(selectionInfo),
             success: function (data) {
                 console.log(data.title);
@@ -508,13 +514,15 @@ function onMouseUp( event )
     }
 }
 
+
 function onWindowResize()
 {
-	camera.aspect = container.clientWidth / container.clientHeight;
-	camera.updateProjectionMatrix();
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
 
-	renderer.setSize( container.clientWidth, container.clientHeight );
+  renderer.setSize( container.clientWidth, container.clientHeight );
 }
+
 
 function render()
 {

@@ -1,5 +1,4 @@
 import flask
-import json
 
 from flask import request
 
@@ -10,7 +9,8 @@ app = flask.Flask(__name__)
 def index():
     return flask.render_template('NESTConnectionApp.html')
 
-@app.route('/selecter', methods=['POST', 'GET'])
+
+@app.route('/selector', methods=['POST', 'GET'])
 def add_blog_ajax():
     if request.method == 'POST':
         name = request.json['name']
@@ -26,8 +26,9 @@ def add_blog_ajax():
         #db.session.commit()
         #return jsonify(title=title, article=article)
 
+
 def getGIDs(name, selection):
-	pass
+    pass
 
 
 if __name__ == '__main__':
