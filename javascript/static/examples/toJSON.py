@@ -1,12 +1,17 @@
 import json
 import numpy as np
 
+
 def convert(specs):
     json_dict = {"layers": {}}
+    json_dict['syn_models'] = specs[2][0]
+    json_dict['models'] = {s[1]: s[0] for s in specs[1]}
     layers = specs[0]
-    
+
     for layer in layers:
         layer_dict = {"neurons": {}}
+        print layer
+        layer_dict['elements'] = layer[1]['elements']
         name = layer[0]
         try:
             ext = layer[1]['extent']
@@ -42,13 +47,12 @@ def convert(specs):
             # Positions through positions vector
             xpos = [x[0] for x in layer[1]['positions']]
             ypos = [y[1] for y in layer[1]['positions']]
-        
+
         for i in range(len(xpos)):
             layer_dict["neurons"][i + 1] = {"x": xpos[i], "y": ypos[i]}
-            
+
         json_dict["layers"][name] = layer_dict
-        
-        #print(json.dumps(json_dict))
+
+        # print(json.dumps(json_dict))
     with open('brunel_converted.json', 'w') as fp:
         json.dump(json_dict, fp)
-    

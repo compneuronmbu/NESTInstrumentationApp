@@ -1,6 +1,7 @@
 class GuiButtons extends React.Component{
     constructor() {
     super();
+    console.log("GuiButtons", modelParameters);
     }
     render() {
         return (
@@ -14,7 +15,8 @@ class GuiButtons extends React.Component{
                                 {value:'projection 2'},
                                 {value:'projection 3'},
                                 {value:'projection 4'},
-                                {value:'projection 5'}]} />
+                                {value:'projection 5'}]}
+                        id='projections' />
             </div>
 
             <div id="gui-box">
@@ -23,14 +25,16 @@ class GuiButtons extends React.Component{
               </div>
               <DropDown items={[{value:'All'},
                                 {value:'Excitatory'},
-                                {value:'Inhibitory'}]} />
+                                {value:'Inhibitory'}]}
+                        id='neuronType' />
             </div>
 
             <div id="gui-box">
               <div id="gui-box-title">
                 Synapse model
               </div>
-              <DropDown items={[{value:'static_excitatory'}]} />
+              <DropDown items={[{value:'static_excitatory'}]}
+                        id='synapseModel' />
             </div>
 
             <div id="gui-box">
@@ -112,7 +116,7 @@ class DropDown extends React.Component {
 
     render() {
         return (
-          <select className="dropdown" onChange={this.handleOptionChange}>
+          <select className="dropdown"  id={this.props.id} onChange={this.handleOptionChange}>
           {this.props.items.map(function(item, i){
             return (
               <option value={item.value} key={i}>{item.value}</option>
@@ -130,7 +134,7 @@ class SelectionsButton extends React.Component {
   }
 
   handleClicked() {
-    console.log("It's alive!")
+    console.log(selections);
   }
 
   render() {

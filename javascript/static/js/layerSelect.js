@@ -21,6 +21,9 @@ var mouseDown = false;
 var mouseCoords = { x: 0, y: 0 };
 var mRelPos = { x: 0, y: 0 };
 
+var modelParameters;
+var selections = [];
+
 var nSelected = 0;
 
 
@@ -44,8 +47,8 @@ function init()
     //xmlReq.onload = function() {
     xmlReq.onreadystatechange = function() {
         if (xmlReq.readyState == 4 && xmlReq.status == 200) {
-            var jsonFile = JSON.parse(this.responseText);
-            initLayers(jsonFile);
+            modelParameters = JSON.parse(this.responseText);
+            initLayers(modelParameters);
         }
     };
     xmlReq.open("get", "static/examples/brunel_converted.json", true);
@@ -401,6 +404,12 @@ function onMouseMove( event )
     }
 }
 
+function getSelectedDropDown(id)
+{
+    dd = document.getElementById(id);
+    return dd.options[dd.selectedIndex].text;
+}
+
 function onMouseUp( event )
 {
     //event.preventDefault();
@@ -409,6 +418,21 @@ function onMouseUp( event )
 
     if (mouseDown)
     {
+        selectedProjection = getSelectedDropDown("projections");
+        selectedNeuronType = getSelectedDropDown("neuronType");
+        selectedSynModel = getSelectedDropDown("synapseModel");
+
+        var selection = {
+            ll: {},
+            ur: {},
+            projection: selectedProjection,
+            neuronType: selectedNeuronType,
+            synModel: selectedSynModel
+        }
+        selections.push(selection);
+
+
+
         // reset the marquee selection
         selectPoints();
         resetMarquee();
