@@ -21,6 +21,9 @@ var mouseDown = false;
 var mouseCoords = { x: 0, y: 0 };
 var mRelPos = { x: 0, y: 0 };
 
+var bounds;
+var layerSelected = "";
+
 var nSelected = 0;
 
 
@@ -224,6 +227,7 @@ function resetMarquee ()
   marquee.css({width: 0, height: 0});
   mouseDownCoords.x = 0;
   mouseDownCoords.y = 0;
+  layerSelected = "";
 }
 
 // Finds the lower_left and upper_right coordinates of the selected square
@@ -284,7 +288,7 @@ function selectPoints()
     var currentMouse = {};
     var mouseDownCorrected = {};
     var units;
-    var bounds;
+    //var bounds;
     var inside = false;
     var selectedUnits = [];
     var dupeCheck = {};
@@ -298,6 +302,8 @@ function selectPoints()
     mouseUpCoords.y = -mRelPos.y + mouseDownCorrected.y;
 
     bounds = findBounds(mouseUpCoords, mouseDownCorrected);
+
+    console.log(bounds)
 
     for ( var layer_name in layer_points )
     {
@@ -315,8 +321,7 @@ function selectPoints()
                 p.z = positions[i + 2];
                 xypos = toScreenXY(p);
 
-                inside = withinBounds(xypos, bounds);
-                if (inside)
+                if (withinBounds(xypos, bounds))
                 {
                     //color.setRGB(0.7, 0.0, 0.0);
                     colors[ i ]     = 1.0;
@@ -325,11 +330,36 @@ function selectPoints()
                     
                     points.geometry.attributes.color.needsUpdate = true;
                     nSelected += 1;
+
+                    if (layerSelected === "" )
+                    {
+                        layerSelected = layer_name;
+                    }
                 }
             }
             $("#infoselected").html( nSelected.toString() + " selected" );
         }
     }
+}
+
+function toObjectCoordinates( screenPos )
+{
+    var vector = new THREE.Vector3();
+
+    vector.set(
+        ( screenPos.x / container.clientWidth ) * 2 - 1,
+        - ( screenPos.y / container.clientHeight ) * 2 + 1,
+        0.5 );
+
+    vector.unproject( camera );
+
+    var dir = vector.sub( camera.position ).normalize();
+
+    var distance = - camera.position.z / dir.z;
+
+    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+
+    return pos
 }
 
 // Events
@@ -392,6 +422,34 @@ function onMouseMove( event )
     }
 }
 
+function findSelectedAreaBounds()
+{
+    var selectionInfo = {};
+
+    var selectedBBoxXYZ = {
+        "ll": toObjectCoordinates(bounds.lower_left),
+        "ur": toObjectCoordinates(bounds.upper_right) };
+
+    var selectionBox = {
+        "ll": {
+            x: selectedBBoxXYZ.ll.x - layer_points[layerSelected].offsetts.x,
+            y: -(selectedBBoxXYZ.ll.y - layer_points[layerSelected].offsetts.y),
+            z: 0
+        },
+        "ur": {
+            x: selectedBBoxXYZ.ur.x - layer_points[layerSelected].offsetts.x,
+            y: -(selectedBBoxXYZ.ur.y - layer_points[layerSelected].offsetts.y),
+            z: 0
+        }
+    }
+
+    selectionInfo = {"name": layerSelected, "selection": selectionBox};
+
+    console.log(selectionInfo)
+
+    return selectionInfo;
+}
+
 function onMouseUp( event )
 {
     //event.preventDefault();
@@ -400,6 +458,20 @@ function onMouseUp( event )
 
     // reset the marquee selection
     selectPoints();
+
+    var selectionInfo = findSelectedAreaBounds();
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/selecter",
+        data: JSON.stringify(selectionInfo),
+        success: function (data) {
+            console.log(data.title);
+            console.log(data.article);
+        },
+        dataType: "json"
+    });
+
     resetMarquee();
 }
 
