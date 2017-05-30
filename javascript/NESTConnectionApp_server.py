@@ -1,6 +1,6 @@
+from __future__ import print_function
+import pprint
 import flask
-
-from flask import request
 
 app = flask.Flask(__name__)
 
@@ -12,11 +12,13 @@ def index():
 
 @app.route('/selector', methods=['POST', 'GET'])
 def add_blog_ajax():
-    if request.method == 'POST':
-        name = request.json['name']
-        selection = request.json['selection']
-        print(name)
-        print(selection)
+    if flask.request.method == 'POST':
+        pp = pprint.PrettyPrinter(indent=4)
+        name = flask.request.json['name']
+        selection = flask.request.json['selection']
+        # print(name)
+        # print(selection)
+        pp.pprint(flask.request.json)
 
         getGIDs(name, selection)
 

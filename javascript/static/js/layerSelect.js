@@ -323,7 +323,7 @@ function selectPoints()
         {
             var points = layer_points[layer_name].points;
             var colors = points.geometry.getAttribute("color").array;
-            var positions = points.geometry.getAttribute("position").array;    
+            var positions = points.geometry.getAttribute("position").array;
             
             for (var i = 0; i < positions.length; i += 3)
             {
@@ -381,8 +381,14 @@ function toObjectCoordinates( screenPos )
 
 function getSelectedDropDown(id)
 {
-    dd = document.getElementById(id);
+    var dd = document.getElementById(id);
     return dd.options[dd.selectedIndex].text;
+}
+
+function getSelectedRadio(id)
+{
+    var query = 'input[name="' + id + '"]:checked';
+    return $(query).val();
 }
 
 function makeSelectionInfo()
@@ -407,17 +413,26 @@ function makeSelectionInfo()
     selectedProjection = getSelectedDropDown("projections");
     selectedNeuronType = getSelectedDropDown("neuronType");
     selectedSynModel = getSelectedDropDown("synapseModel");
+    selectedShape = getSelectedRadio("maskShape");
+    selectedEndpoint = getSelectedRadio("endpoint");
+
 
     var selectionInfo = {
         name: layerSelected,
         selection: selectionBox,
         projection: selectedProjection,
         neuronType: selectedNeuronType,
-        synModel: selectedSynModel
+        synModel: selectedSynModel,
+        maskShape: selectedShape,
+        endpoint: selectedEndpoint
     }
 
     return selectionInfo;
 }
+
+
+function sendSelections()
+{}
 
 
 // Events
@@ -496,8 +511,8 @@ function onMouseUp( event )
     {
         selectPoints();
         var selectionInfo = makeSelectionInfo();
-        //selections.push(selection);
-        
+        //selections.push(selectionInfo);
+
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",

@@ -41,14 +41,16 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <RadioButtons items={[{value:'Rectangle'}]} />
+                <RadioButtons items={[{value:'Rectangle'}]}
+                              name='maskShape'/>
             </div>
 
             <div id="gui-box">
                 <div id="gui-box-title">
-                    Mask type
+                    Endpoint
                 </div>
-                <RadioButtons items={[{value:'Source'}, {value:'Target'}]} />
+                <RadioButtons items={[{value:'Source'}, {value:'Target'}]}
+                              name='endpoint'/>
             </div>
 
             <div id="gui-box">
@@ -81,7 +83,7 @@ class RadioButtons extends React.Component {
     makeRadioButton(item, i) {
       return (
         <label key={i}>
-          <input type="radio" value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
+          <input type="radio" name={this.props.name} value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
           {item.value}<br/>
         </label>
       );
@@ -134,13 +136,14 @@ class SelectionsButton extends React.Component {
   }
 
   handleClicked() {
-    console.log(selections);
+    console.log("This button doesn't do anything yet.");
+    //console.log(selections);
   }
 
   render() {
     return ( 
       <button id="getSelectionsButton" onClick={this.handleClicked}>
-        Get selections
+        (Dummy button)
       </button>
     );
   }
