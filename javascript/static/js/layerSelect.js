@@ -87,9 +87,9 @@ function initLayers( layers_info )
     {
         if (layers.hasOwnProperty(layer))
         {
-            if (layer.toLowerCase().indexOf("generator") === -1 &&
-                layer.toLowerCase().indexOf("detector") === -1 &&
-                layer.toLowerCase().indexOf("meter") === -1 )
+            if (layers[layer].name.toLowerCase().indexOf("generator") === -1 &&
+                layers[layer].name.toLowerCase().indexOf("detector") === -1 &&
+                layers[layer].name.toLowerCase().indexOf("meter") === -1 )
             {
                 number_of_layers++;
             }
@@ -112,14 +112,14 @@ function initLayers( layers_info )
     {
         if (layers.hasOwnProperty(layer))
         {
-            if (layer.toLowerCase().indexOf("generator") === -1 &&
-                layer.toLowerCase().indexOf("detector") === -1 &&
-                layer.toLowerCase().indexOf("meter") === -1 )
+            if (layers[layer].name.toLowerCase().indexOf("generator") === -1 &&
+                layers[layer].name.toLowerCase().indexOf("detector") === -1 &&
+                layers[layer].name.toLowerCase().indexOf("meter") === -1 )
             {
                 // Not sure if this is the best way. Could also do
                 // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                 // but then I think we would have to rewrite some of the code below.
-                layer_points[layer] =
+                layer_points[layers[layer].name] =
                 {
                     points: initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     offsetts: {x: offsett_x, y: offsett_y}
@@ -151,24 +151,21 @@ function initPoints( neurons, offsett_x, offsett_y )
 {
     var geometry = new THREE.BufferGeometry();
     
-    var positions = new Float32Array( Object.keys(neurons).length * 3 );
-    var colors = new Float32Array( Object.keys(neurons).length * 3 );
+    var positions = new Float32Array( neurons.length * 3 );
+    var colors = new Float32Array( neurons.length * 3 );
     
     var i = 0;
     for (var neuron in neurons)
     {
-        if (neurons.hasOwnProperty(neuron))
-        {
-            positions[ i ] = neurons[neuron].x + offsett_x;
-            positions[ i + 1 ] = neurons[neuron].y + offsett_y;
-            positions[ i + 2 ] = 0;
-            
-            colors[ i ]     = color.r;
-            colors[ i + 1 ] = color.g;
-            colors[ i + 2 ] = color.b;
-            
-            i += 3;
-        }
+        positions[ i ] = neurons[neuron].x + offsett_x;
+        positions[ i + 1 ] = neurons[neuron].y + offsett_y;
+        positions[ i + 2 ] = 0;
+        
+        colors[ i ]     = color.r;
+        colors[ i + 1 ] = color.g;
+        colors[ i + 2 ] = color.b;
+        
+        i += 3;
     }
 
     geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
@@ -513,6 +510,21 @@ function onMouseUp( event )
         var selectionInfo = makeSelectionInfo();
         //selections.push(selectionInfo);
 
+        // make network
+        console.log(modelParameters)
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/network",
+            data: JSON.stringify(modelParameters),
+            success: function (data) {
+                console.log(data.title);
+                console.log(data.article);
+            },
+            dataType: "json"
+        });
+
+        // send selection
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
