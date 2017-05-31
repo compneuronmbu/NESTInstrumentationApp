@@ -25,6 +25,8 @@ var modelParameters;
 var selectionCollection = {selections: []};
 var bounds;
 var layerSelected = "";
+var neuronModels = ['All'];
+var synModels = [];
 
 var nSelected = 0;
 
@@ -55,7 +57,7 @@ function init()
     };
     xmlReq.open("get", "static/examples/brunel_converted.json", true);
     xmlReq.send();
-    
+
     // RENDERER
   renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio( window.devicePixelRatio );
@@ -142,6 +144,8 @@ function initLayers( layers_info )
 //    console.log(layer_points);
     camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
 
+    makeModelNameLists();
+
     render();
     make_layer_names();
 }
@@ -220,6 +224,21 @@ function make_layer_names()
     }
 }
 
+
+function makeModelNameLists()
+{
+  var nModels = modelParameters.models;
+  synModels = modelParameters.syn_models;
+  for (var model in nModels)
+  {
+    if (nModels[model].toLowerCase().indexOf("generator") === -1 &&
+        nModels[model].toLowerCase().indexOf("detector") === -1 &&
+        nModels[model].toLowerCase().indexOf("meter") === -1 )
+    {
+      neuronModels.push(model);
+    }
+  }
+}
 
 // Selection
 function resetMarquee ()
@@ -437,6 +456,21 @@ function makeSelectionInfo()
 
 function makeConnections()
 {
+
+  // send synapse specifications
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/synapses",
+      data: JSON.stringify(synModels),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+
+  // send selected connections
   $.ajax({
       type: "POST",
       contentType: "application/json; charset=utf-8",

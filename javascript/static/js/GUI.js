@@ -3,6 +3,7 @@ class GuiButtons extends React.Component{
     super();
     console.log("GuiButtons", modelParameters);
     }
+
     render() {
         return (
           <div>
@@ -23,9 +24,11 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Neuron type
               </div>
-              <DropDown items={[{value:'All'},
-                                {value:'Excitatory'},
-                                {value:'Inhibitory'}]}
+              <DropDown items={
+                neuronModels.map(function(model){return ({value: model});})}
+                               //[{value:'All'},
+                               // {value:'Excitatory'},
+                               // {value:'Inhibitory'}]}
                         id='neuronType' />
             </div>
 
@@ -33,7 +36,9 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Synapse model
               </div>
-              <DropDown items={[{value:'static_excitatory'}]}
+              <DropDown items={
+                synModels.map(function(model){return ({value: model[1]});})}
+                //[{value:'static_excitatory'}]}
                         id='synapseModel' />
             </div>
 
