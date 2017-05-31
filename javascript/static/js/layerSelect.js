@@ -435,8 +435,20 @@ function makeSelectionInfo()
 }
 
 
-function sendSelections()
-{}
+function makeConnections()
+{
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/connect",
+      data: JSON.stringify(selectionCollection),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+}
 
 
 // Events

@@ -54,7 +54,8 @@ class GuiButtons extends React.Component{
             </div>
 
             <div id="gui-box">
-                <SelectionsButton/>
+                <SelectionsButton text='Connect'
+                                  function={makeConnections}/>
             </div>
 
           </div>
@@ -136,14 +137,14 @@ class SelectionsButton extends React.Component {
   }
 
   handleClicked() {
-    console.log("This button doesn't do anything yet.");
+    this.props.function()
     //console.log(selections);
   }
 
   render() {
     return ( 
       <button id="getSelectionsButton" onClick={this.handleClicked}>
-        (Dummy button)
+        {this.props.text}
       </button>
     );
   }

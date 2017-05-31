@@ -18,60 +18,39 @@ def add_blog_ajax():
     if flask.request.method == 'POST':
         pp = pprint.PrettyPrinter(indent=4)
         name = flask.request.json['name']
-        selection = flask.request.json['selection']
         # print(name)
         # print(selection)
         pp.pprint(flask.request.json)
-
-        getGIDs(name, selection)
-
-        # pp.pprint(nest.GetKernelStatus())
-
+        printGIDs(flask.request.json)
         return name
 
 
-@app.route('/network', methods=['POST', 'GET'])
+@app.route('/network', methods=['POST'])
 def make_network_from_ajax():
     if flask.request.method == 'POST':
         nest.ResetKernel()
-        global layers
-        layers = {}
-        networkSpecs = flask.request.json
         pp = pprint.PrettyPrinter(indent=4)
-        for layer in networkSpecs['layers']:
-            neurons = layer['neurons']
-            pos = [[float(neuron['x']), float(neuron['y'])]
-                   for neuron in neurons]
-            model = layer['elements']
-            nest_layer = tp.CreateLayer({'positions': pos,
-                                         'elements': networkSpecs[
-                                             'models'][model]})
-            layers[layer['name']] = nest_layer
+
+        networkSpecs = flask.request.json
+        layers = nu.make_network(networkSpecs)
         pp.pprint(layers)
         return 'returnValue'
 
 
-def getGIDs(name, selection):
-    x_limit_start = -0.5
-    y_limit_start = -0.5
-    x_limit_end = 0.5
-    y_limit_end = 0.5
+@app.route('/connect', methods=['POST'])
+def connect_ajax():
+    if flask.request.method == 'POST':
+        pp = pprint.PrettyPrinter(indent=4)
+        selections = flask.request.json['selections']
+        # print(name)
+        # print(selection)
+        pp.pprint(selections)
+        nu.connect(selections)
+        return "returnValue"
 
-    ll = [selection['ll']['x'], selection['ll']['y']]
-    ur = [selection['ur']['x'], selection['ur']['y']]
-    if ll[0] < x_limit_start:
-        ll[0] = x_limit_start
-    if ll[1] < y_limit_start:
-        ll[1] = y_limit_start
 
-    if ur[0] > x_limit_end:
-        ur[0] = x_limit_end
-    if ur[1] > y_limit_end:
-        ur[1] = y_limit_end
-    cntr = [0.0, 0.0]
-    mask = nu.make_mask(ll, ur, 'rectangle', cntr)
-    gids = tp.SelectNodesByMask(layers[name],
-                                cntr, mask)
+def printGIDs(selection):
+    gids = nu.get_gids(selection)
 
     print(gids)
     pp = pprint.PrettyPrinter(indent=4)

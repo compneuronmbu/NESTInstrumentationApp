@@ -1,4 +1,20 @@
+import nest
 import nest.topology as tp
+
+
+def make_network(networkSpecs):
+    global layers
+    layers = {}
+    for layer in networkSpecs['layers']:
+        neurons = layer['neurons']
+        pos = [[float(neuron['x']), float(neuron['y'])]
+               for neuron in neurons]
+        model = layer['elements']
+        nest_layer = tp.CreateLayer({'positions': pos,
+                                     'elements': networkSpecs[
+                                         'models'][model]})
+        layers[layer['name']] = nest_layer
+    return layers
 
 
 def make_mask(lower_left, upper_right, mask_type, cntr):
@@ -44,3 +60,52 @@ def make_mask(lower_left, upper_right, mask_type, cntr):
     mask = tp.CreateMask(mask_t, spec)
 
     return mask
+
+
+def get_gids(selection_dict):
+    name = selection_dict['name']
+    selection = selection_dict['selection']
+    x_limit_start = -0.5
+    y_limit_start = -0.5
+    x_limit_end = 0.5
+    y_limit_end = 0.5
+
+    ll = [selection['ll']['x'], selection['ll']['y']]
+    ur = [selection['ur']['x'], selection['ur']['y']]
+    if ll[0] < x_limit_start:
+        ll[0] = x_limit_start
+    if ll[1] < y_limit_start:
+        ll[1] = y_limit_start
+
+    if ur[0] > x_limit_end:
+        ur[0] = x_limit_end
+    if ur[1] > y_limit_end:
+        ur[1] = y_limit_end
+    cntr = [0.0, 0.0]
+    mask = make_mask(ll, ur, 'rectangle', cntr)
+    gids = tp.SelectNodesByMask(layers[name],
+                                cntr, mask)
+    return gids
+
+
+def connect(selection_array):
+    """
+    Makes connections from selections specified by the user.
+    """
+
+    for projection in ['projection %i' % i for i in range(1, 6)]:
+        con_dict = {
+            'Source': [],
+            'Target': []
+        }
+        for selection in selection_array:
+            # skip if the projection is wrong
+            if selection['projection'] != projection:
+                continue
+            # we don't think about neuron types yet
+            con_dict[selection['endpoint']] += get_gids(selection)
+        print(con_dict)
+        nest.Connect(con_dict['Source'],
+                     con_dict['Target'],
+                     syn_spec='static_synapse')
+    print(nest.GetConnections())
