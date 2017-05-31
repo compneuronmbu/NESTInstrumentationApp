@@ -338,9 +338,9 @@ function selectPoints()
                       colors[ i + 2 ] = 1.0;
                     } else
                     {
-                      colors[ i ]     = 0.5;
-                      colors[ i + 1 ] = 0.7;
-                      colors[ i + 2 ] = 0.7;
+                      colors[ i ]     = 0.85;
+                      colors[ i + 1 ] = 0.65;
+                      colors[ i + 2 ] = 0.13;
                     }
                     
                     
