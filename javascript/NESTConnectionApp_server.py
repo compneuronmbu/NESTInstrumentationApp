@@ -30,11 +30,20 @@ def make_network_from_ajax():
     if flask.request.method == 'POST':
         nest.ResetKernel()
         pp = pprint.PrettyPrinter(indent=4)
-
         networkSpecs = flask.request.json
         layers = nu.make_network(networkSpecs)
         pp.pprint(layers)
         return 'returnValue'
+
+
+@app.route('/synapses', methods=['POST'])
+def synapses_ajax():
+    if flask.request.method == 'POST':
+        pp = pprint.PrettyPrinter(indent=4)
+        synapses = flask.request.json
+        pp.pprint(synapses)
+        nu.make_synapse_models(synapses)
+        return "returnValue"
 
 
 @app.route('/connect', methods=['POST'])
@@ -42,8 +51,6 @@ def connect_ajax():
     if flask.request.method == 'POST':
         pp = pprint.PrettyPrinter(indent=4)
         selections = flask.request.json['selections']
-        # print(name)
-        # print(selection)
         pp.pprint(selections)
         nu.connect(selections)
         return "returnValue"
@@ -58,5 +65,4 @@ def printGIDs(selection):
 
 
 if __name__ == '__main__':
-    layers = {}
     app.run()

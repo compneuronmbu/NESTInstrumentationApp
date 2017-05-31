@@ -3,8 +3,9 @@ import nest.topology as tp
 
 
 def make_network(networkSpecs):
-    global layers
+    global layers, syn_models
     layers = {}
+    syn_models = {}
     for layer in networkSpecs['layers']:
         neurons = layer['neurons']
         pos = [[float(neuron['x']), float(neuron['y'])]
@@ -62,6 +63,11 @@ def make_mask(lower_left, upper_right, mask_type, cntr):
     return mask
 
 
+def make_synapse_models(syn_collection):
+    for syn_name, model_name, syn_specs in syn_collection:
+        nest.CopyModel(syn_name, model_name, syn_specs)
+
+
 def get_gids(selection_dict):
     name = selection_dict['name']
     selection = selection_dict['selection']
@@ -107,5 +113,5 @@ def connect(selection_array):
         print(con_dict)
         nest.Connect(con_dict['Source'],
                      con_dict['Target'],
-                     syn_spec='static_synapse')
+                     syn_spec=selection['synModel'])
     print(nest.GetConnections())
