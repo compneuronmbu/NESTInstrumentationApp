@@ -60,7 +60,8 @@ def connect_ajax():
 def get_connections_ajax():
     print("Recieved ", flask.request.args.get('input'))
     return flask.jsonify(
-        connections=[{'pre': c[0], 'post': c[1]} for c in nest.GetConnections()])
+        connections=[{'pre': c[0], 'post': c[1]}
+                     for c in nest.GetConnections()])
 
 
 def printGIDs(selection):

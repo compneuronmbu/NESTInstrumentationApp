@@ -243,6 +243,7 @@ function make_layer_names()
             screenCenter.y = container.clientHeight - screenCenter.y;
 
             var text = document.createElement('div');
+            text.id = layer_name + "_label";
             text.style.position = 'absolute';
             text.style.width = 100;
             text.style.height = 100;
@@ -252,6 +253,8 @@ function make_layer_names()
             text.style.top = screenCenter.y + 'px';
             text.style.left = screenCenter.x + 'px';
             document.body.appendChild(text);
+            // adjust the position to align the center with the center of the layer
+            text.style.left = screenCenter.x - parseFloat($('#' + text.id).width())/2.0 + 'px';
         }
     }
 }
@@ -667,5 +670,6 @@ function render()
     if (!layerNamesMade)
     {
         make_layer_names();
+        layerNamesMade = true;
     }
 }
