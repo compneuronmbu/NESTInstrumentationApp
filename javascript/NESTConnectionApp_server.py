@@ -56,6 +56,13 @@ def connect_ajax():
         return "returnValue"
 
 
+@app.route('/connections', methods=['GET'])
+def get_connections_ajax():
+    print("Recieved ", flask.request.args.get('input'))
+    return flask.jsonify(
+        connections=[{'pre': c[0], 'post': c[1]} for c in nest.GetConnections()])
+
+
 def printGIDs(selection):
     gids = nu.get_gids(selection)
 

@@ -454,9 +454,25 @@ function makeSelectionInfo()
 }
 
 
+function makeNetwork()
+{
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/network",
+      data: JSON.stringify(modelParameters),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+}
+
 function makeConnections()
 {
-
+  $("#infoconnected").html( "Making network ..." );
+  makeNetwork();
   // send synapse specifications
   $.ajax({
       type: "POST",
@@ -470,6 +486,7 @@ function makeConnections()
       dataType: "json"
   });
 
+  $("#infoconnected").html( "Connecting ..." );
   // send selected connections
   $.ajax({
       type: "POST",
@@ -482,6 +499,18 @@ function makeConnections()
       },
       dataType: "json"
   });
+  getConnections();
+}
+
+
+function getConnections()
+{
+  $.getJSON("/connections",
+            {
+              input: "dummyData"
+            }).done(function(data){
+              $("#infoconnected").html( data.connections.length.toString() + " connection(s)" );
+            });
 }
 
 
@@ -569,18 +598,8 @@ function onMouseUp( event )
         selectionCollection.selections.push(selectionInfo);
         console.log(selectionCollection)
 
-        // make network
-        $.ajax({
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            url: "/network",
-            data: JSON.stringify(modelParameters),
-            success: function (data) {
-                console.log(data.title);
-                console.log(data.article);
-            },
-            dataType: "json"
-        });
+        // send network specs to the server which makes the network
+        makeNetwork();
 
         // send selection
         $.ajax({
