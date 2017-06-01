@@ -174,6 +174,7 @@ function initPoints( neurons, offsett_x, offsett_y )
         i += 3;
         j += 1;
     }
+
     geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
     geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
     geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
@@ -243,7 +244,7 @@ function make_layer_names()
             screenCenter.y = container.clientHeight - screenCenter.y;
 
             var text = document.createElement('div');
-            text.id = layer_name + "_label";
+            text.id = layer_name + '_label';
             text.style.position = 'absolute';
             text.style.width = 100;
             text.style.height = 100;
