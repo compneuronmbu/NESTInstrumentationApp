@@ -1,5 +1,8 @@
 :root {
   --gui_width: 180px;
+  --selection_button_font_size: 14px;
+  --selection_button_heigt: 25px;
+  --selection_button_width: 150px;
 }
 
 body {
@@ -47,11 +50,28 @@ body {
   font-weight: normal;
 }
 
-#getSelectionsButton
+#poissonButton
 {
-  font-size: 14px;
-  height: 25px;
-  width: 150px;
+  background-color: #B28080;
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
+}
+
+#voltmeterButton
+{
+  background-color: #BDB280;
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
+}
+
+#spikeDetectorButton
+{
+  background-color: #809980;
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
 }
 
 #info {

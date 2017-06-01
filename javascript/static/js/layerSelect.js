@@ -16,10 +16,17 @@ var layer_points = {};
 
 var cameraControls;
 
-var mouseUp = true;
 var mouseDown = false;
-var mouseCoords = { x: 0, y: 0 };
+var shiftDown = false;
+var make_selection_box = false;
+var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
+
+var circle_objects = [];
+var raycaster;
+var plane;
+var object_selected;
+var intersection = new THREE.Vector3();
 
 var modelParameters;
 var selections = [];
@@ -28,19 +35,22 @@ var layerSelected = "";
 
 var nSelected = 0;
 
+var stimulationButtons = { poissonGenerator: false };
+var recordingButtons = { spikeDetector: false, voltmeter: false }; 
+
 init();
 
 
 function init()
 {
     container = document.getElementById( 'main_body' );
-  document.body.appendChild( container );
+    document.body.appendChild( container );
 
     // CAMERA
-  camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
-  scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
+    scene = new THREE.Scene();
   
-  // POINTS
+    // POINTS
     color = new THREE.Color();
     color.setRGB( 0.9, 0.9, 0.9 );
     
@@ -57,22 +67,22 @@ function init()
     xmlReq.send();
     
     // RENDERER
-  renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( container.clientWidth, container.clientHeight );
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( container.clientWidth, container.clientHeight );
 
-  container.appendChild( renderer.domElement );
-  
-  // CONTROLS
-  //cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-  //cameraControls.target.set( 0, 0, 0 );
-  //cameraControls.addEventListener( 'change', render );
-  
-  document.addEventListener( 'mousedown', onMouseDown );
-  document.addEventListener( 'mousemove', onMouseMove );
-  document.addEventListener( 'mouseup', onMouseUp );
-  
-  window.addEventListener( 'resize', onWindowResize, false );
+    container.appendChild( renderer.domElement );
+
+    // CONTROLS
+    //cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+    //cameraControls.target.set( 0, 0, 0 );
+    //cameraControls.addEventListener( 'change', render );
+
+    document.addEventListener( 'mousedown', onMouseDown );
+    document.addEventListener( 'mousemove', onMouseMove );
+    document.addEventListener( 'mouseup', onMouseUp );
+
+    window.addEventListener( 'resize', onWindowResize, false );
 
     //render();
 }
@@ -224,12 +234,12 @@ function make_layer_names()
 // Selection
 function resetMarquee ()
 {
-  mouseUp = true;
   mouseDown = false;
+  shiftDown = false;
+  make_selection_box = false;
   marquee.fadeOut();
   marquee.css({width: 0, height: 0});
-  mouseDownCoords.x = 0;
-  mouseDownCoords.y = 0;
+  mouseDownCoords = { x: 0, y: 0};
   mRelPos = { x: 0, y: 0 };
   layerSelected = "";
 }
@@ -256,7 +266,8 @@ function findBounds (pos1, pos2)
     {
         lower_left.y = pos1.y;
         upper_right.y = pos2.y;
-    } else
+    }
+    else
     {
         lower_left.y = pos2.y;
         upper_right.y = pos1.y;
@@ -440,11 +451,40 @@ function onMouseDown( event )
 
     if (event.target.localName === "canvas")
     {
+        event.preventDefault();
+
         mouseDown = true;
         mouseDownCoords = {};
 
         mouseDownCoords.x = event.clientX;
         mouseDownCoords.y = event.clientY;
+
+        if ( event.shiftKey )
+        {
+            shiftDown = true;
+
+            plane = new THREE.Plane();
+            raycaster = new THREE.Raycaster();
+
+            var rect = renderer.domElement.getBoundingClientRect();
+            var mouse = new THREE.Vector2();
+            mouse.x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
+            mouse.y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
+
+            raycaster.setFromCamera( mouse, camera );
+            var intersects = raycaster.intersectObjects( circle_objects );
+
+            if ( intersects.length > 0 )
+            {
+                object_selected = intersects[ 0 ].object;
+
+                renderer.domElement.style.cursor = 'move';
+            }
+        }
+        else
+        {
+            make_selection_box = true;
+        }
     }
 
 }
@@ -456,7 +496,7 @@ function onMouseMove( event )
     event.stopPropagation();
 
     // make sure we are in a select mode.
-    if(mouseDown){
+    if( make_selection_box ){
         marquee.fadeIn();
         mRelPos.x = event.clientX - mouseDownCoords.x;
         mRelPos.y = event.clientY - mouseDownCoords.y;
@@ -495,16 +535,26 @@ function onMouseMove( event )
                        top: mouseDownCoords.y + 'px'});
         }
     }
+    else if ( shiftDown )
+    {
+        var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
+
+        if ( object_selected ) {
+            if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
+                object_selected.position.copy( relScreenPos ); 
+            }
+        }
+    }
 }
 
 
 function onMouseUp( event )
 {
-    //event.preventDefault();
+    event.preventDefault();
     event.stopPropagation();
     //if (controls.shiftDown === true) return;
 
-    if (mouseDown)
+    if ( make_selection_box )
     {
         selectPoints();
         var selectionInfo = makeSelectionInfo();
@@ -536,9 +586,41 @@ function onMouseUp( event )
             },
             dataType: "json"
         });
-        resetMarquee();
         requestAnimationFrame( render );
     }
+    else if ( shiftDown )
+    {
+        if ( object_selected ) {
+            object_selected = null;
+        }
+
+        renderer.domElement.style.cursor = 'auto';
+    }
+    resetMarquee();
+}
+
+function makeStimulationDevice( device )
+{
+    console.log("making stimulation device of type", device)
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xB28080 } );
+    var circle = new THREE.Mesh( geometry, material );
+    scene.add( circle );
+
+    circle_objects.push( circle );
+}
+
+function makeRecordingDevice( device )
+{
+    console.log("making recording device of type", device)
+    var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    var material = new THREE.MeshBasicMaterial( { color: col } );
+    var circle = new THREE.Mesh( geometry, material );
+    console.log(circle)
+    scene.add( circle );
+
+    circle_objects.push( circle );
 }
 
 
@@ -553,5 +635,23 @@ function onWindowResize()
 
 function render()
 {
+    for ( var device in stimulationButtons )
+    {
+        if ( stimulationButtons[device] === true )
+        {
+            makeStimulationDevice(device);
+            stimulationButtons[device] = false;
+        }
+    }
+    for ( var device in recordingButtons )
+    {
+        if ( recordingButtons[device] === true )
+        {
+            makeRecordingDevice(device);
+            recordingButtons[device] = false;
+        }
+    }
+
     renderer.render( scene, camera );
+    requestAnimationFrame( render );
 }

@@ -54,7 +54,18 @@ class GuiButtons extends React.Component{
             </div>
 
             <div id="gui-box">
-                <SelectionsButton/>
+                <div id="gui-box-title">
+                    Stimulation device
+                </div>
+                <SelectionsButton text='poissonGenerator' button_id='poissonButton' />
+            </div>
+
+            <div id="gui-box">
+                <div id="gui-box-title">
+                    Recording device
+                </div>
+                <SelectionsButton text='voltmeter' button_id='voltmeterButton' />
+                <SelectionsButton text='spikeDetector' button_id='spikeDetectorButton' />
             </div>
 
           </div>
@@ -132,18 +143,29 @@ class DropDown extends React.Component {
 class SelectionsButton extends React.Component {
   constructor(props) {
     super(props);
+    this.items = props.text;
     this.handleClicked = this.handleClicked.bind(this);
   }
 
   handleClicked() {
-    console.log("This button doesn't do anything yet.");
-    //console.log(selections);
+
+    if ( this.items in stimulationButtons )
+    {
+        stimulationButtons[this.items] = true;
+    }
+    if ( this.items in recordingButtons )
+    {
+        recordingButtons[this.items] = true;
+    }
+
+    //console.log(stimulationButtons)
+    //console.log(recordingButtons)
   }
 
   render() {
     return ( 
-      <button id="getSelectionsButton" onClick={this.handleClicked}>
-        (Dummy button)
+      <button id={this.props.button_id} onClick={this.handleClicked}>
+        {this.items}
       </button>
     );
   }
