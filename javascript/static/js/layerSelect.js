@@ -27,6 +27,7 @@ var bounds;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
+var layerNamesMade = false;
 
 var nSelected = 0;
 
@@ -35,7 +36,7 @@ init();
 
 function init()
 {
-    container = document.getElementById( 'main_body' );
+  container = document.getElementById( 'main_body' );
   document.body.appendChild( container );
 
     // CAMERA
@@ -141,13 +142,11 @@ function initLayers( layers_info )
         }
     }
 
-//    console.log(layer_points);
     camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
 
     makeModelNameLists();
 
-    render();
-    make_layer_names();
+    requestAnimationFrame( render );
 }
 
 
@@ -157,8 +156,10 @@ function initPoints( neurons, offsett_x, offsett_y )
     
     var positions = new Float32Array( neurons.length * 3 );
     var colors = new Float32Array( neurons.length * 3 );
+    var sizes = new Float32Array( neurons.length );
     
     var i = 0;
+    var j = 0;
     for (var neuron in neurons)
     {
         positions[ i ] = neurons[neuron].x + offsett_x;
@@ -169,15 +170,44 @@ function initPoints( neurons, offsett_x, offsett_y )
         colors[ i + 1 ] = color.g;
         colors[ i + 2 ] = color.b;
         
+        sizes[i] = 1.0;
         i += 3;
+        j += 1;
     }
-
     geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-    geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+    geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
+    geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+
 
     geometry.computeBoundingSphere();
 
-    material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
+    var texture = new THREE.TextureLoader().load( "static/js/textures/disc.png" );
+    var material = new THREE.ShaderMaterial( {
+        uniforms: {
+            color:     { value: new THREE.Color( 0xffffff ) },
+            texture:   { value: texture }
+        },
+        vertexShader: [
+            "attribute float size;",
+            "attribute vec3 customColor;",
+            "varying vec3 vColor;",
+            "void main() {",
+            "vColor = customColor;",
+            "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+            "gl_Position = projectionMatrix * mvPosition;",
+            "gl_PointSize = 0.05 * ( 300.0 / -mvPosition.z );",
+            "}"
+            ].join( "\n" ),
+        fragmentShader: [
+            "uniform vec3 color;",
+            "uniform sampler2D texture;",
+            "varying vec3 vColor;",
+            "void main() {",
+            "gl_FragColor = vec4( color * vColor, 1.0 );",
+            "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
+            "}"
+            ].join( "\n" )
+    });
 
     points = new THREE.Points( geometry, material );
     
@@ -189,6 +219,8 @@ function initPoints( neurons, offsett_x, offsett_y )
 
 function make_layer_names()
 {
+    console.log("Making layer names");
+    
     var center;
     var bounding_radius;
     var name_pos;
@@ -336,7 +368,7 @@ function selectPoints()
         if (layer_points.hasOwnProperty(layer_name))
         {
             var points = layer_points[layer_name].points;
-            var colors = points.geometry.getAttribute("color").array;
+            var colors = points.geometry.getAttribute("customColor").array;
             var positions = points.geometry.getAttribute("position").array;
             
             for (var i = 0; i < positions.length; i += 3)
@@ -363,7 +395,7 @@ function selectPoints()
                     }
                     
                     
-                    points.geometry.attributes.color.needsUpdate = true;
+                    points.geometry.attributes.customColor.needsUpdate = true;
                     nSelected += 1;
 
                     if (layerSelected === "" )
@@ -630,5 +662,10 @@ function onWindowResize()
 
 function render()
 {
+    console.log("Rendering");
     renderer.render( scene, camera );
+    if (!layerNamesMade)
+    {
+        make_layer_names();
+    }
 }
