@@ -6,27 +6,15 @@
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var container, stats;
-var marquee = $("#select-square");
+var container
 var camera, scene, renderer, material;
+var controls;
 
 var number_of_layers = 0;
-
 var layer_points = {};
 
-var cameraControls;
-
-var mouseDown = false;
-var shiftDown = false;
-var make_selection_box = false;
 var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
-
-var circle_objects = [];
-var raycaster;
-var plane;
-var object_selected;
-var intersection = new THREE.Vector3();
 
 var modelParameters;
 var selectionCollection = {selections: []};
@@ -38,8 +26,10 @@ var layerNamesMade = false;
 
 var nSelected = 0;
 
+var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
 var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
+
 
 init();
 
@@ -81,9 +71,7 @@ function init()
     //cameraControls.target.set( 0, 0, 0 );
     //cameraControls.addEventListener( 'change', render );
 
-    document.addEventListener( 'mousedown', onMouseDown );
-    document.addEventListener( 'mousemove', onMouseMove );
-    document.addEventListener( 'mouseup', onMouseUp );
+    controls = Controls( circle_objects, camera, renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -286,20 +274,6 @@ function makeModelNameLists()
   }
 }
 
-// Selection
-function resetMarquee ()
-{
-  mouseDown = false;
-  shiftDown = false;
-  make_selection_box = false;
-  marquee.fadeOut();
-  marquee.css({width: 0, height: 0});
-  mouseDownCoords = { x: 0, y: 0};
-  mRelPos = { x: 0, y: 0 };
-  layerSelected = "";
-}
-
-
 // Finds the lower_left and upper_right coordinates of the selected square
 function findBounds (pos1, pos2)
 {
@@ -361,11 +335,6 @@ function selectPoints()
 {
     var currentMouse = {};
     var mouseDownCorrected = {};
-    var units;
-    //var bounds;
-    var inside = false;
-    var selectedUnits = [];
-    var dupeCheck = {};
     var mouseUpCoords = {};
     var xypos;
     var nSelectedOld = nSelected;
@@ -426,7 +395,6 @@ function selectPoints()
         }
     }
 }
-
 
 function toObjectCoordinates( screenPos )
 {
@@ -558,159 +526,6 @@ function getConnections()
             }).done(function(data){
               $("#infoconnected").html( data.connections.length.toString() + " connection(s)" );
             });
-}
-
-
-// Events
-function onMouseDown( event )
-{
-    //event.preventDefault();
-    //if (controls.shiftDown === true) return;
-    if (event.target.localName === "canvas")
-    {
-        event.preventDefault();
-
-        mouseDown = true;
-        mouseDownCoords = {};
-
-        mouseDownCoords.x = event.clientX;
-        mouseDownCoords.y = event.clientY;
-
-        if ( event.shiftKey )
-        {
-            shiftDown = true;
-
-            plane = new THREE.Plane();
-            raycaster = new THREE.Raycaster();
-
-            var rect = renderer.domElement.getBoundingClientRect();
-            var mouse = new THREE.Vector2();
-            mouse.x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
-            mouse.y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
-
-            raycaster.setFromCamera( mouse, camera );
-            var intersects = raycaster.intersectObjects( circle_objects );
-
-            if ( intersects.length > 0 )
-            {
-                object_selected = intersects[ 0 ].object;
-
-                renderer.domElement.style.cursor = 'move';
-            }
-        }
-        else
-        {
-            make_selection_box = true;
-        }
-    }
-
-}
-
-
-function onMouseMove( event )
-{
-    //event.preventDefault();
-    event.stopPropagation();
-
-    // make sure we are in a select mode.
-    if( make_selection_box )
-    {
-        marquee.fadeIn();
-        mRelPos.x = event.clientX - mouseDownCoords.x;
-        mRelPos.y = event.clientY - mouseDownCoords.y;
-
-        // square variations
-        // (0,0) origin is the TOP LEFT pixel of the canvas.
-        //
-        //  1 | 2
-        // ---.---
-        //  4 | 3
-        // there are 4 ways a square can be gestured onto the screen.  the following detects these four variations
-        // and creates/updates the CSS to draw the square on the screen
-        if (mRelPos.x < 0 && mRelPos.y < 0)
-        {
-          marquee.css({left: event.clientX + 'px',
-                       width: -mRelPos.x + 'px',
-                       top: event.clientY + 'px',
-                       height: -mRelPos.y + 'px'});
-        } else if ( mRelPos.x >= 0 && mRelPos.y <= 0)
-        {
-          marquee.css({left: mouseDownCoords.x + 'px',
-                       width: mRelPos.x + 'px',
-                       top: event.clientY,
-                       height: -mRelPos.y + 'px'});
-        } else if (mRelPos.x >= 0 && mRelPos.y >= 0)
-        {
-          marquee.css({left: mouseDownCoords.x + 'px',
-                       width: mRelPos.x + 'px',
-                       height: mRelPos.y + 'px',
-                       top: mouseDownCoords.y + 'px'});
-        } else if (mRelPos.x < 0 && mRelPos.y >= 0)
-        {
-          marquee.css({left: event.clientX + 'px',
-                       width: -mRelPos.x + 'px',
-                       height: mRelPos.y + 'px',
-                       top: mouseDownCoords.y + 'px'});
-        }
-    }
-    else if ( shiftDown )
-    {
-        var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
-
-        if ( object_selected ) {
-            if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
-                object_selected.position.copy( relScreenPos ); 
-            }
-        }
-    }
-}
-
-
-function onMouseUp( event )
-{
-    event.preventDefault();
-    event.stopPropagation();
-    //if (controls.shiftDown === true) return;
-
-    if ( make_selection_box )
-    {
-        selectPoints();
-        // If we didn't click on a layer, it will cause problems further down
-        if (layerSelected === "")
-        {
-          resetMarquee();
-          return;
-        }
-        var selectionInfo = makeSelectionInfo();
-        selectionCollection.selections.push(selectionInfo);
-        console.log(selectionCollection)
-
-        // send network specs to the server which makes the network
-        makeNetwork();
-
-        // send selection
-        $.ajax({
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            url: "/selector",
-            data: JSON.stringify(selectionInfo),
-            success: function (data) {
-                console.log(data.title);
-                console.log(data.article);
-            },
-            dataType: "json"
-        });
-        requestAnimationFrame( render );
-    }
-    else if ( shiftDown )
-    {
-        if ( object_selected ) {
-            object_selected = null;
-        }
-
-        renderer.domElement.style.cursor = 'auto';
-    }
-    resetMarquee();
 }
 
 function makeStimulationDevice( device )
