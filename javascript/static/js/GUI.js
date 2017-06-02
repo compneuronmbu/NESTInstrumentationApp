@@ -59,7 +59,7 @@ class GuiButtons extends React.Component{
                     Stimulation device
                 </div>
                 <SelectionsButton text='poissonGenerator'
-                    function={function () {stimulationButtons["poissonGenerator"] = true;}}
+                    function={function () {makeStimulationDevice("poissonGenerator");}}
                     button_id='poissonButton' />
             </div>
 
@@ -68,10 +68,10 @@ class GuiButtons extends React.Component{
                     Recording device
                 </div>
                 <SelectionsButton text='voltmeter' 
-                    function={function () {recordingButtons["voltmeter"] = true;}}
+                    function={function () {makeRecordingDevice("voltmeter");}}
                     button_id='voltmeterButton' />
                 <SelectionsButton text='spikeDetector'
-                    function={function () {recordingButtons["spikeDetector"] = true;}}
+                    function={function () {makeRecordingDevice("spikeDetector");}}
                     button_id='spikeDetectorButton' />
             </div>
 

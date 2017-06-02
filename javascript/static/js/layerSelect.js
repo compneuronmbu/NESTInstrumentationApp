@@ -564,23 +564,6 @@ function onWindowResize()
 
 function render()
 {
-    for ( var device in stimulationButtons )
-    {
-        if ( stimulationButtons[device] === true )
-        {
-            makeStimulationDevice(device);
-            stimulationButtons[device] = false;
-        }
-    }
-    for ( var device in recordingButtons )
-    {
-        if ( recordingButtons[device] === true )
-        {
-            makeRecordingDevice(device);
-            recordingButtons[device] = false;
-        }
-    }
-
     renderer.render( scene, camera );
     requestAnimationFrame( render );
 
