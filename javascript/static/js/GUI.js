@@ -55,8 +55,29 @@ class GuiButtons extends React.Component{
             </div>
 
             <div id="gui-box">
+                <div id="gui-box-title">
+                    Stimulation device
+                </div>
+                <SelectionsButton text='poissonGenerator'
+                    function={function () {stimulationButtons["poissonGenerator"] = true;}}
+                    button_id='poissonButton' />
+            </div>
+
+            <div id="gui-box">
+                <div id="gui-box-title">
+                    Recording device
+                </div>
+                <SelectionsButton text='voltmeter' 
+                    function={function () {recordingButtons["voltmeter"] = true;}}
+                    button_id='voltmeterButton' />
+                <SelectionsButton text='spikeDetector'
+                    function={function () {recordingButtons["spikeDetector"] = true;}}
+                    button_id='spikeDetectorButton' />
+            </div>
+
+            <div id="gui-box">
                 <SelectionsButton text='Connect'
-                                  function={makeConnections}/>
+                                  function={makeConnections} button_id='getSelectionsButton'/>
             </div>
 
           </div>
@@ -134,17 +155,19 @@ class DropDown extends React.Component {
 class SelectionsButton extends React.Component {
   constructor(props) {
     super(props);
+    this.items = props.text;
     this.handleClicked = this.handleClicked.bind(this);
   }
 
   handleClicked() {
-    this.props.function()
-    //console.log(selections);
+
+    this.props.function();
+
   }
 
   render() {
     return ( 
-      <button id="getSelectionsButton" onClick={this.handleClicked}>
+      <button id={this.props.button_id} onClick={this.handleClicked}>
         {this.props.text}
       </button>
     );

@@ -6,19 +6,14 @@
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var container, stats;
-var marquee = $("#select-square");
+var container
 var camera, scene, renderer, material;
+var controls;
 
 var number_of_layers = 0;
-
 var layer_points = {};
 
-var cameraControls;
-
-var mouseUp = true;
-var mouseDown = false;
-var mouseCoords = { x: 0, y: 0 };
+var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;
@@ -31,19 +26,24 @@ var layerNamesMade = false;
 
 var nSelected = 0;
 
+var circle_objects = [];
+var stimulationButtons = { "poissonGenerator": false };
+var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
+
+
 init();
 
 
 function init()
 {
-  container = document.getElementById( 'main_body' );
-  document.body.appendChild( container );
+    container = document.getElementById( 'main_body' );
+    document.body.appendChild( container );
 
     // CAMERA
-  camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
-  scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
+    scene = new THREE.Scene();
   
-  // POINTS
+    // POINTS
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
     
@@ -60,22 +60,20 @@ function init()
     xmlReq.send();
 
     // RENDERER
-  renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( container.clientWidth, container.clientHeight );
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( container.clientWidth, container.clientHeight );
 
-  container.appendChild( renderer.domElement );
-  
-  // CONTROLS
-  //cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-  //cameraControls.target.set( 0, 0, 0 );
-  //cameraControls.addEventListener( 'change', render );
-  
-  document.addEventListener( 'mousedown', onMouseDown );
-  document.addEventListener( 'mousemove', onMouseMove );
-  document.addEventListener( 'mouseup', onMouseUp );
-  
-  window.addEventListener( 'resize', onWindowResize, false );
+    container.appendChild( renderer.domElement );
+
+    // CONTROLS
+    //cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+    //cameraControls.target.set( 0, 0, 0 );
+    //cameraControls.addEventListener( 'change', render );
+
+    controls = Controls( circle_objects, camera, renderer.domElement );
+
+    window.addEventListener( 'resize', onWindowResize, false );
 
     //render();
 }
@@ -276,20 +274,6 @@ function makeModelNameLists()
   }
 }
 
-// Selection
-function resetMarquee ()
-{
-  mouseUp = true;
-  mouseDown = false;
-  marquee.fadeOut();
-  marquee.css({width: 0, height: 0});
-  mouseDownCoords.x = 0;
-  mouseDownCoords.y = 0;
-  mRelPos = { x: 0, y: 0 };
-  layerSelected = "";
-}
-
-
 // Finds the lower_left and upper_right coordinates of the selected square
 function findBounds (pos1, pos2)
 {
@@ -311,7 +295,8 @@ function findBounds (pos1, pos2)
     {
         lower_left.y = pos1.y;
         upper_right.y = pos2.y;
-    } else
+    }
+    else
     {
         lower_left.y = pos2.y;
         upper_right.y = pos1.y;
@@ -350,11 +335,6 @@ function selectPoints()
 {
     var currentMouse = {};
     var mouseDownCorrected = {};
-    var units;
-    //var bounds;
-    var inside = false;
-    var selectedUnits = [];
-    var dupeCheck = {};
     var mouseUpCoords = {};
     var xypos;
     var nSelectedOld = nSelected;
@@ -415,7 +395,6 @@ function selectPoints()
         }
     }
 }
-
 
 function toObjectCoordinates( screenPos )
 {
@@ -549,109 +528,28 @@ function getConnections()
             });
 }
 
-
-// Events
-function onMouseDown( event )
+function makeStimulationDevice( device )
 {
-    //event.preventDefault();
-    //if (controls.shiftDown === true) return;
-    if (event.target.localName === "canvas")
-    {
-        mouseDown = true;
-        mouseDownCoords = {};
+    console.log("making stimulation device of type", device)
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xB28080 } );
+    var circle = new THREE.Mesh( geometry, material );
+    scene.add( circle );
 
-        mouseDownCoords.x = event.clientX;
-        mouseDownCoords.y = event.clientY;
-    }
-
+    circle_objects.push( circle );
 }
 
-
-function onMouseMove( event )
+function makeRecordingDevice( device )
 {
-    //event.preventDefault();
-    event.stopPropagation();
+    console.log("making recording device of type", device)
+    var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    var material = new THREE.MeshBasicMaterial( { color: col } );
+    var circle = new THREE.Mesh( geometry, material );
+    console.log(circle)
+    scene.add( circle );
 
-    // make sure we are in a select mode.
-    if(mouseDown){
-        marquee.fadeIn();
-        mRelPos.x = event.clientX - mouseDownCoords.x;
-        mRelPos.y = event.clientY - mouseDownCoords.y;
-
-        // square variations
-        // (0,0) origin is the TOP LEFT pixel of the canvas.
-        //
-        //  1 | 2
-        // ---.---
-        //  4 | 3
-        // there are 4 ways a square can be gestured onto the screen.  the following detects these four variations
-        // and creates/updates the CSS to draw the square on the screen
-        if (mRelPos.x < 0 && mRelPos.y < 0)
-        {
-          marquee.css({left: event.clientX + 'px',
-                       width: -mRelPos.x + 'px',
-                       top: event.clientY + 'px',
-                       height: -mRelPos.y + 'px'});
-        } else if ( mRelPos.x >= 0 && mRelPos.y <= 0)
-        {
-          marquee.css({left: mouseDownCoords.x + 'px',
-                       width: mRelPos.x + 'px',
-                       top: event.clientY,
-                       height: -mRelPos.y + 'px'});
-        } else if (mRelPos.x >= 0 && mRelPos.y >= 0)
-        {
-          marquee.css({left: mouseDownCoords.x + 'px',
-                       width: mRelPos.x + 'px',
-                       height: mRelPos.y + 'px',
-                       top: mouseDownCoords.y + 'px'});
-        } else if (mRelPos.x < 0 && mRelPos.y >= 0)
-        {
-          marquee.css({left: event.clientX + 'px',
-                       width: -mRelPos.x + 'px',
-                       height: mRelPos.y + 'px',
-                       top: mouseDownCoords.y + 'px'});
-        }
-    }
-}
-
-
-function onMouseUp( event )
-{
-    //event.preventDefault();
-    event.stopPropagation();
-    //if (controls.shiftDown === true) return;
-
-    if (mouseDown)
-    {
-        selectPoints();
-        // If we didn't click on a layer, it will cause problems further down
-        if (layerSelected === "")
-        {
-          resetMarquee();
-          return;
-        }
-        var selectionInfo = makeSelectionInfo();
-        selectionCollection.selections.push(selectionInfo);
-        console.log(selectionCollection)
-
-        // send network specs to the server which makes the network
-        makeNetwork();
-
-        // send selection
-        $.ajax({
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            url: "/selector",
-            data: JSON.stringify(selectionInfo),
-            success: function (data) {
-                console.log(data.title);
-                console.log(data.article);
-            },
-            dataType: "json"
-        });
-        resetMarquee();
-        requestAnimationFrame( render );
-    }
+    circle_objects.push( circle );
 }
 
 
@@ -666,8 +564,26 @@ function onWindowResize()
 
 function render()
 {
-    console.log("Rendering");
+    for ( var device in stimulationButtons )
+    {
+        if ( stimulationButtons[device] === true )
+        {
+            makeStimulationDevice(device);
+            stimulationButtons[device] = false;
+        }
+    }
+    for ( var device in recordingButtons )
+    {
+        if ( recordingButtons[device] === true )
+        {
+            makeRecordingDevice(device);
+            recordingButtons[device] = false;
+        }
+    }
+
     renderer.render( scene, camera );
+    requestAnimationFrame( render );
+
     if (!layerNamesMade)
     {
         make_layer_names();
