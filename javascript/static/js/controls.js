@@ -22,6 +22,8 @@ var Controls = function ( drag_objects, camera, domElement )
 		domElement.addEventListener( 'mousemove', onMouseMove, false );
 		domElement.addEventListener( 'mousedown', onMouseDown, false );
 		domElement.addEventListener( 'mouseup', onMouseUp, false );
+
+		window.addEventListener( 'resize', onWindowResize, false );
 	}
 
 	function resetButtons()
@@ -182,6 +184,14 @@ var Controls = function ( drag_objects, camera, domElement )
 	        renderer.domElement.style.cursor = 'auto';
 	    }
 	    resetButtons();
+	}
+
+	function onWindowResize()
+	{
+		camera.aspect = container.clientWidth / container.clientHeight;
+		camera.updateProjectionMatrix();
+
+		renderer.setSize( container.clientWidth, container.clientHeight );
 	}
 
 	activate();
