@@ -33,21 +33,32 @@ body {
 {
   text-align: center;
   padding-top: 3px;
-  padding-bottom:11px;
+  padding-bottom: 3px;
+  margin-bottom:11px;
   font-weight: bold;
+  background-color: #568f8f;
 }
 
 #gui-box
 {
   border-radius: 4px;
-  padding-top: 4px;
+  padding-bottom: 10px;
   margin-bottom: 10px;
   text-align: center;
+  background-color: #609f9f;
 }
 
 #gui-radio-label
 {
   font-weight: normal;
+}
+
+#getSelectionsButton
+{
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
+  margin-top: 10px;
 }
 
 #poissonButton
@@ -56,6 +67,7 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
+  margin-top: 10px;
 }
 
 #voltmeterButton
@@ -64,6 +76,7 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
+  margin-top: 10px;
 }
 
 #spikeDetectorButton
@@ -72,6 +85,7 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
+  margin-top: 10px;
 }
 
 #info {
@@ -103,4 +117,9 @@ body {
   font-size: 14px;
   height: 25px;
   width: 150px;
+}
+
+.radiobutton{
+    text-align: left;
+    padding-left: 30px;
 }

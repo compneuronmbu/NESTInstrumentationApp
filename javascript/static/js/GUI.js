@@ -3,6 +3,7 @@ class GuiButtons extends React.Component{
     super();
     console.log("GuiButtons", modelParameters);
     }
+
     render() {
         return (
           <div>
@@ -23,9 +24,8 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Neuron type
               </div>
-              <DropDown items={[{value:'All'},
-                                {value:'Excitatory'},
-                                {value:'Inhibitory'}]}
+              <DropDown items={
+                neuronModels.map(function(model){return ({value: model});})}
                         id='neuronType' />
             </div>
 
@@ -33,7 +33,8 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Synapse model
               </div>
-              <DropDown items={[{value:'static_excitatory'}]}
+              <DropDown items={
+                synModels.map(function(model){return ({value: model[1]});})}
                         id='synapseModel' />
             </div>
 
@@ -57,15 +58,26 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Stimulation device
                 </div>
-                <SelectionsButton text='poissonGenerator' button_id='poissonButton' />
+                <SelectionsButton text='poissonGenerator'
+                    function={function () {stimulationButtons["poissonGenerator"] = true;}}
+                    button_id='poissonButton' />
             </div>
 
             <div id="gui-box">
                 <div id="gui-box-title">
                     Recording device
                 </div>
-                <SelectionsButton text='voltmeter' button_id='voltmeterButton' />
-                <SelectionsButton text='spikeDetector' button_id='spikeDetectorButton' />
+                <SelectionsButton text='voltmeter' 
+                    function={function () {recordingButtons["voltmeter"] = true;}}
+                    button_id='voltmeterButton' />
+                <SelectionsButton text='spikeDetector'
+                    function={function () {recordingButtons["spikeDetector"] = true;}}
+                    button_id='spikeDetectorButton' />
+            </div>
+
+            <div id="gui-box">
+                <SelectionsButton text='Connect'
+                                  function={makeConnections} button_id='getSelectionsButton'/>
             </div>
 
           </div>
@@ -149,23 +161,14 @@ class SelectionsButton extends React.Component {
 
   handleClicked() {
 
-    if ( this.items in stimulationButtons )
-    {
-        stimulationButtons[this.items] = true;
-    }
-    if ( this.items in recordingButtons )
-    {
-        recordingButtons[this.items] = true;
-    }
+    this.props.function();
 
-    //console.log(stimulationButtons)
-    //console.log(recordingButtons)
   }
 
   render() {
     return ( 
       <button id={this.props.button_id} onClick={this.handleClicked}>
-        {this.items}
+        {this.props.text}
       </button>
     );
   }

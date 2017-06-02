@@ -4,7 +4,7 @@ import numpy as np
 
 def convert(specs):
     json_dict = {"layers": []}
-    json_dict['syn_models'] = specs[2][0]
+    json_dict['syn_models'] = specs[2]
     json_dict['models'] = {s[1]: s[0] for s in specs[1]}
     layers = specs[0]
 

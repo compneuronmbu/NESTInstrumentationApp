@@ -29,14 +29,17 @@ var object_selected;
 var intersection = new THREE.Vector3();
 
 var modelParameters;
-var selections = [];
+var selectionCollection = {selections: []};
 var bounds;
 var layerSelected = "";
+var neuronModels = ['All'];
+var synModels = [];
+var layerNamesMade = false;
 
 var nSelected = 0;
 
-var stimulationButtons = { poissonGenerator: false };
-var recordingButtons = { spikeDetector: false, voltmeter: false }; 
+var stimulationButtons = { "poissonGenerator": false };
+var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
 init();
 
@@ -52,7 +55,7 @@ function init()
   
     // POINTS
     color = new THREE.Color();
-    color.setRGB( 0.9, 0.9, 0.9 );
+    color.setRGB( 0.5, 0.5, 0.5 );
     
     //var layers_info;
     var xmlReq = new XMLHttpRequest();
@@ -65,7 +68,7 @@ function init()
     };
     xmlReq.open("get", "static/examples/brunel_converted.json", true);
     xmlReq.send();
-    
+
     // RENDERER
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -149,11 +152,11 @@ function initLayers( layers_info )
         }
     }
 
-//    console.log(layer_points);
     camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
 
-    render();
-    make_layer_names();
+    makeModelNameLists();
+
+    requestAnimationFrame( render );
 }
 
 
@@ -163,8 +166,10 @@ function initPoints( neurons, offsett_x, offsett_y )
     
     var positions = new Float32Array( neurons.length * 3 );
     var colors = new Float32Array( neurons.length * 3 );
+    var sizes = new Float32Array( neurons.length );
     
     var i = 0;
+    var j = 0;
     for (var neuron in neurons)
     {
         positions[ i ] = neurons[neuron].x + offsett_x;
@@ -175,15 +180,45 @@ function initPoints( neurons, offsett_x, offsett_y )
         colors[ i + 1 ] = color.g;
         colors[ i + 2 ] = color.b;
         
+        sizes[i] = 1.0;
         i += 3;
+        j += 1;
     }
 
     geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-    geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+    geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
+    geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+
 
     geometry.computeBoundingSphere();
 
-    material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
+    var texture = new THREE.TextureLoader().load( "static/js/textures/disc.png" );
+    var material = new THREE.ShaderMaterial( {
+        uniforms: {
+            color:     { value: new THREE.Color( 0xffffff ) },
+            texture:   { value: texture }
+        },
+        vertexShader: [
+            "attribute float size;",
+            "attribute vec3 customColor;",
+            "varying vec3 vColor;",
+            "void main() {",
+            "vColor = customColor;",
+            "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+            "gl_Position = projectionMatrix * mvPosition;",
+            "gl_PointSize = 0.05 * ( 300.0 / -mvPosition.z );",
+            "}"
+            ].join( "\n" ),
+        fragmentShader: [
+            "uniform vec3 color;",
+            "uniform sampler2D texture;",
+            "varying vec3 vColor;",
+            "void main() {",
+            "gl_FragColor = vec4( color * vColor, 1.0 );",
+            "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
+            "}"
+            ].join( "\n" )
+    });
 
     points = new THREE.Points( geometry, material );
     
@@ -195,6 +230,8 @@ function initPoints( neurons, offsett_x, offsett_y )
 
 function make_layer_names()
 {
+    console.log("Making layer names");
+    
     var center;
     var bounding_radius;
     var name_pos;
@@ -217,6 +254,7 @@ function make_layer_names()
             screenCenter.y = container.clientHeight - screenCenter.y;
 
             var text = document.createElement('div');
+            text.id = layer_name + '_label';
             text.style.position = 'absolute';
             text.style.width = 100;
             text.style.height = 100;
@@ -226,10 +264,27 @@ function make_layer_names()
             text.style.top = screenCenter.y + 'px';
             text.style.left = screenCenter.x + 'px';
             document.body.appendChild(text);
+            // adjust the position to align the center with the center of the layer
+            text.style.left = screenCenter.x - parseFloat($('#' + text.id).width())/2.0 + 'px';
         }
     }
 }
 
+
+function makeModelNameLists()
+{
+  var nModels = modelParameters.models;
+  synModels = modelParameters.syn_models;
+  for (var model in nModels)
+  {
+    if (nModels[model].toLowerCase().indexOf("generator") === -1 &&
+        nModels[model].toLowerCase().indexOf("detector") === -1 &&
+        nModels[model].toLowerCase().indexOf("meter") === -1 )
+    {
+      neuronModels.push(model);
+    }
+  }
+}
 
 // Selection
 function resetMarquee ()
@@ -323,14 +378,12 @@ function selectPoints()
 
     bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-    console.log(bounds)
-
     for ( var layer_name in layer_points )
     {
         if (layer_points.hasOwnProperty(layer_name))
         {
             var points = layer_points[layer_name].points;
-            var colors = points.geometry.getAttribute("color").array;
+            var colors = points.geometry.getAttribute("customColor").array;
             var positions = points.geometry.getAttribute("position").array;
             
             for (var i = 0; i < positions.length; i += 3)
@@ -344,11 +397,20 @@ function selectPoints()
                 if (withinBounds(xypos, bounds))
                 {
                     //color.setRGB(0.7, 0.0, 0.0);
-                    colors[ i ]     = 1.0;
-                    colors[ i + 1 ] = 0.4;
-                    colors[ i + 2 ] = 0.4;
+                    if (getSelectedRadio('endpoint') === 'Source')
+                    {
+                      colors[ i ]     = 1.0;
+                      colors[ i + 1 ] = 0.0;
+                      colors[ i + 2 ] = 1.0;
+                    } else
+                    {
+                      colors[ i ]     = 0.85;
+                      colors[ i + 1 ] = 0.65;
+                      colors[ i + 2 ] = 0.13;
+                    }
                     
-                    points.geometry.attributes.color.needsUpdate = true;
+                    
+                    points.geometry.attributes.customColor.needsUpdate = true;
                     nSelected += 1;
 
                     if (layerSelected === "" )
@@ -439,8 +501,64 @@ function makeSelectionInfo()
 }
 
 
-function sendSelections()
-{}
+function makeNetwork()
+{
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/network",
+      data: JSON.stringify(modelParameters),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+}
+
+function makeConnections()
+{
+  $("#infoconnected").html( "Making network ..." );
+  makeNetwork();
+  // send synapse specifications
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/synapses",
+      data: JSON.stringify(synModels),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+
+  $("#infoconnected").html( "Connecting ..." );
+  // send selected connections
+  $.ajax({
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      url: "/connect",
+      data: JSON.stringify(selectionCollection),
+      success: function (data) {
+          console.log(data.title);
+          console.log(data.article);
+      },
+      dataType: "json"
+  });
+  getConnections();
+}
+
+
+function getConnections()
+{
+  $.getJSON("/connections",
+            {
+              input: "dummyData"
+            }).done(function(data){
+              $("#infoconnected").html( data.connections.length.toString() + " connection(s)" );
+            });
+}
 
 
 // Events
@@ -448,7 +566,6 @@ function onMouseDown( event )
 {
     //event.preventDefault();
     //if (controls.shiftDown === true) return;
-
     if (event.target.localName === "canvas")
     {
         event.preventDefault();
@@ -496,7 +613,8 @@ function onMouseMove( event )
     event.stopPropagation();
 
     // make sure we are in a select mode.
-    if( make_selection_box ){
+    if( make_selection_box )
+    {
         marquee.fadeIn();
         mRelPos.x = event.clientX - mouseDownCoords.x;
         mRelPos.y = event.clientY - mouseDownCoords.y;
@@ -557,22 +675,18 @@ function onMouseUp( event )
     if ( make_selection_box )
     {
         selectPoints();
+        // If we didn't click on a layer, it will cause problems further down
+        if (layerSelected === "")
+        {
+          resetMarquee();
+          return;
+        }
         var selectionInfo = makeSelectionInfo();
-        //selections.push(selectionInfo);
+        selectionCollection.selections.push(selectionInfo);
+        console.log(selectionCollection)
 
-        // make network
-        console.log(modelParameters)
-        $.ajax({
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            url: "/network",
-            data: JSON.stringify(modelParameters),
-            success: function (data) {
-                console.log(data.title);
-                console.log(data.article);
-            },
-            dataType: "json"
-        });
+        // send network specs to the server which makes the network
+        makeNetwork();
 
         // send selection
         $.ajax({
@@ -654,4 +768,10 @@ function render()
 
     renderer.render( scene, camera );
     requestAnimationFrame( render );
+
+    if (!layerNamesMade)
+    {
+        make_layer_names();
+        layerNamesMade = true;
+    }
 }
