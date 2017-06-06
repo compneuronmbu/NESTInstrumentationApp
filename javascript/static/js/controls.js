@@ -11,6 +11,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	var mouseDown = false;
 	var shiftDown = false;
 	var make_selection_box = false;
+	var make_connection = false;
 
 	var plane;
 	var raycaster;
@@ -31,6 +32,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	  mouseDown = false;
 	  shiftDown = false;
 	  make_selection_box = false;
+	  make_connection = false;
 	  marquee.fadeOut();
 	  marquee.css({width: 0, height: 0});
 	  mouseDownCoords = { x: 0, y: 0};
@@ -75,6 +77,28 @@ var Controls = function ( drag_objects, camera, domElement )
 	        }
 	        else
 	        {
+	        	var sel;
+	        	var mouseDownCorrected = {
+	        		x: mouseDownCoords.x,
+    				y: renderer.getSize().height - mouseDownCoords.y
+    			};
+	        	for ( var i in selectionCollection.selections )
+	        	{
+	        		if( selectionCollection.selections[i].type != "neurons" )
+	        		{
+	        			continue;
+	        		}
+	        		sel = selectionCollection.selections[i].selection;
+	        		// Clean up lower_left/ll, upper_right/ur
+	        		console.log(sel)
+	        		console.log(mouseDownCorrected)
+	        		if (withinBounds( mouseDownCorrected, {lower_left: sel.ll, upper_right: sel.ur} ))
+	        		{
+	        			console.log("make_connection")
+	        			make_connection = true;
+	        			return;
+	        		}
+	        	}
 	            make_selection_box = true;
 	        }
 	    }
