@@ -25,7 +25,6 @@ var layerNamesMade = false;
 var nSelected = 0;
 
 var circle_objects = [];
-var line_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
 var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
@@ -63,7 +62,7 @@ function init()
 
     container.appendChild( renderer.domElement );
 
-    Controls( circle_objects, line_objects, camera, renderer.domElement );
+    Controls( circle_objects, camera, renderer.domElement );
 
     //render();
 }
@@ -331,22 +330,6 @@ function addDeviceToSelection( device )
             });
 }
 
-
-function makeTail()
-{
-    var line_material = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
-    var line_geometry = new THREE.BufferGeometry();
-    var vertices = new Float32Array( [
-        0.0, -0.05, 0.0,
-        0.0, -0.20, 0.0
-    ] );
-
-    line_geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-    var line = new THREE.Line(line_geometry, line_material);
-
-    return line;
-}
-
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
@@ -355,15 +338,8 @@ function makeStimulationDevice( device )
     var material = new THREE.MeshBasicMaterial( { color: col } );
     var circle = new THREE.Mesh( geometry, material );
 
-    var line = makeTail();
-
-    circle.children = line;
-
     scene.add( circle );
-    scene.add( line );
-
     circle_objects.push( circle );
-    line_objects.push( line );
 
     gui.addDevice( device );
     //addDeviceToSelection( device );
@@ -376,16 +352,9 @@ function makeRecordingDevice( device )
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
     var material = new THREE.MeshBasicMaterial( { color: col } );
     var circle = new THREE.Mesh( geometry, material );
-    
-    var line = makeTail();
-
-    circle.children = line;
 
     scene.add( circle );
-    scene.add( line );
-
     circle_objects.push( circle );
-    line_objects.push( line );
 
     gui.addDevice( device );
 }
