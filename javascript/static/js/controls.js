@@ -146,7 +146,8 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    if ( make_selection_box )
 	    {
-	        selectPoints();
+	    	selectPoints();
+	    	selectionBox();
 	        // If we didn't click on a layer, it will cause problems further down
 	        if (layerSelected === "")
 	        {

@@ -207,6 +207,28 @@ function selectPoints()
     }
 }
 
+function selectionBox()
+{
+    var objectBoundsLL = toObjectCoordinates(bounds.lower_left);
+    var objectBoundsUR = toObjectCoordinates(bounds.upper_right);
+    var xLength = objectBoundsUR.x - objectBoundsLL.x;
+    var yLength = objectBoundsUR.y - objectBoundsLL.y;
+    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+
+    var boxMaterial = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
+    var box = new THREE.Mesh( boxGeometry, boxMaterial );
+
+    var boxPosition = {
+        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
+        y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
+        z: 0.0
+    }
+
+    box.position.copy(boxPosition);
+
+    scene.add( box );
+}
+
 function getSelectedDropDown(id)
 {
     var dd = document.getElementById(id);
