@@ -4,7 +4,7 @@
 *
 */
 
-var Controls = function ( drag_objects, camera, domElement )
+var Controls = function ( drag_objects, line_objects, camera, domElement )
 {	
 	var marquee = $("#select-square");
 
@@ -16,6 +16,9 @@ var Controls = function ( drag_objects, camera, domElement )
 	var raycaster;
 	var intersection = new THREE.Vector3();
 	var object_selected;
+	var line_selected;
+
+	var startPos = { x: 0, y: 0 };
 
 	function activate()
 	{
@@ -35,6 +38,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	  marquee.css({width: 0, height: 0});
 	  mouseDownCoords = { x: 0, y: 0};
 	  mRelPos = { x: 0, y: 0 };
+	  startPos = { x: 0, y: 0 };
 	  layerSelected = "";
 	}
 
@@ -66,12 +70,20 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	            raycaster.setFromCamera( mouse, camera );
 	            var intersects = raycaster.intersectObjects( drag_objects );
+	            var line_intersects = raycaster.intersectObjects( line_objects );
 
 	            if ( intersects.length > 0 )
 	            {
 	                object_selected = intersects[ 0 ].object;
-
 	                domElement.style.cursor = 'move';
+	            }
+	            else if ( line_intersects.length > 0 )
+	            {
+	            	line_selected = line_intersects[ 0 ].object;
+	                domElement.style.cursor = 'move';
+
+	                startPos.x = line_selected.geometry.attributes.position.array[0];
+	                startPos.y = line_selected.geometry.attributes.position.array[1];
 	            }
 	        }
 	        else
@@ -133,7 +145,29 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	        if ( object_selected ) {
 	            if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
-	                object_selected.position.copy( relScreenPos ); 
+	                object_selected.position.copy( relScreenPos );
+	                if (object_selected.children.length !== 0 )
+	                {
+	                	// Move arrow
+	                	object_selected.children.position.copy( relScreenPos );
+	                }
+	            }
+	        }
+
+	        if ( line_selected ) {
+	            if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
+					var pos = line_selected.position;
+					
+					var linePositions = line_selected.geometry.attributes.position.array;
+					linePositions[0] = startPos.x;
+					linePositions[1] = startPos.y;
+					linePositions[3] = relScreenPos.x - pos.x;
+					linePositions[4] = relScreenPos.y - pos.y;
+
+					line_selected.geometry.attributes.position.needsUpdate = true;
+
+					line_selected.geometry.boundingSphere = null;
+					line_selected.geometry.boundingBox = null;
 	            }
 	        }
 	    }
@@ -179,6 +213,9 @@ var Controls = function ( drag_objects, camera, domElement )
 	    {
 	        if ( object_selected ) {
 	            object_selected = null;
+	        }
+	        if ( line_selected ) {
+	            line_selected = null;
 	        }
 
 	        renderer.domElement.style.cursor = 'auto';
