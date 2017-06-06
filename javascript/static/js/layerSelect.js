@@ -209,7 +209,7 @@ function selectPoints()
 function getSelectedDropDown(id)
 {
     var dd = document.getElementById(id);
-    return dd.options[dd.selectedIndex].text;
+    return dd.options[dd.selectedIndex].value;
 }
 
 function getSelectedRadio(id)
@@ -246,6 +246,7 @@ function makeSelectionInfo()
 
     var selectionInfo = {
         name: layerSelected,
+        type: "neurons",
         selection: selectionBox,
         projection: selectedProjection,
         neuronType: selectedNeuronType,
@@ -317,6 +318,17 @@ function getConnections()
             });
 }
 
+function addDeviceToSelection( device )
+{
+    selectionCollection.selections.push(
+            stimSelection = {
+            name: device + "_1",  // TODO: number should be variable
+            type: device,
+            endpoint: "Source",
+            projection: getSelectedDropDown("projections")
+            });
+}
+
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
@@ -326,6 +338,10 @@ function makeStimulationDevice( device )
     scene.add( circle );
 
     circle_objects.push( circle );
+
+    gui.addDevice( device );
+    //addDeviceToSelection( device );
+
 }
 
 function makeRecordingDevice( device )
@@ -339,6 +355,8 @@ function makeRecordingDevice( device )
     scene.add( circle );
 
     circle_objects.push( circle );
+
+    gui.addDevice( device );
 }
 
 function render()

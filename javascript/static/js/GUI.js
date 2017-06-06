@@ -1,7 +1,32 @@
 class GuiButtons extends React.Component{
     constructor() {
-    super();
-    console.log("GuiButtons", modelParameters);
+      super();
+      this.state = {
+        devices: [],
+        newDevice: false
+      }
+    }
+
+    // function to add device to this.state.devices
+    addDevice( device )
+    {
+      var deviceArray = this.state.devices;
+      deviceArray.push(device);
+      this.setState({
+        devices: deviceArray,
+        newDevice: true
+      });
+    }
+
+    // Called directly after render()
+    // Needed to add a new device to the projection
+    componentDidUpdate()
+    {
+      if (this.state.newDevice)
+      {
+        var len = this.state.devices.length;
+        addDeviceToSelection(this.state.devices[len - 1]);
+      }
     }
 
     render() {
@@ -12,11 +37,9 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Projection
               </div>
-              <DropDown items={[{value:'projection 1'},
-                                {value:'projection 2'},
-                                {value:'projection 3'},
-                                {value:'projection 4'},
-                                {value:'projection 5'}]}
+              <DropDownProjection items={
+                this.state.devices.map(function(device, i){return ({value: i , text: device });})
+              }
                         id='projections' />
             </div>
 
@@ -25,7 +48,7 @@ class GuiButtons extends React.Component{
                 Neuron type
               </div>
               <DropDown items={
-                neuronModels.map(function(model){return ({value: model});})}
+                neuronModels.map(function(model){return ({value: model, text: model});})}
                         id='neuronType' />
             </div>
 
@@ -34,7 +57,7 @@ class GuiButtons extends React.Component{
                 Synapse model
               </div>
               <DropDown items={
-                synModels.map(function(model){return ({value: model[1]});})}
+                synModels.map(function(model){return ({value: model[1], text: model[1]});})}
                         id='synapseModel' />
             </div>
 
@@ -59,7 +82,7 @@ class GuiButtons extends React.Component{
                     Stimulation device
                 </div>
                 <SelectionsButton text='poissonGenerator'
-                    function={function () {makeStimulationDevice("poissonGenerator");}}
+                    function={function () {makeStimulationDevice("poisson_generator");}}
                     button_id='poissonButton' />
             </div>
 
@@ -71,7 +94,7 @@ class GuiButtons extends React.Component{
                     function={function () {makeRecordingDevice("voltmeter");}}
                     button_id='voltmeterButton' />
                 <SelectionsButton text='spikeDetector'
-                    function={function () {makeRecordingDevice("spikeDetector");}}
+                    function={function () {makeRecordingDevice("spike_detector");}}
                     button_id='spikeDetectorButton' />
             </div>
 
@@ -126,26 +149,99 @@ class RadioButtons extends React.Component {
 class DropDown extends React.Component {
     constructor(props) {
       super(props);
-      this.items = props.items;
-      this.state = {
-        selectedOption: this.items[0].value
-      };
+      //this.items = props.items;
+      if (props.items.length != 0)
+      {
+        this.state = { 
+          selectedOption: props.items[0].value,
+          items: props.items };
+      } else
+      {
+        this.state = { 
+          selectedOption: -1,
+          items: props.items };
+      }
       this.handleOptionChange = this.handleOptionChange.bind(this);
     }
 
-    handleOptionChange(changeEvent) {
+    componentWillReceiveProps(nextProps)  // called when recieving new Props
+    {
       this.setState({
-        selectedOption : changeEvent.target.value
-      });
+        selectedOption: nextProps.items[0].value,
+        items: nextProps.items
+      })
+    }
+
+    handleOptionChange(changeEvent) {
+      if (this.state.items.length === 1)
+      {
+        this.setState({
+          selectedOption: this.state.items[this.state.items.last].value
+        });
+      } else
+      {
+        this.setState({
+          selectedOption: changeEvent.target.value
+        });
+      }
     }
 
     render() {
         return (
-          <select className="dropdown"  id={this.props.id} onChange={this.handleOptionChange}>
-          {this.props.items.map(function(item, i){
-            return (
-              <option value={item.value} key={i}>{item.value}</option>
-            );
+          <select className="dropdown" id={this.props.id} value={this.state.selectedOption} onChange={this.handleOptionChange}>
+          {this.state.items.map(function(item, i){
+            return(<option value={item.value} key={i}>{item.text}</option>)
+          })}
+          </select>
+        );
+    }
+}
+
+class DropDownProjection extends React.Component {
+    constructor(props) {
+      super(props);
+      //this.items = props.items;
+      if (props.items.length != 0)
+      {
+        this.state = { 
+          selectedOption: props.items[0].value,
+          items: props.items };
+      } else
+      {
+        this.state = { 
+          selectedOption: -1,
+          items: props.items };
+      }
+      this.handleOptionChange = this.handleOptionChange.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps)  // called when recieving new Props
+    {
+      this.setState({
+        selectedOption: nextProps.items[nextProps.items.length - 1].value,
+        items: nextProps.items
+      })
+    }
+
+    handleOptionChange(changeEvent) {
+      if (this.state.items.length === 1)
+      {
+        this.setState({
+          selectedOption: this.state.items[this.state.items.last].value
+        });
+      } else
+      {
+        this.setState({
+          selectedOption: changeEvent.target.value
+        });
+      }
+    }
+
+    render() {
+        return (
+          <select className="dropdown" id={this.props.id} value={this.state.selectedOption} onChange={this.handleOptionChange}>
+          {this.state.items.map(function(item, i){
+            return(<option value={item.value} key={i}>{item.text}</option>)
           })}
           </select>
         );
@@ -174,7 +270,7 @@ class SelectionsButton extends React.Component {
   }
 }
 
-ReactDOM.render(
+var gui = ReactDOM.render(
     <GuiButtons/>,
     document.getElementById('gui_body')
 );
