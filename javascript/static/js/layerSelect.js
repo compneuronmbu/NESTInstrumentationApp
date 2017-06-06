@@ -345,6 +345,7 @@ function makeTail()
     var line = new THREE.Line(line_geometry, line_material);
 
     return line;
+}
 
 function makeStimulationDevice( device )
 {
