@@ -8,6 +8,11 @@ import nest_utils as nu
 app = flask.Flask(__name__)
 
 
+@app.route('/')
+def redirect():
+    return flask.redirect(flask.url_for('index'))
+
+
 @app.route('/NESTConnectionApp')
 def index():
     return flask.render_template('NESTConnectionApp.html')

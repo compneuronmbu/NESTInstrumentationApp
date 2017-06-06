@@ -211,7 +211,7 @@ function selectPoints()
 function getSelectedDropDown(id)
 {
     var dd = document.getElementById(id);
-    return dd.options[dd.selectedIndex].text;
+    return dd.options[dd.selectedIndex].value;
 }
 
 function getSelectedRadio(id)
@@ -248,6 +248,7 @@ function makeSelectionInfo()
 
     var selectionInfo = {
         name: layerSelected,
+        type: "neurons",
         selection: selectionBox,
         projection: selectedProjection,
         neuronType: selectedNeuronType,
@@ -319,6 +320,18 @@ function getConnections()
             });
 }
 
+function addDeviceToSelection( device )
+{
+    selectionCollection.selections.push(
+            stimSelection = {
+            name: device + "_1",  // TODO: number should be variable
+            type: device,
+            endpoint: "Source",
+            projection: getSelectedDropDown("projections")
+            });
+}
+
+
 function makeTail()
 {
     var line_material = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
@@ -332,7 +345,6 @@ function makeTail()
     var line = new THREE.Line(line_geometry, line_material);
 
     return line;
-}
 
 function makeStimulationDevice( device )
 {
@@ -351,6 +363,9 @@ function makeStimulationDevice( device )
 
     circle_objects.push( circle );
     line_objects.push( line );
+
+    gui.addDevice( device );
+    //addDeviceToSelection( device );
 }
 
 function makeRecordingDevice( device )
@@ -370,27 +385,12 @@ function makeRecordingDevice( device )
 
     circle_objects.push( circle );
     line_objects.push( line );
+
+    gui.addDevice( device );
 }
 
 function render()
 {
-    for ( var device in stimulationButtons )
-    {
-        if ( stimulationButtons[device] === true )
-        {
-            makeStimulationDevice(device);
-            stimulationButtons[device] = false;
-        }
-    }
-    for ( var device in recordingButtons )
-    {
-        if ( recordingButtons[device] === true )
-        {
-            makeRecordingDevice(device);
-            recordingButtons[device] = false;
-        }
-    }
-
     renderer.render( scene, camera );
     requestAnimationFrame( render );
 

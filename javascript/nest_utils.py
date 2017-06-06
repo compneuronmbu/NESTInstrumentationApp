@@ -98,20 +98,39 @@ def connect(selection_array):
     """
     Makes connections from selections specified by the user.
     """
-
-    for projection in ['projection %i' % i for i in range(1, 6)]:
+    for projection in ['%i' % i for i in range(0, 6)]:
+        devices = {}
         con_dict = {
             'Source': [],
             'Target': []
         }
+        spike_detector = False
         for selection in selection_array:
             # skip if the projection is wrong
+            print("PJ: ", selection['projection'], "vs", projection)
             if selection['projection'] != projection:
                 continue
-            # we don't think about neuron types yet
-            con_dict[selection['endpoint']] += get_gids(selection)
+            if selection['type'] == "neurons":
+                # we don't think about neuron types yet
+                con_dict[selection['endpoint']] += get_gids(selection)
+            else:
+                # If device doesn't exist, it must be created
+                name = selection['name']
+                if name not in devices:
+                    devices[name] = nest.Create(selection['type'])
+                    print("Created model %s with GID=%i"
+                          % (name, devices[name][0]))
+                con_dict[selection['endpoint']] += devices[name]
+            if selection['type'] == 'spike_detector':
+                spike_detector = True
+
         print(con_dict)
-        nest.Connect(con_dict['Source'],
-                     con_dict['Target'],
-                     syn_spec=selection['synModel'])
+        if spike_detector:
+            nest.Connect(con_dict['Target'],
+                         con_dict['Source'],
+                         syn_spec=selection['synModel'])
+        else:
+            nest.Connect(con_dict['Source'],
+                         con_dict['Target'],
+                         syn_spec=selection['synModel'])
     print(nest.GetConnections())
