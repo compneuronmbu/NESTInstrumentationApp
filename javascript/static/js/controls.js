@@ -18,6 +18,7 @@ var Controls = function ( drag_objects, camera, domElement )
     var intersection = new THREE.Vector3();
     var object_selected;
     var line;
+    var connectionTarget;
 
     function activate()
     {
@@ -39,6 +40,7 @@ var Controls = function ( drag_objects, camera, domElement )
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
       layerSelected = "";
+      connectionTarget = undefined;
     }
 
 
@@ -85,10 +87,6 @@ var Controls = function ( drag_objects, camera, domElement )
                 };
                 for ( var i in selectionCollection.selections )
                 {
-                    if( selectionCollection.selections[i].type != "neurons" )
-                    {
-                        continue;
-                    }
                     sel = selectionCollection.selections[i].selection;
                     var name = selectionCollection.selections[i].name;
                     // Clean up lower_left/ll, upper_right/ur
@@ -116,6 +114,8 @@ var Controls = function ( drag_objects, camera, domElement )
                         line_geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
                         line = new THREE.Line(line_geometry, line_material);
                         scene.add(line);
+                        // TODO: save selection to tmp var
+                        connectionTarget = selectionCollection.selections[i];
                         return;
                     }
                 }
@@ -274,12 +274,15 @@ var Controls = function ( drag_objects, camera, domElement )
                 line.geometry.boundingBox = null;
                 intersect_target.children.push(line);
 
-
+                // TODO: get selection from tmp var, add to device array in projection
+                projections[intersect_target.name].connectees.push(connectionTarget);
             }
             else
             {
                 scene.remove(line);
             }
+            console.log("projections:", projections);
+            console.log("selcol:", selectionCollection);
         }
         else if ( shiftDown )
         {

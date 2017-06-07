@@ -55,7 +55,7 @@ def synapses_ajax():
 def connect_ajax():
     if flask.request.method == 'POST':
         pp = pprint.PrettyPrinter(indent=4)
-        selections = flask.request.json['selections']
+        selections = flask.request.json
         pp.pprint(selections)
         nu.connect(selections)
         return "returnValue"

@@ -21,8 +21,10 @@ var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
 var layerNamesMade = false;
+var projections = {};
 
 var nSelected = 0;
+var deviceCounter = 1;
 
 var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
@@ -177,19 +179,10 @@ function selectPoints()
                 if (withinBounds(xypos, bounds))
                 {
                     //color.setRGB(0.7, 0.0, 0.0);
-                    if (getSelectedRadio('endpoint') === 'Source')
-                    {
-                      colors[ i ]     = 1.0;
-                      colors[ i + 1 ] = 0.0;
-                      colors[ i + 2 ] = 1.0;
-                    } else
-                    {
-                      colors[ i ]     = 0.85;
-                      colors[ i + 1 ] = 0.65;
-                      colors[ i + 2 ] = 0.13;
-                    }
-                    
-                    
+                    colors[ i ]     = 1.0;
+                    colors[ i + 1 ] = 0.0;
+                    colors[ i + 2 ] = 1.0;
+
                     points.geometry.attributes.customColor.needsUpdate = true;
                     nSelected += 1;
 
@@ -260,22 +253,17 @@ function makeSelectionInfo()
         }
     }
 
-    selectedProjection = getSelectedDropDown("projections");
     selectedNeuronType = getSelectedDropDown("neuronType");
     selectedSynModel = getSelectedDropDown("synapseModel");
     selectedShape = getSelectedRadio("maskShape");
-    selectedEndpoint = getSelectedRadio("endpoint");
 
 
     var selectionInfo = {
         name: layerSelected,
-        type: "neurons",
         selection: selectionBox,
-        projection: selectedProjection,
         neuronType: selectedNeuronType,
         synModel: selectedSynModel,
         maskShape: selectedShape,
-        endpoint: selectedEndpoint
     }
 
     return selectionInfo;
@@ -320,7 +308,7 @@ function makeConnections()
       type: "POST",
       contentType: "application/json; charset=utf-8",
       url: "/connect",
-      data: JSON.stringify(selectionCollection),
+      data: JSON.stringify(projections),
       success: function (data) {
           console.log(data.title);
           console.log(data.article);
@@ -341,16 +329,18 @@ function getConnections()
             });
 }
 
-function addDeviceToSelection( device )
+
+function addDeviceToProjections( device )
 {
-    selectionCollection.selections.push(
-            stimSelection = {
-            name: device + "_1",  // TODO: number should be variable
-            type: device,
-            endpoint: "Source",
-            projection: getSelectedDropDown("projections")
-            });
+    var deviceName = device + "_" + String(deviceCounter++);
+    projections[deviceName] = {
+        specs: {
+            model: device
+        },
+        connectees: []
+    };
 }
+
 
 function makeStimulationDevice( device )
 {
@@ -359,12 +349,14 @@ function makeStimulationDevice( device )
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
     var material = new THREE.MeshBasicMaterial( { color: col } );
     var circle = new THREE.Mesh( geometry, material );
+    circle.name = device + "_" + String(deviceCounter);
 
     scene.add( circle );
     circle_objects.push( circle );
 
-    gui.addDevice( device );
+    //gui.addDevice( device );
     //addDeviceToSelection( device );
+    addDeviceToProjections( device );
 }
 
 function makeRecordingDevice( device )
@@ -374,11 +366,13 @@ function makeRecordingDevice( device )
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
     var material = new THREE.MeshBasicMaterial( { color: col } );
     var circle = new THREE.Mesh( geometry, material );
+    circle.name = device + "_" + String(deviceCounter);
 
     scene.add( circle );
     circle_objects.push( circle );
 
-    gui.addDevice( device );
+    addDeviceToProjections( device );
+
 }
 
 function render()

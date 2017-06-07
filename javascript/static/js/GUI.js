@@ -7,41 +7,9 @@ class GuiButtons extends React.Component{
       }
     }
 
-    // function to add device to this.state.devices
-    addDevice( device )
-    {
-      var deviceArray = this.state.devices;
-      deviceArray.push(device);
-      this.setState({
-        devices: deviceArray,
-        newDevice: true
-      });
-    }
-
-    // Called directly after render()
-    // Needed to add a new device to the projection
-    componentDidUpdate()
-    {
-      if (this.state.newDevice)
-      {
-        var len = this.state.devices.length;
-        addDeviceToSelection(this.state.devices[len - 1]);
-      }
-    }
-
     render() {
         return (
           <div>
-
-            <div id="gui-box">
-              <div id="gui-box-title">
-                Projection
-              </div>
-              <DropDownProjection items={
-                this.state.devices.map(function(device, i){return ({value: i , text: device });})
-              }
-                        id='projections' />
-            </div>
 
             <div id="gui-box">
               <div id="gui-box-title">
@@ -67,14 +35,6 @@ class GuiButtons extends React.Component{
                 </div>
                 <RadioButtons items={[{value:'Rectangle'}]}
                               name='maskShape'/>
-            </div>
-
-            <div id="gui-box">
-                <div id="gui-box-title">
-                    Endpoint
-                </div>
-                <RadioButtons items={[{value:'Source'}, {value:'Target'}]}
-                              name='endpoint'/>
             </div>
 
             <div id="gui-box">

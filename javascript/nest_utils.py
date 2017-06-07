@@ -94,43 +94,20 @@ def get_gids(selection_dict):
     return gids
 
 
-def connect(selection_array):
+def connect(projections):
     """
     Makes connections from selections specified by the user.
     """
-    for projection in ['%i' % i for i in range(0, 6)]:
-        devices = {}
-        con_dict = {
-            'Source': [],
-            'Target': []
-        }
-        spike_detector = False
-        for selection in selection_array:
-            # skip if the projection is wrong
-            print("PJ: ", selection['projection'], "vs", projection)
-            if selection['projection'] != projection:
-                continue
-            if selection['type'] == "neurons":
-                # we don't think about neuron types yet
-                con_dict[selection['endpoint']] += get_gids(selection)
-            else:
-                # If device doesn't exist, it must be created
-                name = selection['name']
-                if name not in devices:
-                    devices[name] = nest.Create(selection['type'])
-                    print("Created model %s with GID=%i"
-                          % (name, devices[name][0]))
-                con_dict[selection['endpoint']] += devices[name]
-            if selection['type'] == 'spike_detector':
-                spike_detector = True
+    for device_name in projections:
+        model = projections[device_name]['specs']['model']
+        nest_device = nest.Create(model)
+        for selection in projections[device_name]['connectees']:
+            nest_neurons = get_gids(selection)
+            synapse_model = selection['synModel']
 
-        print(con_dict)
-        if spike_detector:
-            nest.Connect(con_dict['Target'],
-                         con_dict['Source'],
-                         syn_spec=selection['synModel'])
-        else:
-            nest.Connect(con_dict['Source'],
-                         con_dict['Target'],
-                         syn_spec=selection['synModel'])
+            if model == "spike_detector":
+                nest.Connect(nest_neurons, nest_device)
+            else:
+                nest.Connect(nest_device, nest_neurons,
+                             syn_spec=synapse_model)
     print(nest.GetConnections())
