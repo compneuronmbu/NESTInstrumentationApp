@@ -347,7 +347,8 @@ function makeStimulationDevice( device )
     console.log("making stimulation device of type", device)
     var col = 0xB28080
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    var material = new THREE.MeshBasicMaterial( { color: col } );
+    var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+    var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
     var circle = new THREE.Mesh( geometry, material );
     circle.name = device + "_" + String(deviceCounter);
 
@@ -364,7 +365,8 @@ function makeRecordingDevice( device )
     console.log("making recording device of type", device)
     var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    var material = new THREE.MeshBasicMaterial( { color: col } );
+    var map = new THREE.TextureLoader().load( "static/js/textures/recorder_white.png" );
+    var material = new THREE.MeshBasicMaterial( { color: col, map: map } );
     var circle = new THREE.Mesh( geometry, material );
     circle.name = device + "_" + String(deviceCounter);
 
