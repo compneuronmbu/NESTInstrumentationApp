@@ -58,7 +58,7 @@ function init()
     xmlReq.send();
 
     // RENDERER
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( container.clientWidth, container.clientHeight );
 

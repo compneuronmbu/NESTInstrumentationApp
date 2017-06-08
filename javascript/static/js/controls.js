@@ -21,6 +21,8 @@ var Controls = function ( drag_objects, camera, domElement )
     var curveObject;
     var curve;
 
+    var CURVE_SEGMENTS = 100;
+
     var connectionTarget;
 
     function activate()
@@ -55,10 +57,10 @@ var Controls = function ( drag_objects, camera, domElement )
         curvePos.points[3].x = newPos.x;
         curvePos.points[3].y = newPos.y;
 
-        for (var i=0; i<=50; ++i)
+        for (var i=0; i<=CURVE_SEGMENTS; ++i)
         {
             p = curveVertices[i];
-            p.copy( curvePos.getPoint( i / (50) ) );
+            p.copy( curvePos.getPoint( i / (CURVE_SEGMENTS) ) );
         }
         lineObject.geometry.verticesNeedUpdate = true;
 
@@ -123,7 +125,6 @@ var Controls = function ( drag_objects, camera, domElement )
                     }
                     if (withinBounds( mouseDownCorrected, {lower_left: toScreenXY(selectionBounds.ll), upper_right: toScreenXY(selectionBounds.ur)} ))
                     {
-                        console.log("make_connection")
                         make_connection = true;
 
                         curve = new THREE.CatmullRomCurve3( [
@@ -133,9 +134,8 @@ var Controls = function ( drag_objects, camera, domElement )
                             new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 )
                         ] );
                         curve.type = 'chordal';
-                        console.log("curve:", curve);
                         var curveGeometry = new THREE.Geometry();
-                        curveGeometry.vertices = curve.getPoints(50);
+                        curveGeometry.vertices = curve.getPoints(CURVE_SEGMENTS);
                         var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
                         curveObject = new THREE.Line(curveGeometry, curveMaterial);
                         scene.add(curveObject);
@@ -240,7 +240,6 @@ var Controls = function ( drag_objects, camera, domElement )
             }
             var selectionInfo = makeSelectionInfo();
             selectionCollection.selections.push(selectionInfo);
-            console.log(selectionCollection)
 
             // send network specs to the server which makes the network
             makeNetwork();
@@ -262,7 +261,6 @@ var Controls = function ( drag_objects, camera, domElement )
         else if ( make_connection )
         {
             raycaster = new THREE.Raycaster();
-            console.log(selectionCollection);
             var rect = domElement.getBoundingClientRect();
             var mouse = new THREE.Vector2();
             mouse.x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
@@ -274,7 +272,6 @@ var Controls = function ( drag_objects, camera, domElement )
             if ( intersects.length > 0 )
             {
                 intersect_target = intersects[ 0 ].object;
-                console.log("target: ", intersect_target)
                 var radius = intersect_target.geometry.boundingSphere.radius;
                 updateLinePosition(curveObject, curve, {x: intersect_target.position.x - radius, y: intersect_target.position.y})
 
@@ -288,8 +285,6 @@ var Controls = function ( drag_objects, camera, domElement )
             {
                 scene.remove(curveObject);
             }
-            console.log("projections:", projections);
-            console.log("selcol:", selectionCollection);
         }
         else if ( shiftDown )
         {

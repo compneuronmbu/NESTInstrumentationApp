@@ -83,7 +83,6 @@ var Brain = function ( camera, scene )
 	    var sizes = new Float32Array( neurons.length );
 	    
 	    var i = 0;
-	    var j = 0;
 	    for (var neuron in neurons)
 	    {
 	        positions[ i ] = neurons[neuron].x + offsett_x;
@@ -93,10 +92,8 @@ var Brain = function ( camera, scene )
 	        colors[ i ]     = color.r;
 	        colors[ i + 1 ] = color.g;
 	        colors[ i + 2 ] = color.b;
-	        
-	        sizes[i] = 1.0;
+
 	        i += 3;
-	        j += 1;
 	    }
 
 	    geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
@@ -106,7 +103,7 @@ var Brain = function ( camera, scene )
 
 	    geometry.computeBoundingSphere();
 
-	    var texture = new THREE.TextureLoader().load( "static/js/textures/disc.png" );
+	    var texture = new THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
 	    var material = new THREE.ShaderMaterial( {
 	        uniforms: {
 	            color:     { value: new THREE.Color( 0xffffff ) },
@@ -120,7 +117,7 @@ var Brain = function ( camera, scene )
 	            "vColor = customColor;",
 	            "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
 	            "gl_Position = projectionMatrix * mvPosition;",
-	            "gl_PointSize = 0.05 * ( 300.0 / -mvPosition.z );",
+	            "gl_PointSize = 0.04 * ( 300.0 / -mvPosition.z );",
 	            "}"
 	            ].join( "\n" ),
 	        fragmentShader: [
