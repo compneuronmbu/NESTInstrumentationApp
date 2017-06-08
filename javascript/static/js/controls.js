@@ -17,7 +17,10 @@ var Controls = function ( drag_objects, camera, domElement )
     var raycaster;
     var intersection = new THREE.Vector3();
     var object_selected;
-    var line;
+    
+    var curveObject;
+    var curve;
+
     var connectionTarget;
 
     function activate()
@@ -41,6 +44,24 @@ var Controls = function ( drag_objects, camera, domElement )
       mRelPos = { x: 0, y: 0 };
       layerSelected = "";
       connectionTarget = undefined;
+    }
+
+    function updateLinePosition( lineObject, curvePos, newPos)
+    {
+        var curveVertices = lineObject.geometry.vertices;
+        curvePos.points[1].x = curvePos.points[0].x + 0.05;
+        curvePos.points[2].x = newPos.x - 0.05;
+        curvePos.points[2].y = newPos.y;
+        curvePos.points[3].x = newPos.x;
+        curvePos.points[3].y = newPos.y;
+
+        for (var i=0; i<=50; ++i)
+        {
+            p = curveVertices[i];
+            p.copy( curvePos.getPoint( i / (50) ) );
+        }
+        lineObject.geometry.verticesNeedUpdate = true;
+
     }
 
 
@@ -105,16 +126,20 @@ var Controls = function ( drag_objects, camera, domElement )
                         console.log("make_connection")
                         make_connection = true;
 
-                        var line_material = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
-                        var line_geometry = new THREE.BufferGeometry();
-                        var vertices = new Float32Array( [
-                            selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0,
-                            selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0
-                            ] );
-                        line_geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-                        line = new THREE.Line(line_geometry, line_material);
-                        scene.add(line);
-                        // TODO: save selection to tmp var
+                        curve = new THREE.CatmullRomCurve3( [
+                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 )
+                        ] );
+                        curve.type = 'chordal';
+                        console.log("curve:", curve);
+                        var curveGeometry = new THREE.Geometry();
+                        curveGeometry.vertices = curve.getPoints(50);
+                        var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
+                        curveObject = new THREE.Line(curveGeometry, curveMaterial);
+                        scene.add(curveObject);
+
                         connectionTarget = selectionCollection.selections[i];
                         return;
                     }
@@ -173,15 +198,8 @@ var Controls = function ( drag_objects, camera, domElement )
         else if ( make_connection )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
-            var pos = line.position;
-            var linePositions = line.geometry.attributes.position.array;
-            //linePositions[0] = startPos.x;
-            //linePositions[1] = startPos.y;
-            linePositions[3] = relScreenPos.x - pos.x;
-            linePositions[4] = relScreenPos.y - pos.y;
-                line.geometry.attributes.position.needsUpdate = true;
-                line.geometry.boundingSphere = null;
-            line.geometry.boundingBox = null;
+            var pos = curveObject.position;
+            updateLinePosition(curveObject, curve, {x: relScreenPos.x - pos.x, y: relScreenPos.y - pos.y})
         }
         else if ( shiftDown )
         {
@@ -195,13 +213,8 @@ var Controls = function ( drag_objects, camera, domElement )
                         // Move lines
                         for (var i in object_selected.children)
                         {
-                            var linePosition = object_selected.children[i].geometry.attributes.position.array;
                             var radius = intersect_target.geometry.boundingSphere.radius;
-                            linePosition[3] = object_selected.position.x - radius;
-                            linePosition[4] = object_selected.position.y;
-                            object_selected.children[i].geometry.attributes.position.needsUpdate = true;
-                            object_selected.children[i].geometry.boundingSphere = null;
-                            object_selected.children[i].geometry.boundingBox = null;
+                            updateLinePosition(object_selected.children[i], object_selected.children[i].children, {x: object_selected.position.x - radius, y: object_selected.position.y})
                         }
                     }
                 }
@@ -262,24 +275,18 @@ var Controls = function ( drag_objects, camera, domElement )
             {
                 intersect_target = intersects[ 0 ].object;
                 console.log("target: ", intersect_target)
-                var pos = line.position;
-                var linePositions = line.geometry.attributes.position.array;
-                //linePositions[0] = startPos.x;
-                //linePositions[1] = startPos.y;
                 var radius = intersect_target.geometry.boundingSphere.radius;
-                linePositions[3] = intersect_target.position.x - radius;
-                linePositions[4] = intersect_target.position.y;
-                line.geometry.attributes.position.needsUpdate = true;
-                line.geometry.boundingSphere = null;
-                line.geometry.boundingBox = null;
-                intersect_target.children.push(line);
+                updateLinePosition(curveObject, curve, {x: intersect_target.position.x - radius, y: intersect_target.position.y})
+
+                curveObject.children = curve;
+                intersect_target.children.push(curveObject);
 
                 // TODO: get selection from tmp var, add to device array in projection
                 projections[intersect_target.name].connectees.push(connectionTarget);
             }
             else
             {
-                scene.remove(line);
+                scene.remove(curveObject);
             }
             console.log("projections:", projections);
             console.log("selcol:", selectionCollection);
