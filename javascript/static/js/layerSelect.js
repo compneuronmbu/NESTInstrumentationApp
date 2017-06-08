@@ -101,125 +101,47 @@ function toObjectCoordinates( screenPos )
     return pos
 }
 
-// Finds the lower_left and upper_right coordinates of the selected square
+// Finds the ll and ur coordinates of the selected square
 function findBounds (pos1, pos2)
 {
-    var lower_left = {};
-    var upper_right = {};
+    var ll = {};
+    var ur = {};
 
     if( pos1.x < pos2.x )
     {
-        lower_left.x = pos1.x;
-        upper_right.x = pos2.x;
+        ll.x = pos1.x;
+        ur.x = pos2.x;
     }
     else
     {
-        lower_left.x = pos2.x;
-        upper_right.x = pos1.x;
+        ll.x = pos2.x;
+        ur.x = pos1.x;
     }
 
     if ( pos1.y < pos2.y )
     {
-        lower_left.y = pos1.y;
-        upper_right.y = pos2.y;
+        ll.y = pos1.y;
+        ur.y = pos2.y;
     }
     else
     {
-        lower_left.y = pos2.y;
-        upper_right.y = pos1.y;
+        ll.y = pos2.y;
+        ur.y = pos1.y;
     }
-    return ({lower_left: lower_left, upper_right: upper_right});
+    return ({ll: ll, ur: ur});
 }
 
 // Takes a position and detect if it is within the boundary box defined by findBounds(..)
 function withinBounds(pos, bounds)
 {
-    var ll = bounds.lower_left;
-    var ur = bounds.upper_right;
+    var ll = bounds.ll;
+    var ur = bounds.ur;
 
     if ( (pos.x >= ll.x) && (pos.x <= ur.x) && (pos.y >= ll.y) && (pos.y <= ur.y) )
     {
         return true;
     }
     return false;
-}
-
-function selectPoints()
-{
-    var currentMouse = {};
-    var mouseDownCorrected = {};
-    var mouseUpCoords = {};
-    var xypos;
-    var nSelectedOld = nSelected;
-
-    mouseDownCorrected.x = mouseDownCoords.x;
-    mouseDownCorrected.y = renderer.getSize().height - mouseDownCoords.y;
-
-    mouseUpCoords.x = mRelPos.x + mouseDownCorrected.x;
-    mouseUpCoords.y = -mRelPos.y + mouseDownCorrected.y;
-
-    bounds = findBounds(mouseUpCoords, mouseDownCorrected);
-
-    for ( var layer_name in layer_points )
-    {
-        if (layer_points.hasOwnProperty(layer_name))
-        {
-            var points = layer_points[layer_name].points;
-            var colors = points.geometry.getAttribute("customColor").array;
-            var positions = points.geometry.getAttribute("position").array;
-            
-            for (var i = 0; i < positions.length; i += 3)
-            {
-                var p = {};
-                p.x = positions[i];
-                p.y = positions[i + 1];
-                p.z = positions[i + 2];
-                xypos = toScreenXY(p);
-
-                if (withinBounds(xypos, bounds))
-                {
-                    //color.setRGB(0.7, 0.0, 0.0);
-                    colors[ i ]     = 1.0;
-                    colors[ i + 1 ] = 0.0;
-                    colors[ i + 2 ] = 1.0;
-
-                    points.geometry.attributes.customColor.needsUpdate = true;
-                    nSelected += 1;
-
-                    if (layerSelected === "" )
-                    {
-                        layerSelected = layer_name;
-                    }
-                }
-            }
-            if (nSelected != nSelectedOld)
-            {
-                $("#infoselected").html( nSelected.toString() + " selected" );
-            }
-        }
-    }
-}
-
-function selectionBox()
-{
-    var objectBoundsLL = toObjectCoordinates(bounds.lower_left);
-    var objectBoundsUR = toObjectCoordinates(bounds.upper_right);
-    var xLength = objectBoundsUR.x - objectBoundsLL.x;
-    var yLength = objectBoundsUR.y - objectBoundsLL.y;
-    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
-
-    var boxMaterial = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
-    var box = new THREE.Mesh( boxGeometry, boxMaterial );
-
-    var boxPosition = {
-        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
-        y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
-        z: 0.0
-    }
-
-    box.position.copy(boxPosition);
-
-    scene.add( box );
 }
 
 function getSelectedDropDown(id)
@@ -237,8 +159,8 @@ function getSelectedRadio(id)
 function makeSelectionInfo()
 {
     var selectedBBoxXYZ = {
-        "ll": toObjectCoordinates(bounds.lower_left),
-        "ur": toObjectCoordinates(bounds.upper_right) };
+        "ll": toObjectCoordinates(bounds.ll),
+        "ur": toObjectCoordinates(bounds.ur) };
 
     var selectionBox = {
         "ll": {

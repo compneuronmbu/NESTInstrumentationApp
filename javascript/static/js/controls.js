@@ -17,6 +17,9 @@ var Controls = function ( drag_objects, camera, domElement )
     var raycaster;
     var intersection = new THREE.Vector3();
     var object_selected;
+
+    var selectionBoxArray = [];
+    var boxInFocus;
     
     var curveObject;
     var curve;
@@ -63,9 +66,7 @@ var Controls = function ( drag_objects, camera, domElement )
             p.copy( curvePos.getPoint( i / (CURVE_SEGMENTS) ) );
         }
         lineObject.geometry.verticesNeedUpdate = true;
-
     }
-
 
     function onMouseDown( event )
     {
@@ -79,6 +80,29 @@ var Controls = function ( drag_objects, camera, domElement )
 
             mouseDownCoords.x = event.clientX;
             mouseDownCoords.y = event.clientY;
+
+            if ( boxInFocus !== undefined )
+            {
+            	boxInFocus.removePoints();
+
+            	/*
+            	raycaster = new THREE.Raycaster();
+
+                var rect = domElement.getBoundingClientRect();
+                var mouse = new THREE.Vector2();
+                mouse.x = ( (event.clientX - rect.left) / rect.width ) * 2 - 1;
+                mouse.y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
+
+                raycaster.setFromCamera( mouse, camera );
+                var PointIntersects = raycaster.intersectObject( resizePoints );
+
+                if ( PointIntersects.length > 0 )
+                {
+                    //object_selected = intersects[ 0 ].object;
+                }
+                */
+
+            }
 
             if ( event.shiftKey )
             {
@@ -103,29 +127,23 @@ var Controls = function ( drag_objects, camera, domElement )
             }
             else
             {
-                var sel;
                 var mouseDownCorrected = {
                     x: mouseDownCoords.x,
                     y: renderer.getSize().height - mouseDownCoords.y
                 };
-                for ( var i in selectionCollection.selections )
+
+                console.log(selectionBoxArray)
+
+                for ( var i in selectionBoxArray )
                 {
-                    sel = selectionCollection.selections[i].selection;
-                    var name = selectionCollection.selections[i].name;
-                    // Clean up lower_left/ll, upper_right/ur
-                    var selectionBounds = {
-                        ll: {
-                            x: sel.ll.x + layer_points[name].offsetts.x,
-                            y: sel.ll.y + layer_points[name].offsetts.y
-                        },
-                        ur: {
-                            x: sel.ur.x + layer_points[name].offsetts.x,
-                            y: sel.ur.y + layer_points[name].offsetts.y
-                        }
-                    }
-                    if (withinBounds( mouseDownCorrected, {lower_left: toScreenXY(selectionBounds.ll), upper_right: toScreenXY(selectionBounds.ur)} ))
+                	if (withinBounds( mouseDownCorrected, selectionBoxArray[i] ))
                     {
+                    	boxInFocus = selectionBoxArray[i];
+
+                    	// Make conectee line
                         make_connection = true;
+
+                        var selectionBounds = boxInFocus.getSelectionBounds();
 
                         curve = new THREE.CatmullRomCurve3( [
                             new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
@@ -140,7 +158,15 @@ var Controls = function ( drag_objects, camera, domElement )
                         curveObject = new THREE.Line(curveGeometry, curveMaterial);
                         scene.add(curveObject);
 
+                        console.log("curveObject:", curveObject);
+                        console.log(make_connection)
+
+                        // NB! Be aware
                         connectionTarget = selectionCollection.selections[i];
+
+                        // Make resize points
+                        boxInFocus.makeSelectionPoints();
+
                         return;
                     }
                 }
@@ -230,19 +256,36 @@ var Controls = function ( drag_objects, camera, domElement )
 
         if ( make_selection_box )
         {
-            selectPoints();
+        	var mouseDownCorrected = {
+                x: mouseDownCoords.x,
+                y: renderer.getSize().height - mouseDownCoords.y
+            };
 
-            // If we didn't click on a layer, it will cause problems further down
+            var mouseUpCoords = {
+            	x: mRelPos.x + mouseDownCorrected.x,
+	    		y: -mRelPos.y + mouseDownCorrected.y
+	    	};
+
+	    	bounds = findBounds(mouseUpCoords, mouseDownCorrected);
+
+	    	var selectionBox = new SelectionBox( bounds.ll, bounds.ur );
+	    	layerSelected = selectionBox.layerName;
+	    	selectionBoxArray.push(selectionBox);
+
+	    	// If we didn't click on a layer, it will cause problems further down
             if (layerSelected === "")
             {
               resetButtons();
               return;
             }
-            selectionBox();
+
+            selectionBox.makeBox();
+
+            // TODO: Inn i SelectionBox klasse??
             var selectionInfo = makeSelectionInfo();
             selectionCollection.selections.push(selectionInfo);
 
-            // send network specs to the server which makes the network
+            // Send network specs to the server which makes the network
             makeNetwork();
 
             // send selection
