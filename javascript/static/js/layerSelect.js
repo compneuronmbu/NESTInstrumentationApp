@@ -237,6 +237,28 @@ function getConnections()
             });
 }
 
+function runSimulation()
+{
+    // Make the network and connections before simulating
+    makeConnections();
+    $("#infoconnected").html( "Simulating ..." );
+    $.getJSON("/simulate",
+            {
+              time: "10000"
+            }).done(function(data){
+              console.log("Simulation finished");
+              $("#infoconnected").html( "Simulation finished" );
+            });
+
+    // ping the server a few times
+    for (var i = 0; i < 3; ++i)
+    {
+        $.getJSON("/ping").done(function(data){
+                  console.log("Server responded");
+                });
+    }
+}
+
 
 function addDeviceToProjections( device )
 {

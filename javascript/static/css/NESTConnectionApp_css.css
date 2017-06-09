@@ -61,6 +61,14 @@ body {
   margin-top: 10px;
 }
 
+#runSimulationButton
+{
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
+  margin-top: 10px;
+}
+
 #poissonButton
 {
   background-color: #B28080;

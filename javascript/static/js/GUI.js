@@ -63,6 +63,11 @@ class GuiButtons extends React.Component{
                                   function={makeConnections} button_id='getSelectionsButton'/>
             </div>
 
+            <div id="gui-box">
+                <SelectionsButton text='Simulate'
+                                  function={runSimulation} button_id='runSimulationButton'/>
+            </div>
+
           </div>
         );
     }
@@ -128,57 +133,6 @@ class DropDown extends React.Component {
     {
       this.setState({
         selectedOption: nextProps.items[0].value,
-        items: nextProps.items
-      })
-    }
-
-    handleOptionChange(changeEvent) {
-      if (this.state.items.length === 1)
-      {
-        this.setState({
-          selectedOption: this.state.items[this.state.items.last].value
-        });
-      } else
-      {
-        this.setState({
-          selectedOption: changeEvent.target.value
-        });
-      }
-    }
-
-    render() {
-        return (
-          <select className="dropdown" id={this.props.id} value={this.state.selectedOption} onChange={this.handleOptionChange}>
-          {this.state.items.map(function(item, i){
-            return(<option value={item.value} key={i}>{item.text}</option>)
-          })}
-          </select>
-        );
-    }
-}
-
-class DropDownProjection extends React.Component {
-    constructor(props) {
-      super(props);
-      //this.items = props.items;
-      if (props.items.length != 0)
-      {
-        this.state = { 
-          selectedOption: props.items[0].value,
-          items: props.items };
-      } else
-      {
-        this.state = { 
-          selectedOption: -1,
-          items: props.items };
-      }
-      this.handleOptionChange = this.handleOptionChange.bind(this);
-    }
-
-    componentWillReceiveProps(nextProps)  // called when recieving new Props
-    {
-      this.setState({
-        selectedOption: nextProps.items[nextProps.items.length - 1].value,
         items: nextProps.items
       })
     }
