@@ -8,11 +8,12 @@ class SelectionBox {
 	constructor( ll, ur )
 	{
 		this.layerName = "";
+		// Use screen coordinates
 		this.ll = ll;
 		this.ur = ur;
 
 		this.box;
-		this.resizePoints;
+		this.resizePoints = [];
 
 		this.selectPoints();
 	}
@@ -65,8 +66,8 @@ class SelectionBox {
 
 	makeBox()
 	{
-	    var objectBoundsLL = toObjectCoordinates(bounds.ll);
-	    var objectBoundsUR = toObjectCoordinates(bounds.ur);
+	    var objectBoundsLL = toObjectCoordinates(this.ll);
+	    var objectBoundsUR = toObjectCoordinates(this.ur);
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
 	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
@@ -83,6 +84,26 @@ class SelectionBox {
 	    this.box.position.copy(boxPosition);
 
 	    scene.add( this.box );
+	}
+
+	updateBox()
+	{
+		var objectBoundsLL = toObjectCoordinates(this.ll);
+	    var objectBoundsUR = toObjectCoordinates(this.ur);
+	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
+	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
+	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+
+	    this.box.geometry = boxGeometry;
+
+	    var boxPosition = {
+	        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
+	        y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
+	        z: 0.0
+	    }
+
+	    this.box.position.copy(boxPosition);
+
 	}
 
 	getSelectionBounds()
@@ -103,38 +124,59 @@ class SelectionBox {
 
 	makeSelectionPoints()
 	{
+		var selectionBounds = this.getSelectionBounds();
+
 		var resizeGeometry = new THREE.BufferGeometry();
         var resizePos = new Float32Array( 24 );
 
-        var selectionBounds = this.getSelectionBounds();
+        var posArray = [
+        	{x: selectionBounds.ll.x, y: selectionBounds.ll.y, z: 0.0001},
+        	{x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2, y: selectionBounds.ll.y, z: 0.0001},
+        	{x: selectionBounds.ur.x, y: selectionBounds.ll.y, z: 0.0001},
+        	{x: selectionBounds.ur.x, y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2, z: 0.0001},
+        	{x: selectionBounds.ur.x, y: selectionBounds.ur.y, z: 0.0001},
+        	{x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2, y: selectionBounds.ur.y, z: 0.0001},
+        	{x: selectionBounds.ll.x, y: selectionBounds.ur.y, z: 0.0001},
+        	{x: selectionBounds.ll.x, y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2, z: 0.0001},
+        	];
 
-        resizePos[0] = selectionBounds.ll.x;
-        resizePos[1] = selectionBounds.ll.y;
-        resizePos[3] = ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2;
-        resizePos[4] = selectionBounds.ll.y;
-        resizePos[6] = selectionBounds.ur.x;
-        resizePos[7] = selectionBounds.ll.y;
-        resizePos[9] = selectionBounds.ur.x;
-        resizePos[10] = ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2;
-        resizePos[12] = selectionBounds.ur.x;
-        resizePos[13] = selectionBounds.ur.y;
-        resizePos[15] = ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2;
-        resizePos[16] = selectionBounds.ur.y;
-        resizePos[18] = selectionBounds.ll.x;
-        resizePos[19] = selectionBounds.ur.y;
-        resizePos[21] = selectionBounds.ll.x;
-        resizePos[22] = ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2;
+        var nameArray = [
+        	'lowerLeft',
+        	'lowerMiddle',
+        	'lowerRight',
+        	'middleRight',
+        	'upperRight',
+        	'upperMiddle',
+        	'upperLeft',
+        	'middleLeft'
+        ];
 
-        resizeGeometry.addAttribute( 'position', new THREE.BufferAttribute( resizePos, 3 ) );
-		
-		var resizeMaterial = new THREE.PointsMaterial({size: 0.03, color: 0xffffff});
-		this.resizePoints = new THREE.Points( resizeGeometry, resizeMaterial );
-		scene.add(this.resizePoints);
+        for ( var i = 0; i < posArray.length; ++i )
+        {
+        	this.resizePoints.push(this.makePoint(posArray[i], nameArray[i]));
+        }
+	}
+
+	makePoint(pos, name)
+	{
+		var geometry = new THREE.CircleBufferGeometry( 0.009, 32 );
+   		var material = new THREE.MeshBasicMaterial( { color: 0xffffff,} );
+    	var point = new THREE.Mesh( geometry, material );
+    	point.name = name;
+    	point.position.copy( pos );
+
+    	scene.add(point);
+
+		return point;
 	}
 
 	removePoints()
 	{
-		scene.remove(this.resizePoints);
+		for (var i = 0; i < this.resizePoints.length ; ++i)
+		{
+			scene.remove(this.resizePoints[i]);
+		}
+		this.resizePoints = [];
 	}
 
 }

@@ -20,6 +20,7 @@ var Controls = function ( drag_objects, camera, domElement )
 
     var selectionBoxArray = [];
     var boxInFocus;
+    var resizeSideInFocus;
     
     var curveObject;
     var curve;
@@ -47,7 +48,7 @@ var Controls = function ( drag_objects, camera, domElement )
       marquee.css({width: 0, height: 0});
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
-      layerSelected = "";
+      layerSelected = "";   
       connectionTarget = undefined;
     }
 
@@ -83,9 +84,6 @@ var Controls = function ( drag_objects, camera, domElement )
 
             if ( boxInFocus !== undefined )
             {
-            	boxInFocus.removePoints();
-
-            	/*
             	raycaster = new THREE.Raycaster();
 
                 var rect = domElement.getBoundingClientRect();
@@ -94,16 +92,20 @@ var Controls = function ( drag_objects, camera, domElement )
                 mouse.y = - ( (event.clientY - rect.top) / rect.height ) * 2 + 1;
 
                 raycaster.setFromCamera( mouse, camera );
-                var PointIntersects = raycaster.intersectObject( resizePoints );
+                var pointIntersects = raycaster.intersectObjects( boxInFocus.resizePoints );
 
-                if ( PointIntersects.length > 0 )
+                if ( pointIntersects.length > 0 )
                 {
-                    //object_selected = intersects[ 0 ].object;
+                    resizeSideInFocus = pointIntersects[ 0 ].object.name;
+                    console.log("intersects", resizeSideInFocus);
+                    return;
                 }
-                */
-
+                else
+                {
+                    boxInFocus.removePoints();
+                    boxInFocus = undefined;
+                }
             }
-
             if ( event.shiftKey )
             {
                 shiftDown = true;
@@ -131,8 +133,6 @@ var Controls = function ( drag_objects, camera, domElement )
                     x: mouseDownCoords.x,
                     y: renderer.getSize().height - mouseDownCoords.y
                 };
-
-                console.log(selectionBoxArray)
 
                 for ( var i in selectionBoxArray )
                 {
@@ -221,6 +221,48 @@ var Controls = function ( drag_objects, camera, domElement )
                            top: mouseDownCoords.y + 'px'});
             }
         }
+        else if (resizeSideInFocus !== undefined)
+        {
+            /*
+            mRelPos.x = event.clientX - mouseDownCoords.x;
+            mRelPos.y = event.clientY - mouseDownCoords.y;
+
+            var mouseDownCorrected = {
+                x: mouseDownCoords.x,
+                y: renderer.getSize().height - mouseDownCoords.y
+            };
+
+            var mouseUpCoords = {
+                x: mRelPos.x + mouseDownCorrected.x,
+                y: -mRelPos.y + mouseDownCorrected.y
+            };
+
+            bounds = findBounds(mouseUpCoords, mouseDownCorrected);*/
+
+            switch ( resizeSideInFocus ) {
+                case "lowerLeft":
+                    
+                    break;
+                case "lowerMiddle":
+                    //noe
+                    break;
+                case "lowerRight":
+                    //noe
+                    break;
+                case "middleRight":
+                    boxInFocus.ur.x = event.clientX;
+                    boxInFocus.updateBox();    
+                    break;
+                case "upperRight":
+                    break;
+                case "upperMiddle":
+                    break;
+                case "upperLeft":
+                    break;
+                case "middleLeft":
+                    break;
+            }
+        }
         else if ( make_connection )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
@@ -301,6 +343,13 @@ var Controls = function ( drag_objects, camera, domElement )
                 dataType: "json"
             });
             requestAnimationFrame( render );
+        }
+        else if (resizeSideInFocus !== undefined)
+        {
+            resizeSideInFocus = undefined;
+            boxInFocus.removePoints();
+            boxInFocus.makeSelectionPoints();
+            boxInFocus.selectPoints();
         }
         else if ( make_connection )
         {
