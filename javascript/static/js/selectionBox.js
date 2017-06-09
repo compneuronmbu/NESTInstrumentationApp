@@ -12,6 +12,10 @@ class SelectionBox {
 		this.ll = ll;
 		this.ur = ur;
 
+		this.selectedNeuronType;
+		this.selectedSynModel;
+		this.selectedShape;
+
 		this.box;
 		this.resizePoints = [];
 
@@ -19,7 +23,7 @@ class SelectionBox {
 		this.currentCurveObject;
 		this.curves = [];
 
-    this.selectedPointIDs = [];
+        this.selectedPointIDs = [];
 
 		this.selectPoints();
     	this.CURVE_SEGMENTS = 100;
@@ -194,7 +198,6 @@ class SelectionBox {
 	setLineTarget( device )
 	{
 		this.curves[this.curves.length - 1].target = device;
-		console.log("curves (t):", this.curves);
 	}
 
 	updateLineStart( newPos )
@@ -264,6 +267,41 @@ class SelectionBox {
 			            y: -roomUR.y
 			        }
 			    };
+	}
+
+	getSelectionInfo()
+	{
+		var selectedBBoxXYZ = {
+		    "ll": toObjectCoordinates(this.ll),
+		    "ur": toObjectCoordinates(this.ur) 
+		};
+		var selectionBox = {
+		    "ll": {
+		        x: selectedBBoxXYZ.ll.x - layer_points[this.layerName].offsetts.x,
+		        y: -(selectedBBoxXYZ.ll.y - layer_points[this.layerName].offsetts.y),
+		        z: 0
+		    },
+		    "ur": {
+		        x: selectedBBoxXYZ.ur.x - layer_points[this.layerName].offsetts.x,
+		        y: -(selectedBBoxXYZ.ur.y - layer_points[this.layerName].offsetts.y),
+		        z: 0
+		    }
+		};
+
+		var selectedNeuronType = getSelectedDropDown("neuronType");
+		var selectedSynModel = getSelectedDropDown("synapseModel");
+		var selectedShape = getSelectedRadio("maskShape");
+
+
+		var selectionInfo = {
+		    name: this.layerName,
+		    selection: selectionBox,
+		    neuronType: selectedNeuronType,
+		    synModel: selectedSynModel,
+		    maskShape: selectedShape,
+		};
+
+		return selectionInfo;
 	}
 
 	makeSelectionPoints()

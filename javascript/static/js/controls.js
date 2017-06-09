@@ -25,7 +25,6 @@ var Controls = function ( drag_objects, camera, domElement )
     var curveObject;
     var curve;
 
-    var connectionTarget;
 
     function activate()
     {
@@ -49,7 +48,6 @@ var Controls = function ( drag_objects, camera, domElement )
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
       layerSelected = "";   
-      connectionTarget = undefined;
     }
 
 
@@ -131,8 +129,6 @@ var Controls = function ( drag_objects, camera, domElement )
                             boxInFocus.makeLine();
                         }
 
-                        // NB! Be aware
-                        connectionTarget = selectionCollection.selections[i];
 
                         // Make resize points
                         boxInFocus.makeSelectionPoints();
@@ -245,9 +241,9 @@ var Controls = function ( drag_objects, camera, domElement )
                     object_selected.position.copy( relScreenPos );
                     var deviceName = object_selected.name
                     var radius = object_selected.geometry.boundingSphere.radius;
-                    for (var i in projections[deviceName].connectees)
+                    for (var i in deviceBoxMap[deviceName])
                     {
-                        projections[deviceName].connectees[i].updateLineEnd({x: object_selected.position.x - radius, y: object_selected.position.y}, deviceName);
+                        deviceBoxMap[deviceName][i].updateLineEnd({x: object_selected.position.x - radius, y: object_selected.position.y}, deviceName);
                     }
                 }
             }
@@ -288,10 +284,11 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.makeBox();
             boxInFocus.makeSelectionPoints();
 
-            // TODO: Inn i SelectionBox klasse??
-            var selectionInfo = makeSelectionInfo();
-            selectionCollection.selections.push(selectionInfo);
+            boxInFocus.selectedNeuronType = getSelectedDropDown("neuronType");
+            boxInFocus.selectedSynModel = getSelectedDropDown("synapseModel");
+            boxInFocus.selectedShape = getSelectedRadio("maskShape");
 
+            // ############ Send points to server for GID feedback ############
             // Send network specs to the server which makes the network
             makeNetwork();
 
@@ -300,18 +297,21 @@ var Controls = function ( drag_objects, camera, domElement )
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 url: "/selector",
-                data: JSON.stringify(selectionInfo),
+                data: JSON.stringify(boxInFocus.getSelectionInfo()),
                 success: function (data) {
                     console.log(data.title);
                     console.log(data.article);
                 },
                 dataType: "json"
             });
+
+
             requestAnimationFrame( render );
         }
         else if (resizeSideInFocus !== undefined)
         {
             resizeSideInFocus = undefined;
+            // We need to exchange coordinates if the selection is being flipped
             if (boxInFocus.ll.x > boxInFocus.ur.x)
             {
                 var tmpX = boxInFocus.ur.x;
@@ -350,8 +350,7 @@ var Controls = function ( drag_objects, camera, domElement )
                 //curveObject.children = curve;
                 //intersect_target.children.push(boxInFocus);
 
-                projections[intersect_target.name].connectees.push(boxInFocus);
-                console.log("proj:", projections)
+                deviceBoxMap[intersect_target.name].push(boxInFocus);
             }
             else
             {

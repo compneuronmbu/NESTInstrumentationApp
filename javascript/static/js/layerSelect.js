@@ -15,13 +15,13 @@ var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;
-var selectionCollection = {selections: []};
 var bounds;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
 var layerNamesMade = false;
 var projections = {};
+var deviceBoxMap = {};
 
 var nSelected = 0;
 var deviceCounter = 1;
@@ -156,39 +156,9 @@ function getSelectedRadio(id)
     return $(query).val();
 }
 
-function makeSelectionInfo()
+function makeSelectionInfo(ll, ur)
 {
-    var selectedBBoxXYZ = {
-        "ll": toObjectCoordinates(bounds.ll),
-        "ur": toObjectCoordinates(bounds.ur) };
-
-    var selectionBox = {
-        "ll": {
-            x: selectedBBoxXYZ.ll.x - layer_points[layerSelected].offsetts.x,
-            y: -(selectedBBoxXYZ.ll.y - layer_points[layerSelected].offsetts.y),
-            z: 0
-        },
-        "ur": {
-            x: selectedBBoxXYZ.ur.x - layer_points[layerSelected].offsetts.x,
-            y: -(selectedBBoxXYZ.ur.y - layer_points[layerSelected].offsetts.y),
-            z: 0
-        }
-    }
-
-    selectedNeuronType = getSelectedDropDown("neuronType");
-    selectedSynModel = getSelectedDropDown("synapseModel");
-    selectedShape = getSelectedRadio("maskShape");
-
-
-    var selectionInfo = {
-        name: layerSelected,
-        selection: selectionBox,
-        neuronType: selectedNeuronType,
-        synModel: selectedSynModel,
-        maskShape: selectedShape,
-    }
-
-    return selectionInfo;
+    return;
 }
 
 
@@ -225,6 +195,21 @@ function makeConnections()
   });
 
   // TODO: create array to be sent from Box objects in projections
+  $("#infoconnected").html( "Gathering selections to be connected ..." );
+  for (device in deviceBoxMap)
+  {
+    deviceModel = device.slice(0, device.lastIndexOf("_"));
+    projections[device] = {
+        specs: {
+            model: deviceModel
+        },
+        connectees: []
+    };
+    for (i in deviceBoxMap[device])
+    {
+        projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
+    }
+  }
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
   $.ajax({
@@ -256,12 +241,13 @@ function getConnections()
 function addDeviceToProjections( device )
 {
     var deviceName = device + "_" + String(deviceCounter++);
-    projections[deviceName] = {
+    /*projections[deviceName] = {
         specs: {
             model: device
         },
         connectees: []
-    };
+    };*/
+    deviceBoxMap[deviceName] = [];
 }
 
 
