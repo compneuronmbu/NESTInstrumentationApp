@@ -223,22 +223,6 @@ var Controls = function ( drag_objects, camera, domElement )
         }
         else if (resizeSideInFocus !== undefined)
         {
-            /*
-            mRelPos.x = event.clientX - mouseDownCoords.x;
-            mRelPos.y = event.clientY - mouseDownCoords.y;
-
-            var mouseDownCorrected = {
-                x: mouseDownCoords.x,
-                y: renderer.getSize().height - mouseDownCoords.y
-            };
-
-            var mouseUpCoords = {
-                x: mRelPos.x + mouseDownCorrected.x,
-                y: -mRelPos.y + mouseDownCorrected.y
-            };
-
-            bounds = findBounds(mouseUpCoords, mouseDownCorrected);*/
-
             switch ( resizeSideInFocus ) {
                 case "lowerLeft":
                     
@@ -254,13 +238,22 @@ var Controls = function ( drag_objects, camera, domElement )
                     boxInFocus.updateBox();    
                     break;
                 case "upperRight":
+                    boxInFocus.ur.x = event.clientX;
+                    boxInFocus.ur.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox(); 
                     break;
                 case "upperMiddle":
+                    boxInFocus.ur.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox();  
                     break;
                 case "upperLeft":
+                    boxInFocus.ll.x = event.clientX;
+                    boxInFocus.ur.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox();  
                     break;
                 case "middleLeft":
-                    break;
+                    boxInFocus.ll.x = event.clientX;
+                    boxInFocus.updateBox();  
             }
         }
         else if ( make_connection )
