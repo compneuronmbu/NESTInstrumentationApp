@@ -189,8 +189,6 @@ class SelectionBox {
 		scene.add(this.currentCurveObject);
 
 		this.curves.push({curveObject: this.currentCurveObject, curve: this.currentCurve, target: ""});
-
-		console.log("curveObject:", this.currentCurveObject);
 	}
 
 	setLineTarget( device )
@@ -249,6 +247,7 @@ class SelectionBox {
     removeLine()
     {
     	scene.remove(this.currentCurveObject);
+    	this.curves.pop();
     }
 
 	getSelectionBounds()

@@ -274,9 +274,9 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    	bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-	    	var selectionBox = new SelectionBox( bounds.ll, bounds.ur );
-	    	layerSelected = selectionBox.layerName;
-	    	selectionBoxArray.push(selectionBox);
+	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur );
+	    	layerSelected = boxInFocus.layerName;
+	    	selectionBoxArray.push(boxInFocus);
 
 	    	// If we didn't click on a layer, it will cause problems further down
             if (layerSelected === "")
@@ -285,8 +285,8 @@ var Controls = function ( drag_objects, camera, domElement )
               return;
             }
 
-            selectionBox.makeBox();
-            //selectionBox.makeSelectionPoints();
+            boxInFocus.makeBox();
+            boxInFocus.makeSelectionPoints();
 
             // TODO: Inn i SelectionBox klasse??
             var selectionInfo = makeSelectionInfo();
@@ -312,6 +312,18 @@ var Controls = function ( drag_objects, camera, domElement )
         else if (resizeSideInFocus !== undefined)
         {
             resizeSideInFocus = undefined;
+            if (boxInFocus.ll.x > boxInFocus.ur.x)
+            {
+                var tmpX = boxInFocus.ur.x;
+                boxInFocus.ur.x = boxInFocus.ll.x;
+                boxInFocus.ll.x = tmpX;
+            }
+            if (boxInFocus.ll.y > boxInFocus.ur.y)
+            {
+                var tmpY = boxInFocus.ur.y;
+                boxInFocus.ur.y = boxInFocus.ll.y;
+                boxInFocus.ll.y = tmpY;
+            }
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
             boxInFocus.updateColors();
