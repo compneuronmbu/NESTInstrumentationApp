@@ -19,6 +19,8 @@ class SelectionBox {
 		this.currentCurveObject;
 		this.curves = [];
 
+    this.selectedPointIDs = [];
+
 		this.selectPoints();
     	this.CURVE_SEGMENTS = 100;
 
@@ -29,6 +31,7 @@ class SelectionBox {
 	{
 	    var xypos;
 	    var nSelectedOld = nSelected;
+	    var boundary = {ll: this.ll, ur: this.ur}
 
 	    for ( var layer_name in layer_points )
 	    {
@@ -46,8 +49,9 @@ class SelectionBox {
 	                p.z = positions[i + 2];
 	                xypos = toScreenXY(p);
 
-	                if (withinBounds(xypos, bounds))
+	                if (withinBounds(xypos, boundary))
 	                {
+	                	this.selectedPointIDs.push(i);
 	                    //color.setRGB(0.7, 0.0, 0.0);
 	                    colors[ i ]     = 1.0;
 	                    colors[ i + 1 ] = 0.0;
@@ -61,6 +65,7 @@ class SelectionBox {
 	                        this.layerName = layer_name;
 	                    }
 	                }
+
 	            }
 	            if (nSelected != nSelectedOld)
 	            {
@@ -68,6 +73,60 @@ class SelectionBox {
 	            }
 	        }
 	    }
+	}
+
+	updateColors()
+	{
+		var points = layer_points[this.layerName].points;
+		var colors = points.geometry.getAttribute("customColor").array;
+	    var positions = points.geometry.getAttribute("position").array;
+
+	    var nSelectedOld = nSelected;
+
+	    var oldPointIDs = this.selectedPointIDs;
+	    var newPoints = [];
+
+	    var colorID;
+
+        var xypos;
+        var newBounds = {ll: this.ll, ur: this.ur};
+
+	    for (var i = 0; i < oldPointIDs.length; ++i)
+        {
+        	colorID = oldPointIDs[i];
+
+        	colors[ colorID ]     = color.r;
+        	colors[ colorID + 1 ] = color.g;
+        	colors[ colorID + 2 ] = color.b;
+        	
+        	nSelected -= 1
+        }
+
+        for (var i = 0; i < positions.length; i += 3)
+        {
+            var p = { x: positions[i], y: positions[i + 1], z: positions[i + 2] };
+            xypos = toScreenXY(p);
+
+            if (withinBounds(xypos, newBounds))
+            {
+            	newPoints.push(i);
+                colors[ i ]     = 1.0;
+                colors[ i + 1 ] = 0.0;
+                colors[ i + 2 ] = 1.0;
+
+                nSelected += 1;
+            }
+
+        }
+        points.geometry.attributes.customColor.needsUpdate = true;
+
+        if (nSelected != nSelectedOld)
+        {
+            $("#infoselected").html( nSelected.toString() + " selected" );
+        }
+
+        this.selectedPointIDs = newPoints;
+
 	}
 
 	makeBox()
