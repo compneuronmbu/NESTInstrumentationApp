@@ -39,11 +39,7 @@ class SelectionBox {
 	                p.y = positions[i + 1];
 	                p.z = positions[i + 2];
 	                xypos = toScreenXY(p);
-
-	                colors[ i ]     = color.r;
-	        		colors[ i + 1 ] = color.g;
-	        		colors[ i + 2 ] = color.b;
-
+	                
 	                if (withinBounds(xypos, bounds))
 	                {
 	                    //color.setRGB(0.7, 0.0, 0.0);
@@ -58,6 +54,12 @@ class SelectionBox {
 	                    {
 	                        this.layerName = layer_name;
 	                    }
+	                }
+	                else
+	                {
+	                	colors[ i ]     = color.r;
+		        		colors[ i + 1 ] = color.g;
+		        		colors[ i + 2 ] = color.b;
 	                }
 	            }
 	            if (nSelected != nSelectedOld)
