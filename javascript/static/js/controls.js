@@ -226,6 +226,8 @@ var Controls = function ( drag_objects, camera, domElement )
                     boxInFocus.ll.x = event.clientX;
                     boxInFocus.updateBox();  
             }
+            boxInFocus.removePoints();
+            boxInFocus.makeSelectionPoints();
         }
         else if ( make_connection )
         {
