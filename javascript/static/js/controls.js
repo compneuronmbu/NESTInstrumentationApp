@@ -35,6 +35,8 @@ var Controls = function ( drag_objects, camera, domElement )
         domElement.addEventListener( 'mousedown', onMouseDown, false );
         domElement.addEventListener( 'mouseup', onMouseUp, false );
 
+        window.addEventListener( 'keyup', onKeyUp, false );
+
         window.addEventListener( 'resize', onWindowResize, false );
     }
 
@@ -320,6 +322,7 @@ var Controls = function ( drag_objects, camera, domElement )
             }
 
             selectionBox.makeBox();
+            //selectionBox.makeSelectionPoints();
 
             // TODO: Inn i SelectionBox klasse??
             var selectionInfo = makeSelectionInfo();
@@ -347,7 +350,7 @@ var Controls = function ( drag_objects, camera, domElement )
             resizeSideInFocus = undefined;
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
-            boxInFocus.selectPoints();
+            boxInFocus.updateColors();
         }
         else if ( make_connection )
         {
@@ -386,6 +389,14 @@ var Controls = function ( drag_objects, camera, domElement )
             renderer.domElement.style.cursor = 'auto';
         }
         resetButtons();
+    }
+
+    function onKeyUp( event )
+    {
+        if( event.keyCode == 46 && boxInFocus !== undefined )
+        {
+            window.alert('Delete key pressed');
+        }
     }
 
     function onWindowResize()
