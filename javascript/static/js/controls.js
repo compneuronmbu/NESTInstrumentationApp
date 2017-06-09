@@ -361,7 +361,16 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         if( event.keyCode == 46 && boxInFocus !== undefined )
         {
-            window.alert('Delete key pressed');
+            boxInFocus.removePoints();
+            boxInFocus.removeBox();
+            boxInFocus.removeLines();
+
+            var index = selectionBoxArray.indexOf(boxInFocus);
+            if ( index > -1 )
+            {
+                selectionBoxArray.splice(index, 1);
+            }
+            boxInFocus = undefined;
         }
     }
 
