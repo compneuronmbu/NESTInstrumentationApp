@@ -25,8 +25,6 @@ var Controls = function ( drag_objects, camera, domElement )
     var curveObject;
     var curve;
 
-    var CURVE_SEGMENTS = 100;
-
     var connectionTarget;
 
     function activate()
@@ -52,22 +50,6 @@ var Controls = function ( drag_objects, camera, domElement )
       connectionTarget = undefined;
     }
 
-    function updateLinePosition( lineObject, curvePos, newPos)
-    {
-        var curveVertices = lineObject.geometry.vertices;
-        curvePos.points[1].x = curvePos.points[0].x + 0.05;
-        curvePos.points[2].x = newPos.x - 0.05;
-        curvePos.points[2].y = newPos.y;
-        curvePos.points[3].x = newPos.x;
-        curvePos.points[3].y = newPos.y;
-
-        for (var i=0; i<=CURVE_SEGMENTS; ++i)
-        {
-            p = curveVertices[i];
-            p.copy( curvePos.getPoint( i / (CURVE_SEGMENTS) ) );
-        }
-        lineObject.geometry.verticesNeedUpdate = true;
-    }
 
     function onMouseDown( event )
     {
@@ -140,26 +122,12 @@ var Controls = function ( drag_objects, camera, domElement )
                     {
                     	boxInFocus = selectionBoxArray[i];
 
-                    	// Make conectee line
-                        make_connection = true;
-
-                        var selectionBounds = boxInFocus.getSelectionBounds();
-
-                        curve = new THREE.CatmullRomCurve3( [
-                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
-                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
-                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
-                            new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 )
-                        ] );
-                        curve.type = 'chordal';
-                        var curveGeometry = new THREE.Geometry();
-                        curveGeometry.vertices = curve.getPoints(CURVE_SEGMENTS);
-                        var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
-                        curveObject = new THREE.Line(curveGeometry, curveMaterial);
-                        scene.add(curveObject);
-
-                        console.log("curveObject:", curveObject);
-                        console.log(make_connection)
+                        if (boxInFocus.curveObject === undefined)
+                        {
+                            // Make conectee line
+                            make_connection = true;
+                            boxInFocus.makeLine();
+                        }
 
                         // NB! Be aware
                         connectionTarget = selectionCollection.selections[i];
@@ -264,8 +232,7 @@ var Controls = function ( drag_objects, camera, domElement )
         else if ( make_connection )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
-            var pos = curveObject.position;
-            updateLinePosition(curveObject, curve, {x: relScreenPos.x - pos.x, y: relScreenPos.y - pos.y})
+            boxInFocus.updateLineEnd({x: relScreenPos.x, y: relScreenPos.y}, "")
         }
         else if ( shiftDown )
         {
@@ -274,14 +241,11 @@ var Controls = function ( drag_objects, camera, domElement )
             if ( object_selected ) {
                 if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
                     object_selected.position.copy( relScreenPos );
-                    if (object_selected.children.length !== 0 )
+                    var deviceName = object_selected.name
+                    var radius = object_selected.geometry.boundingSphere.radius;
+                    for (var i in projections[deviceName].connectees)
                     {
-                        // Move lines
-                        for (var i in object_selected.children)
-                        {
-                            var radius = intersect_target.geometry.boundingSphere.radius;
-                            updateLinePosition(object_selected.children[i], object_selected.children[i].children, {x: object_selected.position.x - radius, y: object_selected.position.y})
-                        }
+                        projections[deviceName].connectees[i].updateLineEnd({x: object_selected.position.x - radius, y: object_selected.position.y}, deviceName);
                     }
                 }
             }
@@ -348,6 +312,7 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
             boxInFocus.selectPoints();
+            boxInFocus.updateLineStart(toObjectCoordinates({x: boxInFocus.ur.x, y: renderer.getSize().height - (boxInFocus.ll.y + boxInFocus.ur.y) / 2.0}))
         }
         else if ( make_connection )
         {
@@ -364,17 +329,18 @@ var Controls = function ( drag_objects, camera, domElement )
             {
                 intersect_target = intersects[ 0 ].object;
                 var radius = intersect_target.geometry.boundingSphere.radius;
-                updateLinePosition(curveObject, curve, {x: intersect_target.position.x - radius, y: intersect_target.position.y})
+                boxInFocus.setLineTarget(intersect_target.name);
+                boxInFocus.updateLineEnd({x: intersect_target.position.x - radius, y: intersect_target.position.y}, intersect_target.name)
 
-                curveObject.children = curve;
-                intersect_target.children.push(curveObject);
+                //curveObject.children = curve;
+                //intersect_target.children.push(boxInFocus);
 
-                // TODO: get selection from tmp var, add to device array in projection
-                projections[intersect_target.name].connectees.push(connectionTarget);
+                projections[intersect_target.name].connectees.push(boxInFocus);
+                console.log("proj:", projections)
             }
             else
             {
-                scene.remove(curveObject);
+                boxInFocus.removeLine();
             }
         }
         else if ( shiftDown )

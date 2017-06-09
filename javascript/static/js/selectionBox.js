@@ -15,7 +15,13 @@ class SelectionBox {
 		this.box;
 		this.resizePoints = [];
 
+		this.currentCurve;
+		this.currentCurveObject;
+		this.curves = [];
+
 		this.selectPoints();
+    	this.CURVE_SEGMENTS = 100;
+
 	}
 
 
@@ -105,6 +111,86 @@ class SelectionBox {
 	    this.box.position.copy(boxPosition);
 
 	}
+
+	makeLine()
+	{
+		var selectionBounds = this.getSelectionBounds();
+
+		this.currentCurve = new THREE.CatmullRomCurve3( [
+		    new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+		    new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+		    new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 ),
+		    new THREE.Vector3( selectionBounds.ur.x, (selectionBounds.ll.y + selectionBounds.ur.y)/2.0, 0.0 )
+		] );
+		this.currentCurve.type = 'chordal';
+		var curveGeometry = new THREE.Geometry();
+		curveGeometry.vertices = this.currentCurve.getPoints(this.CURVE_SEGMENTS);
+		var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
+		this.currentCurveObject = new THREE.Line(curveGeometry, curveMaterial);
+		scene.add(this.currentCurveObject);
+
+		this.curves.push({curveObject: this.currentCurveObject, curve: this.currentCurve, target: ""});
+
+		console.log("curveObject:", this.currentCurveObject);
+	}
+
+	setLineTarget( device )
+	{
+		this.curves[this.curves.length - 1].target = device;
+		console.log("curves (t):", this.curves);
+	}
+
+	updateLineStart( newPos )
+    {
+        for (i in this.curves)
+        {
+	        var curveObject = this.curves[i].curveObject;
+	        var curve = this.curves[i].curve;
+
+	        curve.points[0].x = newPos.x;
+	        curve.points[0].y = newPos.y;
+	        curve.points[1].x = curve.points[0].x + 0.05;
+	        curve.points[1].y = curve.points[0].y;
+
+	        for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
+	        {
+	            curveObject.geometry.vertices[i].copy( curve.getPoint( i / (this.CURVE_SEGMENTS) ) );
+	        }
+	        curveObject.geometry.verticesNeedUpdate = true;
+    	}
+    }
+
+    updateLineEnd( newPos, target )
+    {
+        for (i in this.curves)
+        {
+        	if (this.curves[i].target === target)
+        	{
+	        	var curveObject = this.curves[i].curveObject;
+	        	var curve = this.curves[i].curve;
+
+	        	var curveVertices = curveObject.geometry.vertices;
+	        	curve.points[1].x = curve.points[0].x + 0.05;
+	        	curve.points[2].x = newPos.x - 0.05;
+	        	curve.points[2].y = newPos.y;
+	        	curve.points[3].x = newPos.x;
+	        	curve.points[3].y = newPos.y;
+
+	        	for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
+	        	{
+	        	    var p = curveVertices[i];
+	        	    p.copy( curve.getPoint( i / (this.CURVE_SEGMENTS) ) );
+	        	}
+	        	curveObject.geometry.verticesNeedUpdate = true;
+        	}
+        }
+
+    }
+
+    removeLine()
+    {
+    	scene.remove(this.currentCurveObject);
+    }
 
 	getSelectionBounds()
 	{

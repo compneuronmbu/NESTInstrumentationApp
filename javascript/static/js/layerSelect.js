@@ -224,6 +224,7 @@ function makeConnections()
       dataType: "json"
   });
 
+  // TODO: create array to be sent from Box objects in projections
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
   $.ajax({
