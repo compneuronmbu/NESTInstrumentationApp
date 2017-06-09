@@ -372,7 +372,25 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         if( event.keyCode == 46 && boxInFocus !== undefined )
         {
-            window.alert('Delete key pressed');
+            boxInFocus.removePoints();
+            boxInFocus.removeBox();
+            boxInFocus.removeLines();
+
+            var index = selectionBoxArray.indexOf(boxInFocus);
+            if ( index > -1 )
+            {
+                selectionBoxArray.splice(index, 1);
+            }
+            for (device in deviceBoxMap)
+            {
+                index = deviceBoxMap[device].indexOf(boxInFocus);
+                if ( index > -1 )
+                {
+                    deviceBoxMap[device].splice(index, 1);
+                }
+            }
+            console.log("dbm", deviceBoxMap)
+            boxInFocus = undefined;
         }
     }
 

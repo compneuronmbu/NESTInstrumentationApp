@@ -23,7 +23,7 @@ class SelectionBox {
 		this.currentCurveObject;
 		this.curves = [];
 
-        this.selectedPointIDs = [];
+    	this.selectedPointIDs = [];
 
 		this.selectPoints();
     	this.CURVE_SEGMENTS = 100;
@@ -175,6 +175,37 @@ class SelectionBox {
 
 	}
 
+	removeBox()
+	{
+		scene.remove(this.box);
+
+		var points = layer_points[this.layerName].points;
+		var colors = points.geometry.getAttribute("customColor").array;
+
+	    var nSelectedOld = nSelected;
+
+	    var oldPointIDs = this.selectedPointIDs;
+
+	    var colorID;
+
+	    for (var i = 0; i < oldPointIDs.length; ++i)
+        {
+        	colorID = oldPointIDs[i];
+
+        	colors[ colorID ]     = color.r;
+        	colors[ colorID + 1 ] = color.g;
+        	colors[ colorID + 2 ] = color.b;
+        	
+        	nSelected -= 1
+        }
+        points.geometry.attributes.customColor.needsUpdate = true;
+
+        if (nSelected != nSelectedOld)
+        {
+            $("#infoselected").html( nSelected.toString() + " selected" );
+        }
+	}
+
 	makeLine()
 	{
 		var selectionBounds = this.getSelectionBounds();
@@ -251,6 +282,14 @@ class SelectionBox {
     {
     	scene.remove(this.currentCurveObject);
     	this.curves.pop();
+    }
+
+    removeLines()
+    {
+    	for ( var i = 0; i < this.curves.length ; ++i )
+    	{
+    		scene.remove(this.curves[i].curveObject);
+    	}
     }
 
 	getSelectionBounds()
