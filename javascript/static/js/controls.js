@@ -241,13 +241,18 @@ var Controls = function ( drag_objects, camera, domElement )
 
             switch ( resizeSideInFocus ) {
                 case "lowerLeft":
-                    
+                    boxInFocus.ll.x = event.clientX;
+                    boxInFocus.ll.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox();
                     break;
                 case "lowerMiddle":
-                    //noe
+                    boxInFocus.ll.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox();
                     break;
                 case "lowerRight":
-                    //noe
+                    boxInFocus.ur.x = event.clientX;
+                    boxInFocus.ll.y = renderer.getSize().height - event.clientY;
+                    boxInFocus.updateBox();
                     break;
                 case "middleRight":
                     boxInFocus.ur.x = event.clientX;
