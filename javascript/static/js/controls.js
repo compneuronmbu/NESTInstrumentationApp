@@ -16,11 +16,12 @@ var Controls = function ( drag_objects, camera, domElement )
     var plane;
     var raycaster;
     var intersection = new THREE.Vector3();
-    var object_selected;
 
     var selectionBoxArray = [];
     var boxInFocus;
     var resizeSideInFocus;
+    var deviceInFocus;
+    var deviceInFocusColor;
     
     var curveObject;
     var curve;
@@ -47,7 +48,7 @@ var Controls = function ( drag_objects, camera, domElement )
       marquee.css({width: 0, height: 0});
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
-      layerSelected = "";   
+      layerSelected = "";
     }
 
 
@@ -63,6 +64,8 @@ var Controls = function ( drag_objects, camera, domElement )
 
             mouseDownCoords.x = event.clientX;
             mouseDownCoords.y = event.clientY;
+
+            deviceInFocus = undefined;
 
             if ( boxInFocus !== undefined )
             {
@@ -105,8 +108,11 @@ var Controls = function ( drag_objects, camera, domElement )
 
                 if ( intersects.length > 0 )
                 {
-                    object_selected = intersects[ 0 ].object;
+                    deviceInFocus = intersects[ 0 ].object;
                     domElement.style.cursor = 'move';
+                    console.log("in focus: ", deviceInFocus);
+                    console.log("down", selectionBoxArray);
+
                 }
             }
             else
@@ -138,6 +144,7 @@ var Controls = function ( drag_objects, camera, domElement )
                 }
                 make_selection_box = true;
             }
+            console.log("down", selectionBoxArray);
         }
     }
 
@@ -234,18 +241,18 @@ var Controls = function ( drag_objects, camera, domElement )
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
             boxInFocus.updateLineEnd({x: relScreenPos.x, y: relScreenPos.y}, "")
         }
-        else if ( shiftDown )
+        else if ( deviceInFocus != undefined && mouseDown )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
 
-            if ( object_selected ) {
+            if ( deviceInFocus ) {
                 if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
-                    object_selected.position.copy( relScreenPos );
-                    var deviceName = object_selected.name
-                    var radius = object_selected.geometry.boundingSphere.radius;
+                    deviceInFocus.position.copy( relScreenPos );
+                    var deviceName = deviceInFocus.name
+                    var radius = deviceInFocus.geometry.boundingSphere.radius;
                     for (var i in deviceBoxMap[deviceName])
                     {
-                        deviceBoxMap[deviceName][i].updateLineEnd({x: object_selected.position.x - radius, y: object_selected.position.y}, deviceName);
+                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x - radius, y: deviceInFocus.position.y}, deviceName);
                     }
                 }
             }
@@ -257,10 +264,13 @@ var Controls = function ( drag_objects, camera, domElement )
         event.preventDefault();
         event.stopPropagation();
         //if (controls.shiftDown === true) return;
+        console.log("deviceInFocus", deviceInFocus);
+
 
         if ( make_selection_box )
         {
-        	var mouseDownCorrected = {
+            console.log("make selection box");
+            var mouseDownCorrected = {
                 x: mouseDownCoords.x,
                 y: renderer.getSize().height - mouseDownCoords.y
             };
@@ -274,7 +284,6 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur );
 	    	layerSelected = boxInFocus.layerName;
-	    	selectionBoxArray.push(boxInFocus);
 
 	    	// If we didn't click on a layer, it will cause problems further down
             if (layerSelected === "")
@@ -282,6 +291,8 @@ var Controls = function ( drag_objects, camera, domElement )
               resetButtons();
               return;
             }
+
+            selectionBoxArray.push(boxInFocus);
 
             boxInFocus.makeBox();
             boxInFocus.makeSelectionPoints();
@@ -312,6 +323,7 @@ var Controls = function ( drag_objects, camera, domElement )
         }
         else if (resizeSideInFocus !== undefined)
         {
+            console.log("resize in focus");
             resizeSideInFocus = undefined;
             // We need to exchange coordinates if the selection is being flipped
             if (boxInFocus.ll.x > boxInFocus.ur.x)
@@ -333,6 +345,7 @@ var Controls = function ( drag_objects, camera, domElement )
         }
         else if ( make_connection )
         {
+            console.log("make connection");
             raycaster = new THREE.Raycaster();
             var rect = domElement.getBoundingClientRect();
             var mouse = new THREE.Vector2();
@@ -359,15 +372,14 @@ var Controls = function ( drag_objects, camera, domElement )
                 boxInFocus.removeLine();
             }
         }
-        else if ( shiftDown )
+        else if ( deviceInFocus != undefined )
         {
-            if ( object_selected ) {
-                object_selected = null;
-            }
-
+            console.log("device in focus");
+            
             renderer.domElement.style.cursor = 'auto';
         }
         resetButtons();
+        console.log("up", selectionBoxArray);
     }
 
     function onKeyUp( event )
