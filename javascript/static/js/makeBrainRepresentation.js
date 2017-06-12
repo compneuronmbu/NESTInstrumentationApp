@@ -67,6 +67,21 @@ var Brain = function ( camera, scene )
 	        }
 	    }
 
+	    outlineMaterial = new THREE.ShaderMaterial( {
+	        uniforms: {},
+	        vertexShader: [
+                "void main() {",
+                "vec4 pos = modelViewMatrix * vec4( position, 1.0 );",
+                "gl_Position = projectionMatrix * pos;",
+            	"}"
+	            ].join( "\n" ),
+	        fragmentShader: [
+	            "void main(){",
+                "gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );",
+       			"}"
+	            ].join( "\n" )
+	    });
+
 	    camera.position.set( 0, -0.6*no_rows + 0.6, no_rows + 1.5 );
 
 	    makeModelNameLists();

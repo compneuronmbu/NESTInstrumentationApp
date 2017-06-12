@@ -284,11 +284,24 @@ class SelectionBox {
     	this.curves.pop();
     }
 
-    removeLines()
+    removeLines( target = "" )
     {
     	for ( var i = 0; i < this.curves.length ; ++i )
     	{
-    		scene.remove(this.curves[i].curveObject);
+    		if ( target === "")
+    		{
+    			scene.remove( this.curves[i].curveObject );
+    		} 
+    		else if (target === this.curves[i].target )
+    		{
+    			scene.remove( this.curves[i].curveObject );
+    			this.curves.splice(i, 1);
+    			break;
+    		}
+    	}
+    	if ( target === "")
+    	{
+    		this.curves = [];
     	}
     }
 
