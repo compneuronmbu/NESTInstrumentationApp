@@ -44,7 +44,7 @@ var Controls = function ( drag_objects, camera, domElement )
       make_selection_box = false;
       make_connection = false;
       marquee.fadeOut();
-      marquee.css({width: 0, height: 0});
+      marquee.css({width: 0, height: 0, borderRadius: 0});
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
       layerSelected = "";   
@@ -129,7 +129,6 @@ var Controls = function ( drag_objects, camera, domElement )
                             boxInFocus.makeLine();
                         }
 
-
                         // Make resize points
                         boxInFocus.makeSelectionPoints();
 
@@ -150,17 +149,17 @@ var Controls = function ( drag_objects, camera, domElement )
         if( make_selection_box )
         {
             marquee.fadeIn();
+
             mRelPos.x = event.clientX - mouseDownCoords.x;
             mRelPos.y = event.clientY - mouseDownCoords.y;
 
-            // square variations
-            // (0,0) origin is the TOP LEFT pixel of the canvas.
-            //
-            //  1 | 2
-            // ---.---
-            //  4 | 3
-            // there are 4 ways a square can be gestured onto the screen.  the following detects these four variations
-            // and creates/updates the CSS to draw the square on the screen
+            var selectedShape = getSelectedRadio("maskShape");
+
+            if ( selectedShape == "Ellipse" )
+            {
+                marquee.css({borderRadius: 50 + '%'});
+            }
+
             if (mRelPos.x < 0 && mRelPos.y < 0)
             {
               marquee.css({left: event.clientX + 'px',
@@ -268,7 +267,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	    		y: -mRelPos.y + mouseDownCorrected.y
 	    	};
 
-	    	bounds = findBounds(mouseUpCoords, mouseDownCorrected);
+	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
 	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur );
 	    	layerSelected = boxInFocus.layerName;
@@ -389,7 +388,6 @@ var Controls = function ( drag_objects, camera, domElement )
                     deviceBoxMap[device].splice(index, 1);
                 }
             }
-            console.log("dbm", deviceBoxMap)
             boxInFocus = undefined;
         }
     }
@@ -403,6 +401,5 @@ var Controls = function ( drag_objects, camera, domElement )
     }
 
     activate();
-
 
 };

@@ -15,7 +15,6 @@ var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;
-var bounds;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
@@ -134,10 +133,40 @@ function findBounds (pos1, pos2)
 // Takes a position and detect if it is within the boundary box defined by findBounds(..)
 function withinBounds(pos, bounds)
 {
+    if ( getSelectedRadio("maskShape") == 'Rectangle' )
+    {
+        return withinRectangleBounds(pos, bounds);
+    }
+    else
+    {
+        return withinEllipticalBounds(pos, bounds);
+    }
+
+}
+
+function withinRectangleBounds(pos, bounds)
+{
     var ll = bounds.ll;
     var ur = bounds.ur;
 
     if ( (pos.x >= ll.x) && (pos.x <= ur.x) && (pos.y >= ll.y) && (pos.y <= ur.y) )
+    {
+        return true;
+    }
+    return false;
+}
+
+function withinEllipticalBounds(pos, bounds)
+{
+    var ll = bounds.ll;
+    var ur = bounds.ur;
+
+    var x_side = (ur.x - ll.x) / 2;
+    var y_side = (ur.y - ll.y) / 2;
+
+    center = [(ur.x + ll.x) / 2.0, (ur.y + ll.y) / 2.0]
+
+    if ((Math.pow(pos.x - center[0], 2)) / (x_side * x_side) + (Math.pow(pos.y - center[1], 2)) / (y_side * y_side) <= 1)
     {
         return true;
     }

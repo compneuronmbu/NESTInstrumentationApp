@@ -69,7 +69,6 @@ class SelectionBox {
 	                        this.layerName = layer_name;
 	                    }
 	                }
-
 	            }
 	            if (nSelected != nSelectedOld)
 	            {
@@ -130,19 +129,29 @@ class SelectionBox {
         }
 
         this.selectedPointIDs = newPoints;
-
 	}
 
 	makeBox()
 	{
-	    var objectBoundsLL = toObjectCoordinates(this.ll);
+		var objectBoundsLL = toObjectCoordinates(this.ll);
 	    var objectBoundsUR = toObjectCoordinates(this.ur);
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
-	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 
-	    var boxMaterial = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
-	    this.box = new THREE.Mesh( boxGeometry, boxMaterial );
+		if ( getSelectedRadio("maskShape") == "Rectangle" )
+		{
+			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+		}
+		else if ( getSelectedRadio("maskShape") == "Ellipse" )
+		{
+			var ellipseShape = new THREE.Shape();
+			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
+			var geometry = new THREE.ShapeBufferGeometry(ellipseShape, 200);
+		}
+
+		var material = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
+
+	    this.box = new THREE.Mesh( geometry, material );
 
 	    var boxPosition = {
 	        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
@@ -151,7 +160,6 @@ class SelectionBox {
 	    }
 
 	    this.box.position.copy(boxPosition);
-
 	    scene.add( this.box );
 	}
 
@@ -161,9 +169,18 @@ class SelectionBox {
 	    var objectBoundsUR = toObjectCoordinates(this.ur);
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
-	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 
-	    this.box.geometry = boxGeometry;
+	    if ( getSelectedRadio("maskShape") == "Rectangle" )
+		{
+			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+		}
+		else if ( getSelectedRadio("maskShape") == "Ellipse" )
+		{
+			var ellipseShape = new THREE.Shape();
+			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
+			var geometry = new THREE.ShapeBufferGeometry(ellipseShape, 200);
+		}
+	    this.box.geometry = geometry;
 
 	    var boxPosition = {
 	        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
@@ -172,7 +189,6 @@ class SelectionBox {
 	    }
 
 	    this.box.position.copy(boxPosition);
-
 	}
 
 	removeBox()
@@ -275,7 +291,6 @@ class SelectionBox {
 	        	curveObject.geometry.verticesNeedUpdate = true;
         	}
         }
-
     }
 
     removeLine()
@@ -399,5 +414,4 @@ class SelectionBox {
 		}
 		this.resizePoints = [];
 	}
-
 }

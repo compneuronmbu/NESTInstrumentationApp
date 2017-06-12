@@ -33,7 +33,7 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <RadioButtons items={[{value:'Rectangle'}]}
+                <RadioButtons items={[{value:'Rectangle', symbol: "\u25FC"}, {value:'Ellipse', symbol: "\u2b2c"}]}
                               name='maskShape'/>
             </div>
 
@@ -90,7 +90,7 @@ class RadioButtons extends React.Component {
       return (
         <label key={i}>
           <input type="radio" name={this.props.name} value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
-          {item.value}<br/>
+          { item.symbol}<br/>
         </label>
       );
     }

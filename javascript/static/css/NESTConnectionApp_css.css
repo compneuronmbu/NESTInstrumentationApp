@@ -111,6 +111,7 @@ body {
   margin: 0;
   padding: 0;
   pointer-events:none;
+  border-radius: 0%;
 }
 
 .dropdown{
@@ -120,6 +121,8 @@ body {
 }
 
 .radiobutton{
-    text-align: left;
-    padding-left: 30px;
+  text-align: left;
+  padding-left: 30px;
+  font-size: 22px;
+  color: #373737;
 }
