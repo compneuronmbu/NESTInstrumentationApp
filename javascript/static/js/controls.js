@@ -118,7 +118,7 @@ var Controls = function ( drag_objects, camera, domElement )
 
                 for ( var i in selectionBoxArray )
                 {
-                	if (withinBounds( mouseDownCorrected, selectionBoxArray[i] ))
+                	if ( selectionBoxArray[i].withinBounds( mouseDownCorrected, selectionBoxArray[i] ) )
                     {
                     	boxInFocus = selectionBoxArray[i];
 
@@ -269,7 +269,7 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur );
+	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedRadio("maskShape") );
 	    	layerSelected = boxInFocus.layerName;
 	    	selectionBoxArray.push(boxInFocus);
 
