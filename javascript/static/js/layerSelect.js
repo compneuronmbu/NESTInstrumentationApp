@@ -15,7 +15,7 @@ var outlineMesh;
 
 var layer_points = {};
 
-var mouseDownCoords = { x: 0, y: 0};
+var mouseDownCoords = { x: 0, y: 0 };
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;

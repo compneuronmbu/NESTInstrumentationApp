@@ -40,7 +40,7 @@ class SelectionBox {
 	    	return;
 	    }
 
-	    var points = layer_points[this.layerName].points;
+    	var points = layer_points[this.layerName].points;
         var colors = points.geometry.getAttribute("customColor").array;
         var positions = points.geometry.getAttribute("position").array;
         
@@ -80,13 +80,25 @@ class SelectionBox {
             x: mouseDownCoords.x,
             y: renderer.getSize().height - mouseDownCoords.y
         };
-		var roomMouse = toObjectCoordinates(mouseDownCorrected);
+		var roomMouseDown = toObjectCoordinates(mouseDownCorrected);
+
+		var mouseUpCoords = {
+        	x: mRelPos.x + mouseDownCorrected.x,
+    		y: -mRelPos.y + mouseDownCorrected.y
+    	};
+		var roomMouseUp = toObjectCoordinates(mouseUpCoords);
+
 		for ( var name in layer_points )
 		{
 			if (layer_points.hasOwnProperty(name))
 	        {
 				var bbox = layer_points[name].points.geometry.boundingBox;
-				if ( (roomMouse.x >= bbox.min.x) && (roomMouse.y >= bbox.min.y) && (roomMouse.x <= bbox.max.x) && (roomMouse.y <= bbox.max.y) )
+				if ( (roomMouseDown.x >= bbox.min.x) && (roomMouseDown.y >= bbox.min.y) && (roomMouseDown.x <= bbox.max.x) && (roomMouseDown.y <= bbox.max.y) )
+				{
+					this.layerName = name;
+					break;
+				}
+				else if ( ( this.layerName === "" ) && (roomMouseUp.x >= bbox.min.x) && (roomMouseUp.y >= bbox.min.y) && (roomMouseUp.x <= bbox.max.x) && (roomMouseUp.y <= bbox.max.y) )
 				{
 					this.layerName = name;
 				}
