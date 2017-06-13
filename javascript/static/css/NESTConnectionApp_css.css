@@ -48,11 +48,6 @@ body {
   background-color: #609f9f;
 }
 
-#gui-radio-label
-{
-  font-weight: normal;
-}
-
 #getSelectionsButton
 {
   font-size: var(--selection_button_font_size);
@@ -114,15 +109,38 @@ body {
   border-radius: 0%;
 }
 
+#rectangleButton {
+  background-color: #607d8b;
+  border: 1px solid #999;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+#rectangleButton:focus {
+  outline: none;
+}
+
+#ellipticalButton {
+  background-color: #609f9f;
+  border: 0px;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+#ellipticalButton:focus {
+  outline: none;
+}
+
 .dropdown{
   font-size: 14px;
   height: 25px;
   width: 150px;
-}
-
-.radiobutton{
-  text-align: left;
-  padding-left: 30px;
-  font-size: 22px;
-  color: #373737;
 }

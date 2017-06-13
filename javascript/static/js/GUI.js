@@ -33,8 +33,8 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <RadioButtons items={[{value:'Rectangle', symbol: "\u25FC"}, {value:'Ellipse', symbol: "\u2b2c"}]}
-                              name='maskShape'/>
+                <SelectionsButton button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
+                <SelectionsButton button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
             </div>
 
             <div id="gui-box">
@@ -68,44 +68,6 @@ class GuiButtons extends React.Component{
     }
 }
 
-class RadioButtons extends React.Component {
-    constructor(props) {
-      super(props);
-      this.items = props.items;
-      this.state = {
-        selectedOption: this.items[0].value
-      };
-      // This binding is necessary to make `this` work in the callback
-      this.handleOptionChange = this.handleOptionChange.bind(this);
-      this.makeRadioButton = this.makeRadioButton.bind(this);
-    }
-
-    handleOptionChange(changeEvent) {
-      this.setState({
-        selectedOption: changeEvent.target.value
-      });
-    }
-
-    makeRadioButton(item, i) {
-      return (
-        <label key={i}>
-          <input type="radio" name={this.props.name} value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
-          { item.symbol}<br/>
-        </label>
-      );
-    }
-
-    render() {
-        return (
-          <form>
-            <div className="radiobutton">
-            {this.props.items.map(this.makeRadioButton)}
-            </div>
-          </form>
-        );
-    }
-}
-
 class DropDown extends React.Component {
     constructor(props) {
       super(props);
@@ -128,57 +90,6 @@ class DropDown extends React.Component {
     {
       this.setState({
         selectedOption: nextProps.items[0].value,
-        items: nextProps.items
-      })
-    }
-
-    handleOptionChange(changeEvent) {
-      if (this.state.items.length === 1)
-      {
-        this.setState({
-          selectedOption: this.state.items[this.state.items.last].value
-        });
-      } else
-      {
-        this.setState({
-          selectedOption: changeEvent.target.value
-        });
-      }
-    }
-
-    render() {
-        return (
-          <select className="dropdown" id={this.props.id} value={this.state.selectedOption} onChange={this.handleOptionChange}>
-          {this.state.items.map(function(item, i){
-            return(<option value={item.value} key={i}>{item.text}</option>)
-          })}
-          </select>
-        );
-    }
-}
-
-class DropDownProjection extends React.Component {
-    constructor(props) {
-      super(props);
-      //this.items = props.items;
-      if (props.items.length != 0)
-      {
-        this.state = { 
-          selectedOption: props.items[0].value,
-          items: props.items };
-      } else
-      {
-        this.state = { 
-          selectedOption: -1,
-          items: props.items };
-      }
-      this.handleOptionChange = this.handleOptionChange.bind(this);
-    }
-
-    componentWillReceiveProps(nextProps)  // called when recieving new Props
-    {
-      this.setState({
-        selectedOption: nextProps.items[nextProps.items.length - 1].value,
         items: nextProps.items
       })
     }

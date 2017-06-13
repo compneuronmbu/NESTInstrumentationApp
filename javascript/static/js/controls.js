@@ -153,7 +153,7 @@ var Controls = function ( drag_objects, camera, domElement )
             mRelPos.x = event.clientX - mouseDownCoords.x;
             mRelPos.y = event.clientY - mouseDownCoords.y;
 
-            var selectedShape = getSelectedRadio("maskShape");
+            var selectedShape = getSelectedShape();
 
             if ( selectedShape == "Ellipse" )
             {
@@ -269,7 +269,7 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedRadio("maskShape") );
+	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
 	    	layerSelected = boxInFocus.layerName;
 	    	selectionBoxArray.push(boxInFocus);
 
@@ -285,7 +285,6 @@ var Controls = function ( drag_objects, camera, domElement )
 
             boxInFocus.selectedNeuronType = getSelectedDropDown("neuronType");
             boxInFocus.selectedSynModel = getSelectedDropDown("synapseModel");
-            boxInFocus.selectedShape = getSelectedRadio("maskShape");
 
             // ############ Send points to server for GID feedback ############
             // Send network specs to the server which makes the network

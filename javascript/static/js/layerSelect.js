@@ -18,6 +18,7 @@ var modelParameters;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
+var selectedShape = "Rectangle";
 var layerNamesMade = false;
 var projections = {};
 var deviceBoxMap = {};
@@ -67,7 +68,6 @@ function init()
 
     //render();
 }
-
 
 function toScreenXY (point_pos) {
 
@@ -130,16 +130,34 @@ function findBounds (pos1, pos2)
     return ({ll: ll, ur: ur});
 }
 
+function makeRectangularShape()
+{
+    var rectangleButtoncss = $("#rectangleButton");
+    rectangleButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    var ellipticalButtoncss = $("#ellipticalButton");
+    ellipticalButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+
+    selectedShape = 'Rectangle';
+}
+function makeEllipticalShape()
+{
+    var rectangleButtoncss = $("#rectangleButton");
+    rectangleButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    var ellipticalButtoncss = $("#ellipticalButton");
+    ellipticalButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+
+    selectedShape = 'Ellipse';
+}
+
 function getSelectedDropDown(id)
 {
     var dd = document.getElementById(id);
     return dd.options[dd.selectedIndex].value;
 }
 
-function getSelectedRadio(id)
+function getSelectedShape()
 {
-    var query = 'input[name="' + id + '"]:checked';
-    return $(query).val();
+    return selectedShape;
 }
 
 function makeSelectionInfo(ll, ur)
