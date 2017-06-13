@@ -336,13 +336,14 @@ function loadFromJSON(textJSON)
         for (i in inputObj.projections[device].connectees)
         {
             var boxSpecs = inputObj.projections[device].connectees[i];
-            var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur );
+            var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
             layerSelected = boxSpecs.name;
-            selectionBoxArray.push(box);
-            box.makeBox();
             box.selectedNeuronType = boxSpecs.neuronType;
             box.selectedSynModel = boxSpecs.synModel;
             box.selectedShape = boxSpecs.maskShape;
+
+            selectionBoxArray.push(box);
+            box.makeBox();
 
             box.makeLine();
             var radius = target.geometry.boundingSphere.radius;
