@@ -356,6 +356,20 @@ class SelectionBox {
 		return selectionInfo;
 	}
 
+	getInfoForSaving()
+	{
+		var selectionInfo = {
+		    name: this.layerName,
+		    ll: this.ll,
+		    ur: this.ur,
+		    neuronType: this.selectedNeuronType,
+		    synModel: this.selectedSynModel,
+		    maskShape: this.selectedShape,
+		};
+
+		return selectionInfo;
+	}
+
 	makeSelectionPoints()
 	{
 		var selectionBounds = this.getSelectionBounds();

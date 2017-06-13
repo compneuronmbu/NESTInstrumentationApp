@@ -68,6 +68,18 @@ class GuiButtons extends React.Component{
                                   function={runSimulation} button_id='runSimulationButton'/>
             </div>
 
+            <div id="gui-box">
+                <a id="downloadAnchorElem" style={{display: "none"}}/>
+                <SelectionsButton text='Save'
+                                  function={saveSelection} button_id='saveSelectionButton'/>
+            </div>
+
+            <div id="gui-box">
+                <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
+                <SelectionsButton text='Load'
+                                  function={loadSelection} button_id='loadSelectionButton'/>
+            </div>
+
           </div>
         );
     }
@@ -188,3 +200,5 @@ var gui = ReactDOM.render(
     <GuiButtons/>,
     document.getElementById('gui_body')
 );
+
+document.getElementById('uploadAnchorElem').addEventListener('change', handleFileUpload, false);
