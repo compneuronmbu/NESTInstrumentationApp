@@ -1,8 +1,6 @@
 from __future__ import print_function
 import pprint
 import flask
-import nest
-import nest.topology as tp
 import nest_utils as nu
 
 app = flask.Flask(__name__)
@@ -26,14 +24,16 @@ def add_blog_ajax():
         # print(name)
         # print(selection)
         pp.pprint(flask.request.json)
-        printGIDs(flask.request.json)
+        gids, positions = nu.printGIDs(flask.request.json)
+        print(gids)
+        pp.pprint(positions)
+
         return name
 
 
 @app.route('/network', methods=['POST'])
 def make_network_from_ajax():
     if flask.request.method == 'POST':
-        nest.ResetKernel()
         pp = pprint.PrettyPrinter(indent=4)
         networkSpecs = flask.request.json
         layers = nu.make_network(networkSpecs)
@@ -64,17 +64,24 @@ def connect_ajax():
 @app.route('/connections', methods=['GET'])
 def get_connections_ajax():
     print("Recieved ", flask.request.args.get('input'))
+    connections = nu.get_connections()
     return flask.jsonify(
         connections=[{'pre': c[0], 'post': c[1]}
-                     for c in nest.GetConnections()])
+                     for c in connections])
 
 
-def printGIDs(selection):
-    gids = nu.get_gids(selection)
+@app.route('/simulate', methods=['GET'])
+def simulate_ajax():
+    t = flask.request.args.get('time')
+    print("Simulating for ", t, "ms")
+    nu.simulate(t)
+    return flask.jsonify(value=1)
 
-    print(gids)
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(tp.GetPosition(gids))
+
+@app.route('/ping', methods=['GET'])
+def ping_ajax():
+    print("PING!")
+    return flask.jsonify(value=1)
 
 
 if __name__ == '__main__':

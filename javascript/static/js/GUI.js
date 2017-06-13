@@ -63,6 +63,11 @@ class GuiButtons extends React.Component{
                                   function={makeConnections} button_id='getSelectionsButton'/>
             </div>
 
+            <div id="gui-box">
+                <SelectionsButton text='Simulate'
+                                  function={runSimulation} button_id='runSimulationButton'/>
+            </div>
+
           </div>
         );
     }

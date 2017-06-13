@@ -232,7 +232,7 @@ class SelectionBox {
 		this.currentCurve.type = 'chordal';
 		var curveGeometry = new THREE.Geometry();
 		curveGeometry.vertices = this.currentCurve.getPoints(this.CURVE_SEGMENTS);
-		var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 3 });
+		var curveMaterial = new THREE.LineBasicMaterial({ color: 0x809980*1.1, linewidth: 2 });
 		this.currentCurveObject = new THREE.Line(curveGeometry, curveMaterial);
 		scene.add(this.currentCurveObject);
 
@@ -296,11 +296,24 @@ class SelectionBox {
     	this.curves.pop();
     }
 
-    removeLines()
+    removeLines( target = "" )
     {
     	for ( var i = 0; i < this.curves.length ; ++i )
     	{
-    		scene.remove(this.curves[i].curveObject);
+    		if ( target === "")
+    		{
+    			scene.remove( this.curves[i].curveObject );
+    		} 
+    		else if (target === this.curves[i].target )
+    		{
+    			scene.remove( this.curves[i].curveObject );
+    			this.curves.splice(i, 1);
+    			break;
+    		}
+    	}
+    	if ( target === "")
+    	{
+    		this.curves = [];
     	}
     }
 

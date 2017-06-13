@@ -3,6 +3,7 @@ import nest.topology as tp
 
 
 def make_network(networkSpecs):
+    nest.ResetKernel()
     global layers, syn_models
     layers = {}
     syn_models = {}
@@ -95,6 +96,11 @@ def get_gids(selection_dict):
     return gids
 
 
+def printGIDs(selection):
+    gids = get_gids(selection)
+    return (gids, tp.GetPosition(gids))
+
+
 def connect(projections):
     """
     Makes connections from selections specified by the user.
@@ -112,3 +118,12 @@ def connect(projections):
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
     print(nest.GetConnections())
+
+
+def get_connections():
+    return nest.GetConnections()
+
+
+def simulate(t):
+    nest.SetKernelStatus({'print_time': True})
+    nest.Simulate(t)

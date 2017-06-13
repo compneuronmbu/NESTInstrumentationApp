@@ -9,6 +9,10 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 var container
 var camera, scene, renderer, material;
 
+var outlineScene;
+var outlineMaterial;
+var outlineMesh;
+
 var layer_points = {};
 
 var mouseDownCoords = { x: 0, y: 0};
@@ -42,6 +46,7 @@ function init()
     // CAMERA
     camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
     scene = new THREE.Scene();
+    outlineScene = new THREE.Scene();
   
     // POINTS
     color = new THREE.Color();
@@ -61,6 +66,7 @@ function init()
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( container.clientWidth, container.clientHeight );
+    renderer.autoClear = false;
 
     container.appendChild( renderer.domElement );
 
@@ -241,6 +247,28 @@ function getConnections()
             });
 }
 
+function runSimulation()
+{
+    // Make the network and connections before simulating
+    makeConnections();
+    $("#infoconnected").html( "Simulating ..." );
+    $.getJSON("/simulate",
+            {
+              time: "10000"
+            }).done(function(data){
+              console.log("Simulation finished");
+              $("#infoconnected").html( "Simulation finished" );
+            });
+
+    // ping the server a few times
+    for (var i = 0; i < 3; ++i)
+    {
+        $.getJSON("/ping").done(function(data){
+                  console.log("Server responded");
+                });
+    }
+}
+
 
 function addDeviceToProjections( device )
 {
@@ -292,8 +320,10 @@ function makeRecordingDevice( device )
 
 function render()
 {
-    renderer.render( scene, camera );
     requestAnimationFrame( render );
+
+    renderer.render( outlineScene, camera );
+    renderer.render( scene, camera );
 
     if (!layerNamesMade)
     {

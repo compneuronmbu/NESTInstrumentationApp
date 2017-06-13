@@ -16,12 +16,12 @@ var Controls = function ( drag_objects, camera, domElement )
     var plane;
     var raycaster;
     var intersection = new THREE.Vector3();
-    var object_selected;
 
     var selectionBoxArray = [];
     var boxInFocus;
     var resizeSideInFocus;
-    
+    var deviceInFocus;
+
     var curveObject;
     var curve;
 
@@ -47,7 +47,24 @@ var Controls = function ( drag_objects, camera, domElement )
       marquee.css({width: 0, height: 0, borderRadius: 0});
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
-      layerSelected = "";   
+      layerSelected = "";
+    }
+
+    function makeOutline(focusObject)
+    {
+        removeOutline();
+        outlineMesh = new THREE.Mesh( focusObject.geometry, outlineMaterial );
+        outlineMesh.material.depthWrite = false;
+        outlineMesh.quaternion = focusObject.quaternion;
+        outlineMesh.position.copy(focusObject.position);
+        var scale = new THREE.Vector3(1.1, 1.1, 1.1);
+        outlineMesh.scale.copy(scale);
+        outlineScene.add(outlineMesh);
+    }
+
+    function removeOutline()
+    {
+        outlineScene.remove(outlineMesh);
     }
 
 
@@ -63,6 +80,9 @@ var Controls = function ( drag_objects, camera, domElement )
 
             mouseDownCoords.x = event.clientX;
             mouseDownCoords.y = event.clientY;
+
+            deviceInFocus = undefined;
+            removeOutline();
 
             if ( boxInFocus !== undefined )
             {
@@ -105,8 +125,10 @@ var Controls = function ( drag_objects, camera, domElement )
 
                 if ( intersects.length > 0 )
                 {
-                    object_selected = intersects[ 0 ].object;
+                    deviceInFocus = intersects[ 0 ].object;
                     domElement.style.cursor = 'move';
+
+                    makeOutline(deviceInFocus);
                 }
             }
             else
@@ -225,24 +247,27 @@ var Controls = function ( drag_objects, camera, domElement )
                     boxInFocus.ll.x = event.clientX;
                     boxInFocus.updateBox();  
             }
+            boxInFocus.removePoints();
+            boxInFocus.makeSelectionPoints();
         }
         else if ( make_connection )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
             boxInFocus.updateLineEnd({x: relScreenPos.x, y: relScreenPos.y}, "")
         }
-        else if ( shiftDown )
+        else if ( deviceInFocus != undefined && mouseDown )
         {
             var relScreenPos = toObjectCoordinates( {x: event.clientX, y: event.clientY} );
 
-            if ( object_selected ) {
+            if ( deviceInFocus ) {
                 if ( raycaster.ray.intersectPlane( plane, intersection ) ) {
-                    object_selected.position.copy( relScreenPos );
-                    var deviceName = object_selected.name
-                    var radius = object_selected.geometry.boundingSphere.radius;
+                    deviceInFocus.position.copy( relScreenPos );
+                    makeOutline(deviceInFocus);
+                    var deviceName = deviceInFocus.name
+                    var radius = deviceInFocus.geometry.boundingSphere.radius;
                     for (var i in deviceBoxMap[deviceName])
                     {
-                        deviceBoxMap[deviceName][i].updateLineEnd({x: object_selected.position.x - radius, y: object_selected.position.y}, deviceName);
+                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x - radius, y: deviceInFocus.position.y}, deviceName);
                     }
                 }
             }
@@ -257,7 +282,8 @@ var Controls = function ( drag_objects, camera, domElement )
 
         if ( make_selection_box )
         {
-        	var mouseDownCorrected = {
+            console.log("make selection box");
+            var mouseDownCorrected = {
                 x: mouseDownCoords.x,
                 y: renderer.getSize().height - mouseDownCoords.y
             };
@@ -271,7 +297,6 @@ var Controls = function ( drag_objects, camera, domElement )
 
 	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
 	    	layerSelected = boxInFocus.layerName;
-	    	selectionBoxArray.push(boxInFocus);
 
 	    	// If we didn't click on a layer, it will cause problems further down
             if (layerSelected === "")
@@ -279,6 +304,8 @@ var Controls = function ( drag_objects, camera, domElement )
               resetButtons();
               return;
             }
+
+            selectionBoxArray.push(boxInFocus);
 
             boxInFocus.makeBox();
             boxInFocus.makeSelectionPoints();
@@ -329,6 +356,7 @@ var Controls = function ( drag_objects, camera, domElement )
         }
         else if ( make_connection )
         {
+            console.log("make connection");
             raycaster = new THREE.Raycaster();
             var rect = domElement.getBoundingClientRect();
             var mouse = new THREE.Vector2();
@@ -355,12 +383,9 @@ var Controls = function ( drag_objects, camera, domElement )
                 boxInFocus.removeLine();
             }
         }
-        else if ( shiftDown )
+        else if ( deviceInFocus != undefined )
         {
-            if ( object_selected ) {
-                object_selected = null;
-            }
-
+            
             renderer.domElement.style.cursor = 'auto';
         }
         resetButtons();
@@ -368,26 +393,50 @@ var Controls = function ( drag_objects, camera, domElement )
 
     function onKeyUp( event )
     {
-        if( event.keyCode == 46 && boxInFocus !== undefined )
+        if( event.keyCode == 46)
         {
-            boxInFocus.removePoints();
-            boxInFocus.removeBox();
-            boxInFocus.removeLines();
+            if (boxInFocus !== undefined)
+            {
+                boxInFocus.removePoints();
+                boxInFocus.removeBox();
+                boxInFocus.removeLines();
 
-            var index = selectionBoxArray.indexOf(boxInFocus);
-            if ( index > -1 )
-            {
-                selectionBoxArray.splice(index, 1);
-            }
-            for (device in deviceBoxMap)
-            {
-                index = deviceBoxMap[device].indexOf(boxInFocus);
+                var index = selectionBoxArray.indexOf(boxInFocus);
                 if ( index > -1 )
                 {
-                    deviceBoxMap[device].splice(index, 1);
+                    selectionBoxArray.splice(index, 1);
                 }
+                for (device in deviceBoxMap)
+                {
+                    index = deviceBoxMap[device].indexOf(boxInFocus);
+                    if ( index > -1 )
+                    {
+                        deviceBoxMap[device].splice(index, 1);
+                    }
+                }
+                console.log("dbm", deviceBoxMap)
+                boxInFocus = undefined;
             }
-            boxInFocus = undefined;
+            else if (deviceInFocus != undefined)
+            {
+                // remove connection lines
+                var deviceName = deviceInFocus.name;
+                for (var i in deviceBoxMap[deviceName])
+                {
+                    deviceBoxMap[deviceName][i].removeLines( deviceName );
+                }
+                removeOutline()
+                for (i in circle_objects)
+                {
+                    if (circle_objects[i].name === deviceName)
+                    {
+                        scene.remove(circle_objects[i]);
+                        circle_objects.splice(i, 1);
+                    }
+                }
+                delete deviceBoxMap[deviceName];
+                deviceInFocus = undefined;
+            }
         }
     }
 
@@ -397,6 +446,7 @@ var Controls = function ( drag_objects, camera, domElement )
         camera.updateProjectionMatrix();
 
         renderer.setSize( container.clientWidth, container.clientHeight );
+
     }
 
     activate();
