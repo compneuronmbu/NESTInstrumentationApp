@@ -48,22 +48,6 @@ body {
   background-color: #609f9f;
 }
 
-#getSelectionsButton
-{
-  font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
-  width: var(--selection_button_width);
-  margin-top: 10px;
-}
-
-#runSimulationButton
-{
-  font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
-  width: var(--selection_button_width);
-  margin-top: 10px;
-}
-
 #poissonButton
 {
   background-color: #B28080;
@@ -149,4 +133,11 @@ body {
   font-size: 14px;
   height: 25px;
   width: 150px;
+}
+
+.selectionsButton{
+  font-size: var(--selection_button_font_size);
+  height: var(--selection_button_heigt);
+  width: var(--selection_button_width);
+  margin-top: 10px;
 }

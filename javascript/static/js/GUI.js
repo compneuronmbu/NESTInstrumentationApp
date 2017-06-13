@@ -61,11 +61,17 @@ class GuiButtons extends React.Component{
             <div id="gui-box">
                 <SelectionsButton text='Connect'
                                   function={makeConnections} button_id='getSelectionsButton'/>
+                <SelectionsButton text='Simulate'
+                                  function={runSimulation} button_id='runSimulationButton'/>
             </div>
 
             <div id="gui-box">
-                <SelectionsButton text='Simulate'
-                                  function={runSimulation} button_id='runSimulationButton'/>
+                <a id="downloadAnchorElem" style={{display: "none"}}/>
+                <SelectionsButton text='Save'
+                                  function={saveSelection} button_id='saveSelectionButton'/>
+                <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
+                <SelectionsButton text='Load'
+                                  function={loadSelection} button_id='loadSelectionButton'/>
             </div>
 
           </div>
@@ -139,7 +145,7 @@ class SelectionsButton extends React.Component {
 
   render() {
     return ( 
-      <button id={this.props.button_id} onClick={this.handleClicked}>
+      <button className="selectionsButton" id={this.props.button_id} onClick={this.handleClicked}>
         {this.props.text}
       </button>
     );
@@ -150,3 +156,5 @@ var gui = ReactDOM.render(
     <GuiButtons/>,
     document.getElementById('gui_body')
 );
+
+document.getElementById('uploadAnchorElem').addEventListener('change', handleFileUpload, false);

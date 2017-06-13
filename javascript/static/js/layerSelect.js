@@ -13,6 +13,8 @@ var outlineScene;
 var outlineMaterial;
 var outlineMesh;
 
+var controls;
+
 var layer_points = {};
 
 var mouseDownCoords = { x: 0, y: 0};
@@ -24,7 +26,7 @@ var neuronModels = ['All'];
 var synModels = [];
 var selectedShape = "Rectangle";
 var layerNamesMade = false;
-var projections = {};
+var selectionBoxArray = [];
 var deviceBoxMap = {};
 
 var nSelected = 0;
@@ -70,7 +72,9 @@ function init()
 
     container.appendChild( renderer.domElement );
 
-    Controls( circle_objects, camera, renderer.domElement );
+    controls = new Controls( circle_objects, camera, renderer.domElement );
+    console.log("CONTROLS", controls);
+
 
     //render();
 }
@@ -204,7 +208,8 @@ function makeConnections()
       dataType: "json"
   });
 
-  // TODO: create array to be sent from Box objects in projections
+  // create object to be sent
+  var projections = {};
   $("#infoconnected").html( "Gathering selections to be connected ..." );
   for (device in deviceBoxMap)
   {
@@ -220,6 +225,7 @@ function makeConnections()
         projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
     }
   }
+
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
   $.ajax({
@@ -270,6 +276,98 @@ function runSimulation()
 }
 
 
+function saveSelection()
+{
+    console.log("##################");
+    console.log("    Selections");
+    console.log("##################");
+    console.log("deviceBoxMap", deviceBoxMap);
+    console.log("circle_objects", circle_objects);
+    console.log("##################");
+
+    // create object to be saved
+    var projections = {};
+    for (device in deviceBoxMap)
+    {
+      deviceModel = device.slice(0, device.lastIndexOf("_"));
+      projections[device] = {
+          specs: {
+              model: deviceModel
+          },
+          connectees: []
+      };
+      for (i in deviceBoxMap[device])
+      {
+          projections[device].connectees.push(deviceBoxMap[device][i].getInfoForSaving())
+      }
+    }
+    console.log("projections", projections);
+
+    dlObject = {projections: projections};
+    jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dlObject));
+    var dlAnchorElem = document.getElementById('downloadAnchorElem');
+    dlAnchorElem.setAttribute("href", jsonStr);
+    dlAnchorElem.setAttribute("download", "connectionData.json");
+    dlAnchorElem.click();
+}
+
+function loadSelection()
+{
+    document.getElementById('uploadAnchorElem').click();
+}
+
+function loadFromJSON(textJSON)
+{
+    var inputObj = JSON.parse( textJSON );
+    for (device in inputObj.projections)
+    {
+        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        if (deviceModel === "poisson_generator")
+        {
+            makeStimulationDevice( deviceModel );
+        }
+        else
+        {
+            makeRecordingDevice( deviceModel );
+        }
+
+        var target = circle_objects[circle_objects.length - 1];
+
+        for (i in inputObj.projections[device].connectees)
+        {
+            var boxSpecs = inputObj.projections[device].connectees[i];
+            var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+            layerSelected = boxSpecs.name;
+            box.selectedNeuronType = boxSpecs.neuronType;
+            box.selectedSynModel = boxSpecs.synModel;
+            box.selectedShape = boxSpecs.maskShape;
+
+            selectionBoxArray.push(box);
+            box.makeBox();
+
+            box.makeLine();
+            var radius = target.geometry.boundingSphere.radius;
+            box.setLineTarget(target.name);
+            box.updateLineEnd({x: target.position.x - radius, y: target.position.y}, target.name)
+
+            deviceBoxMap[device].push(box);
+        }
+    }
+}
+
+function handleFileUpload( event )
+{
+    console.log("file uploaded")
+    // TODO: need some checks here
+    fr = new FileReader();
+    var result;
+    fr.onload = function (e) {
+        loadFromJSON(fr.result);
+    };
+    fr.readAsText(event.target.files[0]);
+}
+
+
 function addDeviceToProjections( device )
 {
     var deviceName = device + "_" + String(deviceCounter++);
@@ -287,6 +385,7 @@ function makeStimulationDevice( device )
     console.log("making stimulation device of type", device)
     var col = 0xB28080
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    geometry.computeBoundingSphere(); // needed for loading
     var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
     var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
     var circle = new THREE.Mesh( geometry, material );
@@ -303,6 +402,7 @@ function makeRecordingDevice( device )
     console.log("making recording device of type", device)
     var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    geometry.computeBoundingSphere(); // needed for loading
     var map = new THREE.TextureLoader().load( "static/js/textures/multimeter_white.png" );
     var material = new THREE.MeshBasicMaterial( { color: col, map: map } );
     var circle = new THREE.Mesh( geometry, material );
