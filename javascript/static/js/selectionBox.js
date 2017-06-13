@@ -32,9 +32,13 @@ class SelectionBox {
 	selectPoints()
 	{
 	    var xypos;
-	    var nSelectedOld = nSelected;
+	    var count = 0;
 
 	    this.getLayerName();
+	    if ( this.layerName === "" )
+	    {
+	    	return;
+	    }
 
 	    var points = layer_points[this.layerName].points;
         var colors = points.geometry.getAttribute("customColor").array;
@@ -51,17 +55,21 @@ class SelectionBox {
             if ( this.withinBounds(xypos) )
             {
             	this.selectedPointIDs.push(i);
-                //color.setRGB(0.7, 0.0, 0.0);
                 colors[ i ]     = 1.0;
                 colors[ i + 1 ] = 0.0;
                 colors[ i + 2 ] = 1.0;
 
                 points.geometry.attributes.customColor.needsUpdate = true;
-                nSelected += 1;
+                count += 1;
             }
         }
-        if (nSelected != nSelectedOld)
+        if ( !count )
         {
+        	this.layerName = "";
+        }
+        else
+        {
+        	nSelected += count;
             $("#infoselected").html( nSelected.toString() + " selected" );
         }
 	}

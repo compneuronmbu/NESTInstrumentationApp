@@ -329,7 +329,6 @@ var Controls = function ( drag_objects, camera, domElement )
                 dataType: "json"
             });
 
-
             requestAnimationFrame( render );
         }
         else if (resizeSideInFocus !== undefined)
