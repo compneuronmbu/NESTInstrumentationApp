@@ -61,9 +61,6 @@ class GuiButtons extends React.Component{
             <div id="gui-box">
                 <SelectionsButton text='Connect'
                                   function={makeConnections} button_id='getSelectionsButton'/>
-            </div>
-
-            <div id="gui-box">
                 <SelectionsButton text='Simulate'
                                   function={runSimulation} button_id='runSimulationButton'/>
             </div>
@@ -72,9 +69,6 @@ class GuiButtons extends React.Component{
                 <a id="downloadAnchorElem" style={{display: "none"}}/>
                 <SelectionsButton text='Save'
                                   function={saveSelection} button_id='saveSelectionButton'/>
-            </div>
-
-            <div id="gui-box">
                 <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                 <SelectionsButton text='Load'
                                   function={loadSelection} button_id='loadSelectionButton'/>
@@ -189,7 +183,7 @@ class SelectionsButton extends React.Component {
 
   render() {
     return ( 
-      <button id={this.props.button_id} onClick={this.handleClicked}>
+      <button className="selectionsButton" id={this.props.button_id} onClick={this.handleClicked}>
         {this.props.text}
       </button>
     );
