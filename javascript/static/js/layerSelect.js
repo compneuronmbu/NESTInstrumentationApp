@@ -322,6 +322,7 @@ function render()
 {
     requestAnimationFrame( render );
 
+    renderer.clear();
     renderer.render( outlineScene, camera );
     renderer.render( scene, camera );
 
