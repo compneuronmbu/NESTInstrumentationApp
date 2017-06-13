@@ -13,8 +13,6 @@ var outlineScene;
 var outlineMaterial;
 var outlineMesh;
 
-var controls;
-
 var layer_points = {};
 
 var mouseDownCoords = { x: 0, y: 0};
@@ -72,9 +70,7 @@ function init()
 
     container.appendChild( renderer.domElement );
 
-    controls = new Controls( circle_objects, camera, renderer.domElement );
-    console.log("CONTROLS", controls);
-
+    Controls( circle_objects, camera, renderer.domElement );
 
     //render();
 }
