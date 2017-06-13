@@ -70,7 +70,6 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
-  margin-top: 10px;
 }
 
 #voltmeterButton
@@ -79,7 +78,6 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
-  margin-top: 10px;
 }
 
 #spikeDetectorButton
@@ -88,7 +86,7 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
-  margin-top: 10px;
+  margin-top: 7px;
 }
 
 #info {

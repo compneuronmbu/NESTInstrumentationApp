@@ -282,7 +282,6 @@ function addDeviceToProjections( device )
     deviceBoxMap[deviceName] = [];
 }
 
-
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
@@ -296,8 +295,6 @@ function makeStimulationDevice( device )
     scene.add( circle );
     circle_objects.push( circle );
 
-    //gui.addDevice( device );
-    //addDeviceToSelection( device );
     addDeviceToProjections( device );
 }
 
@@ -315,7 +312,6 @@ function makeRecordingDevice( device )
     circle_objects.push( circle );
 
     addDeviceToProjections( device );
-
 }
 
 function render()

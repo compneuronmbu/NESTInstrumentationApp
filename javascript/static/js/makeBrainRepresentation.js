@@ -77,7 +77,7 @@ var Brain = function ( camera, scene )
 	            ].join( "\n" ),
 	        fragmentShader: [
 	            "void main(){",
-                "gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );",
+                "gl_FragColor = vec4( 0.80, 0.80, 0.80, 1.0 );",
        			"}"
 	            ].join( "\n" )
 	    });

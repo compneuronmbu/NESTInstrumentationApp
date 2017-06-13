@@ -25,6 +25,8 @@ var Controls = function ( drag_objects, camera, domElement )
     var curveObject;
     var curve;
 
+    var outlineMesh;
+
 
     function activate()
     {
@@ -57,7 +59,7 @@ var Controls = function ( drag_objects, camera, domElement )
         outlineMesh.material.depthWrite = false;
         outlineMesh.quaternion = focusObject.quaternion;
         outlineMesh.position.copy(focusObject.position);
-        var scale = new THREE.Vector3(1.1, 1.1, 1.1);
+        var scale = new THREE.Vector3(1.08, 1.08, 1.08);
         outlineMesh.scale.copy(scale);
         outlineScene.add(outlineMesh);
     }
@@ -66,7 +68,6 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         outlineScene.remove(outlineMesh);
     }
-
 
     function onMouseDown( event )
     {

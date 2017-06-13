@@ -406,7 +406,7 @@ class SelectionBox {
 	makePoint(pos, name)
 	{
 		var geometry = new THREE.CircleBufferGeometry( 0.009, 32 );
-   		var material = new THREE.MeshBasicMaterial( { color: 0xffffff,} );
+   		var material = new THREE.MeshBasicMaterial( { color: 0xcccccc} );
     	var point = new THREE.Mesh( geometry, material );
     	point.name = name;
     	point.position.copy( pos );
