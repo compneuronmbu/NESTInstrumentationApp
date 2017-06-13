@@ -27,7 +27,6 @@ class SelectionBox {
 
 		this.selectPoints();
     	this.CURVE_SEGMENTS = 100;
-
 	}
 
 	selectPoints()
@@ -35,45 +34,56 @@ class SelectionBox {
 	    var xypos;
 	    var nSelectedOld = nSelected;
 
-	    for ( var layer_name in layer_points )
-	    {
-	        if (layer_points.hasOwnProperty(layer_name))
+	    this.getLayerName();
+
+	    var points = layer_points[this.layerName].points;
+        var colors = points.geometry.getAttribute("customColor").array;
+        var positions = points.geometry.getAttribute("position").array;
+        
+        for (var i = 0; i < positions.length; i += 3)
+        {
+            var p = {};
+            p.x = positions[i];
+            p.y = positions[i + 1];
+            p.z = positions[i + 2];
+            xypos = toScreenXY(p);
+
+            if ( this.withinBounds(xypos) )
+            {
+            	this.selectedPointIDs.push(i);
+                //color.setRGB(0.7, 0.0, 0.0);
+                colors[ i ]     = 1.0;
+                colors[ i + 1 ] = 0.0;
+                colors[ i + 2 ] = 1.0;
+
+                points.geometry.attributes.customColor.needsUpdate = true;
+                nSelected += 1;
+            }
+        }
+        if (nSelected != nSelectedOld)
+        {
+            $("#infoselected").html( nSelected.toString() + " selected" );
+        }
+	}
+
+	getLayerName()
+	{
+		var mouseDownCorrected = {
+            x: mouseDownCoords.x,
+            y: renderer.getSize().height - mouseDownCoords.y
+        };
+		var roomMouse = toObjectCoordinates(mouseDownCorrected);
+		for ( var name in layer_points )
+		{
+			if (layer_points.hasOwnProperty(name))
 	        {
-	            var points = layer_points[layer_name].points;
-	            var colors = points.geometry.getAttribute("customColor").array;
-	            var positions = points.geometry.getAttribute("position").array;
-	            
-	            for (var i = 0; i < positions.length; i += 3)
-	            {
-	                var p = {};
-	                p.x = positions[i];
-	                p.y = positions[i + 1];
-	                p.z = positions[i + 2];
-	                xypos = toScreenXY(p);
-
-	                if ( this.withinBounds(xypos) )
-	                {
-	                	this.selectedPointIDs.push(i);
-	                    //color.setRGB(0.7, 0.0, 0.0);
-	                    colors[ i ]     = 1.0;
-	                    colors[ i + 1 ] = 0.0;
-	                    colors[ i + 2 ] = 1.0;
-
-	                    points.geometry.attributes.customColor.needsUpdate = true;
-	                    nSelected += 1;
-
-	                    if ( this.layerName === "" )
-	                    {
-	                        this.layerName = layer_name;
-	                    }
-	                }
-	            }
-	            if (nSelected != nSelectedOld)
-	            {
-	                $("#infoselected").html( nSelected.toString() + " selected" );
-	            }
-	        }
-	    }
+				var bbox = layer_points[name].points.geometry.boundingBox;
+				if ( (roomMouse.x >= bbox.min.x) && (roomMouse.y >= bbox.min.y) && (roomMouse.x <= bbox.max.x) && (roomMouse.y <= bbox.max.y) )
+				{
+					this.layerName = name;
+				}
+			}
+		}
 	}
 
 	updateColors()

@@ -115,7 +115,7 @@ var Brain = function ( camera, scene )
 	    geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
 	    geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
 
-
+	    geometry.computeBoundingBox();
 	    geometry.computeBoundingSphere();
 
 	    var texture = new THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
