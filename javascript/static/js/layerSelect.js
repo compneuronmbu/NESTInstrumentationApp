@@ -21,10 +21,10 @@ var mouseDownCoords = { x: 0, y: 0};
 var mRelPos = { x: 0, y: 0 };
 
 var modelParameters;
-var bounds;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
+var selectedShape = "Rectangle";
 var layerNamesMade = false;
 var selectionBoxArray = [];
 var deviceBoxMap = {};
@@ -78,7 +78,6 @@ function init()
 
     //render();
 }
-
 
 function toScreenXY (point_pos) {
 
@@ -141,17 +140,23 @@ function findBounds (pos1, pos2)
     return ({ll: ll, ur: ur});
 }
 
-// Takes a position and detect if it is within the boundary box defined by findBounds(..)
-function withinBounds(pos, bounds)
+function makeRectangularShape()
 {
-    var ll = bounds.ll;
-    var ur = bounds.ur;
+    var rectangleButtoncss = $("#rectangleButton");
+    rectangleButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    var ellipticalButtoncss = $("#ellipticalButton");
+    ellipticalButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
 
-    if ( (pos.x >= ll.x) && (pos.x <= ur.x) && (pos.y >= ll.y) && (pos.y <= ur.y) )
-    {
-        return true;
-    }
-    return false;
+    selectedShape = 'Rectangle';
+}
+function makeEllipticalShape()
+{
+    var rectangleButtoncss = $("#rectangleButton");
+    rectangleButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    var ellipticalButtoncss = $("#ellipticalButton");
+    ellipticalButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+
+    selectedShape = 'Ellipse';
 }
 
 function getSelectedDropDown(id)
@@ -160,10 +165,9 @@ function getSelectedDropDown(id)
     return dd.options[dd.selectedIndex].value;
 }
 
-function getSelectedRadio(id)
+function getSelectedShape()
 {
-    var query = 'input[name="' + id + '"]:checked';
-    return $(query).val();
+    return selectedShape;
 }
 
 function makeSelectionInfo(ll, ur)
@@ -375,7 +379,6 @@ function addDeviceToProjections( device )
     deviceBoxMap[deviceName] = [];
 }
 
-
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
@@ -390,8 +393,6 @@ function makeStimulationDevice( device )
     scene.add( circle );
     circle_objects.push( circle );
 
-    //gui.addDevice( device );
-    //addDeviceToSelection( device );
     addDeviceToProjections( device );
 }
 
@@ -410,13 +411,13 @@ function makeRecordingDevice( device )
     circle_objects.push( circle );
 
     addDeviceToProjections( device );
-
 }
 
 function render()
 {
     requestAnimationFrame( render );
 
+    renderer.clear();
     renderer.render( outlineScene, camera );
     renderer.render( scene, camera );
 

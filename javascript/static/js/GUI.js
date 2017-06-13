@@ -33,8 +33,8 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <RadioButtons items={[{value:'Rectangle'}]}
-                              name='maskShape'/>
+                <SelectionsButton button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
+                <SelectionsButton button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
             </div>
 
             <div id="gui-box">
@@ -75,44 +75,6 @@ class GuiButtons extends React.Component{
             </div>
 
           </div>
-        );
-    }
-}
-
-class RadioButtons extends React.Component {
-    constructor(props) {
-      super(props);
-      this.items = props.items;
-      this.state = {
-        selectedOption: this.items[0].value
-      };
-      // This binding is necessary to make `this` work in the callback
-      this.handleOptionChange = this.handleOptionChange.bind(this);
-      this.makeRadioButton = this.makeRadioButton.bind(this);
-    }
-
-    handleOptionChange(changeEvent) {
-      this.setState({
-        selectedOption: changeEvent.target.value
-      });
-    }
-
-    makeRadioButton(item, i) {
-      return (
-        <label key={i}>
-          <input type="radio" name={this.props.name} value={item.value} checked={this.state.selectedOption === item.value} onChange={this.handleOptionChange} />
-          {item.value}<br/>
-        </label>
-      );
-    }
-
-    render() {
-        return (
-          <form>
-            <div className="radiobutton">
-            {this.props.items.map(this.makeRadioButton)}
-            </div>
-          </form>
         );
     }
 }

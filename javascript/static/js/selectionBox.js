@@ -5,16 +5,16 @@
 */
 
 class SelectionBox {
-	constructor( ll, ur )
+	constructor( ll, ur, shape )
 	{
 		this.layerName = "";
-		// Use screen coordinates
+		// ll and ur use screen coordinates
 		this.ll = ll;
 		this.ur = ur;
 
 		this.selectedNeuronType;
 		this.selectedSynModel;
-		this.selectedShape;
+		this.selectedShape = shape;
 
 		this.box;
 		this.resizePoints = [];
@@ -30,12 +30,10 @@ class SelectionBox {
 
 	}
 
-
 	selectPoints()
 	{
 	    var xypos;
 	    var nSelectedOld = nSelected;
-	    var boundary = {ll: this.ll, ur: this.ur}
 
 	    for ( var layer_name in layer_points )
 	    {
@@ -53,7 +51,7 @@ class SelectionBox {
 	                p.z = positions[i + 2];
 	                xypos = toScreenXY(p);
 
-	                if (withinBounds(xypos, boundary))
+	                if ( this.withinBounds(xypos) )
 	                {
 	                	this.selectedPointIDs.push(i);
 	                    //color.setRGB(0.7, 0.0, 0.0);
@@ -69,7 +67,6 @@ class SelectionBox {
 	                        this.layerName = layer_name;
 	                    }
 	                }
-
 	            }
 	            if (nSelected != nSelectedOld)
 	            {
@@ -93,7 +90,6 @@ class SelectionBox {
 	    var colorID;
 
         var xypos;
-        var newBounds = {ll: this.ll, ur: this.ur};
 
 	    for (var i = 0; i < oldPointIDs.length; ++i)
         {
@@ -111,7 +107,7 @@ class SelectionBox {
             var p = { x: positions[i], y: positions[i + 1], z: positions[i + 2] };
             xypos = toScreenXY(p);
 
-            if (withinBounds(xypos, newBounds))
+            if ( this.withinBounds(xypos) )
             {
             	newPoints.push(i);
                 colors[ i ]     = 1.0;
@@ -130,19 +126,29 @@ class SelectionBox {
         }
 
         this.selectedPointIDs = newPoints;
-
 	}
 
 	makeBox()
 	{
-	    var objectBoundsLL = toObjectCoordinates(this.ll);
+		var objectBoundsLL = toObjectCoordinates(this.ll);
 	    var objectBoundsUR = toObjectCoordinates(this.ur);
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
-	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 
-	    var boxMaterial = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
-	    this.box = new THREE.Mesh( boxGeometry, boxMaterial );
+		if ( this.selectedShape == "Rectangle" )
+		{
+			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+		}
+		else if ( this.selectedShape == "Ellipse" )
+		{
+			var ellipseShape = new THREE.Shape();
+			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
+			var geometry = new THREE.ShapeBufferGeometry(ellipseShape, 200);
+		}
+
+		var material = new THREE.MeshBasicMaterial( {color: 0xFF00FF, transparent: true, opacity: 0.2} );
+
+	    this.box = new THREE.Mesh( geometry, material );
 
 	    var boxPosition = {
 	        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
@@ -151,7 +157,6 @@ class SelectionBox {
 	    }
 
 	    this.box.position.copy(boxPosition);
-
 	    scene.add( this.box );
 	}
 
@@ -161,9 +166,18 @@ class SelectionBox {
 	    var objectBoundsUR = toObjectCoordinates(this.ur);
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
-	    var boxGeometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 
-	    this.box.geometry = boxGeometry;
+	    if ( this.selectedShape == "Rectangle" )
+		{
+			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+		}
+		else if ( this.selectedShape == "Ellipse" )
+		{
+			var ellipseShape = new THREE.Shape();
+			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
+			var geometry = new THREE.ShapeBufferGeometry(ellipseShape, 200);
+		}
+	    this.box.geometry = geometry;
 
 	    var boxPosition = {
 	        x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
@@ -172,7 +186,6 @@ class SelectionBox {
 	    }
 
 	    this.box.position.copy(boxPosition);
-
 	}
 
 	removeBox()
@@ -275,7 +288,6 @@ class SelectionBox {
 	        	curveObject.geometry.verticesNeedUpdate = true;
         	}
         }
-
     }
 
     removeLine()
@@ -342,7 +354,7 @@ class SelectionBox {
 
 		var selectedNeuronType = getSelectedDropDown("neuronType");
 		var selectedSynModel = getSelectedDropDown("synapseModel");
-		var selectedShape = getSelectedRadio("maskShape");
+		var selectedShape = this.selectedShape;
 
 
 		var selectionInfo = {
@@ -408,7 +420,7 @@ class SelectionBox {
 	makePoint(pos, name)
 	{
 		var geometry = new THREE.CircleBufferGeometry( 0.009, 32 );
-   		var material = new THREE.MeshBasicMaterial( { color: 0xffffff,} );
+   		var material = new THREE.MeshBasicMaterial( { color: 0xcccccc} );
     	var point = new THREE.Mesh( geometry, material );
     	point.name = name;
     	point.position.copy( pos );
@@ -427,4 +439,30 @@ class SelectionBox {
 		this.resizePoints = [];
 	}
 
+	// Takes a position and detect if it is within the boundary box
+	withinBounds(pos)
+	{
+	    if ( this.selectedShape == 'Rectangle' )
+	    {
+	        return this.withinRectangleBounds(pos);
+	    }
+	    else if ( this.selectedShape == 'Ellipse' )
+	    {
+	        return this.withinEllipticalBounds(pos);
+	    }
+	}
+
+	withinRectangleBounds(pos)
+	{
+	    return ( (pos.x >= this.ll.x) && (pos.x <= this.ur.x) && (pos.y >= this.ll.y) && (pos.y <= this.ur.y) );
+	}
+
+	withinEllipticalBounds(pos)
+	{
+	    var x_side = (this.ur.x - this.ll.x) / 2;
+	    var y_side = (this.ur.y - this.ll.y) / 2;
+	    var center = { x: ( this.ur.x + this.ll.x ) / 2.0, y: ( this.ur.y + this.ll.y ) / 2.0 };
+
+	    return ((Math.pow(pos.x - center.x, 2)) / (x_side * x_side) + (Math.pow(pos.y - center.y, 2)) / (y_side * y_side) <= 1);
+	}
 }

@@ -24,6 +24,8 @@ var Controls = function ( drag_objects, camera, domElement )
     var curveObject;
     var curve;
 
+    var outlineMesh;
+
 
     function activate()
     {
@@ -43,7 +45,7 @@ var Controls = function ( drag_objects, camera, domElement )
       make_selection_box = false;
       make_connection = false;
       marquee.fadeOut();
-      marquee.css({width: 0, height: 0});
+      marquee.css({width: 0, height: 0, borderRadius: 0});
       mouseDownCoords = { x: 0, y: 0};
       mRelPos = { x: 0, y: 0 };
       layerSelected = "";
@@ -56,7 +58,7 @@ var Controls = function ( drag_objects, camera, domElement )
         outlineMesh.material.depthWrite = false;
         outlineMesh.quaternion = focusObject.quaternion;
         outlineMesh.position.copy(focusObject.position);
-        var scale = new THREE.Vector3(1.1, 1.1, 1.1);
+        var scale = new THREE.Vector3(1.08, 1.08, 1.08);
         outlineMesh.scale.copy(scale);
         outlineScene.add(outlineMesh);
     }
@@ -65,7 +67,6 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         outlineScene.remove(outlineMesh);
     }
-
 
     function onMouseDown( event )
     {
@@ -139,7 +140,7 @@ var Controls = function ( drag_objects, camera, domElement )
 
                 for ( var i in selectionBoxArray )
                 {
-                	if (withinBounds( mouseDownCorrected, selectionBoxArray[i] ))
+                	if ( selectionBoxArray[i].withinBounds( mouseDownCorrected, selectionBoxArray[i] ) )
                     {
                     	boxInFocus = selectionBoxArray[i];
 
@@ -149,7 +150,6 @@ var Controls = function ( drag_objects, camera, domElement )
                             make_connection = true;
                             boxInFocus.makeLine();
                         }
-
 
                         // Make resize points
                         boxInFocus.makeSelectionPoints();
@@ -171,17 +171,17 @@ var Controls = function ( drag_objects, camera, domElement )
         if( make_selection_box )
         {
             marquee.fadeIn();
+
             mRelPos.x = event.clientX - mouseDownCoords.x;
             mRelPos.y = event.clientY - mouseDownCoords.y;
 
-            // square variations
-            // (0,0) origin is the TOP LEFT pixel of the canvas.
-            //
-            //  1 | 2
-            // ---.---
-            //  4 | 3
-            // there are 4 ways a square can be gestured onto the screen.  the following detects these four variations
-            // and creates/updates the CSS to draw the square on the screen
+            var selectedShape = getSelectedShape();
+
+            if ( selectedShape == "Ellipse" )
+            {
+                marquee.css({borderRadius: 50 + '%'});
+            }
+
             if (mRelPos.x < 0 && mRelPos.y < 0)
             {
               marquee.css({left: event.clientX + 'px',
@@ -293,9 +293,9 @@ var Controls = function ( drag_objects, camera, domElement )
 	    		y: -mRelPos.y + mouseDownCorrected.y
 	    	};
 
-	    	bounds = findBounds(mouseUpCoords, mouseDownCorrected);
+	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
-	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur );
+	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
 	    	layerSelected = boxInFocus.layerName;
 
 	    	// If we didn't click on a layer, it will cause problems further down
@@ -312,7 +312,6 @@ var Controls = function ( drag_objects, camera, domElement )
 
             boxInFocus.selectedNeuronType = getSelectedDropDown("neuronType");
             boxInFocus.selectedSynModel = getSelectedDropDown("synapseModel");
-            boxInFocus.selectedShape = getSelectedRadio("maskShape");
 
             // ############ Send points to server for GID feedback ############
             // Send network specs to the server which makes the network
@@ -438,7 +437,6 @@ var Controls = function ( drag_objects, camera, domElement )
                 delete deviceBoxMap[deviceName];
                 deviceInFocus = undefined;
             }
-            
         }
     }
 
@@ -452,7 +450,6 @@ var Controls = function ( drag_objects, camera, domElement )
     }
 
     activate();
-
 
 };
 

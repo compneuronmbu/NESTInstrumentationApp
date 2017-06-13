@@ -31,13 +31,13 @@ def make_mask(lower_left, upper_right, mask_type, cntr):
     :returns: A NEST ``Mask`` object.
     """
 
-    if mask_type == 'rectangle':
+    if mask_type == 'Rectangle':
         mask_t = 'rectangular'
         spec = {'lower_left': [lower_left[0] - cntr[0],
                                lower_left[1] - cntr[1]],
                 'upper_right': [upper_right[0] - cntr[0],
                                 upper_right[1] - cntr[1]]}
-    elif mask_type == 'ellipse':
+    elif mask_type == 'Ellipse':
         mask_t = 'elliptical'
         # Calculate center of ellipse
         xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -72,6 +72,7 @@ def make_synapse_models(syn_collection):
 def get_gids(selection_dict):
     name = selection_dict['name']
     selection = selection_dict['selection']
+    mask_type = selection_dict['maskShape']
     x_limit_start = -0.5
     y_limit_start = -0.5
     x_limit_end = 0.5
@@ -89,7 +90,7 @@ def get_gids(selection_dict):
     if ur[1] > y_limit_end:
         ur[1] = y_limit_end
     cntr = [0.0, 0.0]
-    mask = make_mask(ll, ur, 'rectangle', cntr)
+    mask = make_mask(ll, ur, mask_type, cntr)
     gids = tp.SelectNodesByMask(layers[name],
                                 cntr, mask)
     return gids
