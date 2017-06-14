@@ -166,11 +166,6 @@ function getSelectedShape()
     return selectedShape;
 }
 
-function makeSelectionInfo(ll, ur)
-{
-    return;
-}
-
 
 function makeNetwork()
 {

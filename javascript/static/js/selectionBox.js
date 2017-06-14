@@ -274,50 +274,75 @@ class SelectionBox {
 		this.curves[this.curves.length - 1].target = device;
 	}
 
-	updateLineStart( newPos )
+	updateLine( newEndPos, curveIndex, radius )
+	{
+		var curveObject = this.curves[curveIndex].curveObject;
+		var curve = this.curves[curveIndex].curve;
+
+		var selectionBounds = this.getSelectionBounds();
+		var centreX = (selectionBounds.ll.x + selectionBounds.ur.x) / 2;
+		var direction = 1;
+
+		var endPos = (newEndPos === undefined) ? curve.points[3] : newEndPos;
+    	if ( endPos.x < centreX )
+    	{
+    		curve.points[0].x = (selectionBounds.ll.x < selectionBounds.ur.x) ? selectionBounds.ll.x : selectionBounds.ur.x;
+    	}
+    	else
+    	{
+    		curve.points[0].x = (selectionBounds.ll.x < selectionBounds.ur.x) ? selectionBounds.ur.x : selectionBounds.ll.x;
+    		direction = -1;
+    	}
+
+		curve.points[0].y = (selectionBounds.ll.y + selectionBounds.ur.y) / 2;
+		curve.points[1].x = curve.points[0].x + direction * -0.05;
+		curve.points[1].y = curve.points[0].y;
+
+		if ( newEndPos !== undefined )
+		{
+        	curve.points[3].x = newEndPos.x + direction * radius;
+        	curve.points[3].y = newEndPos.y;
+        	curve.points[2].x = curve.points[3].x + direction * 0.05;
+        	curve.points[2].y = curve.points[3].y;
+		}
+		for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
+		{
+		    curveObject.geometry.vertices[i].copy( curve.getPoint( i / (this.CURVE_SEGMENTS) ) );
+		}
+		curveObject.geometry.verticesNeedUpdate = true;
+	}
+
+	updateLineStart()
     {
-        for (i in this.curves)
+        for (var i in this.curves)
         {
-	        var curveObject = this.curves[i].curveObject;
-	        var curve = this.curves[i].curve;
-
-	        curve.points[0].x = newPos.x;
-	        curve.points[0].y = newPos.y;
-	        curve.points[1].x = curve.points[0].x + 0.05;
-	        curve.points[1].y = curve.points[0].y;
-
-	        for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
-	        {
-	            curveObject.geometry.vertices[i].copy( curve.getPoint( i / (this.CURVE_SEGMENTS) ) );
-	        }
-	        curveObject.geometry.verticesNeedUpdate = true;
+	        this.updateLine(undefined, i, 0);
     	}
     }
 
-    updateLineEnd( newPos, target )
+    updateLineEnd( newPos, target, radius=0 )
     {
-        for (i in this.curves)
+        for (var i in this.curves)
         {
         	if (this.curves[i].target === target)
         	{
-	        	var curveObject = this.curves[i].curveObject;
-	        	var curve = this.curves[i].curve;
-
-	        	var curveVertices = curveObject.geometry.vertices;
-	        	curve.points[1].x = curve.points[0].x + 0.05;
-	        	curve.points[2].x = newPos.x - 0.05;
-	        	curve.points[2].y = newPos.y;
-	        	curve.points[3].x = newPos.x;
-	        	curve.points[3].y = newPos.y;
-
-	        	for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
-	        	{
-	        	    var p = curveVertices[i];
-	        	    p.copy( curve.getPoint( i / (this.CURVE_SEGMENTS) ) );
-	        	}
-	        	curveObject.geometry.verticesNeedUpdate = true;
+        		this.updateLine(newPos, i, radius);
         	}
         }
+    }
+
+    lineToDevice(targetPos, radius, target)
+    {
+    	var selectionBounds = this.getSelectionBounds();
+    	var centreX = (selectionBounds.ll.x + selectionBounds.ur.x) / 2;
+    	if ((targetPos.x - radius) < centreX)
+    	{
+    		this.updateLineEnd( {x: targetPos.x + radius, y: targetPos.y}, target );
+    	}
+    	else
+    	{
+    		this.updateLineEnd( {x: targetPos.x - radius, y: targetPos.y}, target );
+    	}
     }
 
     removeLine()

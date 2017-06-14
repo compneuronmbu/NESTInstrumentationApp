@@ -71,7 +71,6 @@ var Controls = function ( drag_objects, camera, domElement )
     function onMouseDown( event )
     {
         //event.preventDefault();
-        //if (controls.shiftDown === true) return;
         if (event.target.localName === "canvas")
         {
             event.preventDefault();
@@ -249,6 +248,7 @@ var Controls = function ( drag_objects, camera, domElement )
             }
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
+            boxInFocus.updateLineStart();
         }
         else if ( make_connection )
         {
@@ -267,7 +267,7 @@ var Controls = function ( drag_objects, camera, domElement )
                     var radius = deviceInFocus.geometry.boundingSphere.radius;
                     for (var i in deviceBoxMap[deviceName])
                     {
-                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x - radius, y: deviceInFocus.position.y}, deviceName);
+                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x, y: deviceInFocus.position.y}, deviceName, radius);
                     }
                 }
             }
@@ -278,7 +278,6 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         event.preventDefault();
         event.stopPropagation();
-        //if (controls.shiftDown === true) return;
 
         if ( make_selection_box )
         {
@@ -350,7 +349,7 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
             boxInFocus.updateColors();
-            boxInFocus.updateLineStart(toObjectCoordinates({x: boxInFocus.ur.x, y: renderer.getSize().height - (boxInFocus.ll.y + boxInFocus.ur.y) / 2.0}))
+            boxInFocus.updateLineStart();
         }
         else if ( make_connection )
         {
@@ -369,7 +368,7 @@ var Controls = function ( drag_objects, camera, domElement )
                 intersect_target = intersects[ 0 ].object;
                 var radius = intersect_target.geometry.boundingSphere.radius;
                 boxInFocus.setLineTarget(intersect_target.name);
-                boxInFocus.updateLineEnd({x: intersect_target.position.x - radius, y: intersect_target.position.y}, intersect_target.name)
+                boxInFocus.lineToDevice(intersect_target.position, radius, intersect_target.name)
 
                 deviceBoxMap[intersect_target.name].push(boxInFocus);
             }
