@@ -29,6 +29,7 @@ var deviceBoxMap = {};
 
 var nSelected = 0;
 var deviceCounter = 1;
+var uniqueID = 1;
 
 var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
@@ -274,6 +275,7 @@ function saveSelection()
     console.log("##################");
     console.log("deviceBoxMap", deviceBoxMap);
     console.log("circle_objects", circle_objects);
+    console.log("selectionBoxArray", selectionBoxArray);
     console.log("##################");
 
     // create object to be saved
@@ -310,6 +312,7 @@ function loadSelection()
 function loadFromJSON(textJSON)
 {
     var inputObj = JSON.parse( textJSON );
+    var IDsCreated = [];
     for (device in inputObj.projections)
     {
         var deviceModel = device.slice(0, device.lastIndexOf("_"));
@@ -327,19 +330,43 @@ function loadFromJSON(textJSON)
         for (i in inputObj.projections[device].connectees)
         {
             var boxSpecs = inputObj.projections[device].connectees[i];
-            var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
-            layerSelected = boxSpecs.name;
-            box.selectedNeuronType = boxSpecs.neuronType;
-            box.selectedSynModel = boxSpecs.synModel;
-            box.selectedShape = boxSpecs.maskShape;
 
-            selectionBoxArray.push(box);
-            box.makeBox();
+            // if not created yet, the box must be created
+            if ( IDsCreated.indexOf(boxSpecs.uniqueID) === -1 )
+            {
+                IDsCreated.push(boxSpecs.uniqueID);
+                var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                box.uniqueID = boxSpecs.uniqueID;
+
+                // update our uniqueID count only if box.uniqueID is greater
+                uniqueID = ( boxSpecs.uniqueID > uniqueID ) ? boxSpecs.uniqueID : uniqueID;
+                
+                box.layerName = boxSpecs.name;
+                box.selectedNeuronType = boxSpecs.neuronType;
+                box.selectedSynModel = boxSpecs.synModel;
+                box.selectedShape = boxSpecs.maskShape;
+
+                selectionBoxArray.push(box);
+                box.makeBox();
+            }
+            // if the box is already created, it must be found
+            else
+            {
+                for (i in selectionBoxArray)
+                {
+                    if (selectionBoxArray[i].uniqueID === boxSpecs.uniqueID)
+                    {
+                        var box = selectionBoxArray[i];
+                        break;
+                    }
+                }
+            }
 
             box.makeLine();
             var radius = target.geometry.boundingSphere.radius;
             box.setLineTarget(target.name);
-            box.updateLineEnd({x: target.position.x - radius, y: target.position.y}, target.name)
+            box.updateLineEnd({x: target.position.x - radius, y: target.position.y}, target.name);
+            box.updateColors();
 
             deviceBoxMap[device].push(box);
         }
@@ -362,12 +389,6 @@ function handleFileUpload( event )
 function addDeviceToProjections( device )
 {
     var deviceName = device + "_" + String(deviceCounter++);
-    /*projections[deviceName] = {
-        specs: {
-            model: device
-        },
-        connectees: []
-    };*/
     deviceBoxMap[deviceName] = [];
 }
 

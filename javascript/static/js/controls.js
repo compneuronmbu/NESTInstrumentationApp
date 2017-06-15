@@ -294,6 +294,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
 	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
+            boxInFocus.uniqueID = uniqueID++;
 	    	layerSelected = boxInFocus.layerName;
 
 	    	// If we didn't click on a layer, it will cause problems further down

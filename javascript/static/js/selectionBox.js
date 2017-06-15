@@ -7,6 +7,7 @@
 class SelectionBox {
 	constructor( ll, ur, shape )
 	{
+		this.uniqueID = -1;
 		this.layerName = "";
 		// ll and ur use screen coordinates
 		this.ll = ll;
@@ -432,6 +433,7 @@ class SelectionBox {
 		    neuronType: this.selectedNeuronType,
 		    synModel: this.selectedSynModel,
 		    maskShape: this.selectedShape,
+		    uniqueID: this.uniqueID
 		};
 
 		return selectionInfo;
