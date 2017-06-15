@@ -82,6 +82,15 @@ body {
   z-index: 100;
 }
 
+#spikeTrain {
+  color: #fff;
+  position: absolute;
+  bottom: 2px;
+  width: calc(100% - var(--gui_width));
+  padding: 5px;
+  z-index: 100;
+}
+
 #select-square {
   position:absolute;
   /* initialize it offscreen */

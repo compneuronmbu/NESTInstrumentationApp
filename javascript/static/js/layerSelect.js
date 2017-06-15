@@ -251,13 +251,18 @@ function getConnections()
 
 function runSimulation()
 {
+    var t;
+
     // Make the network and connections before simulating
     makeConnections();
     $("#infoconnected").html( "Simulating ..." );
     $.getJSON("/simulate",
             {
-              time: "10000"
+              time: "100"
             }).done(function(data){
+              var spikeEvents = data.spikeEvents;
+              console.log("spikeEvents", spikeEvents)
+              makeSpikeTrain(spikeEvents);
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
             });
@@ -269,6 +274,8 @@ function runSimulation()
                   console.log("Server responded");
                 });
     }
+
+    //makeSpikeTrain();
 }
 
 

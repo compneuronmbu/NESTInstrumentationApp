@@ -74,8 +74,9 @@ def get_connections_ajax():
 def simulate_ajax():
     t = flask.request.args.get('time')
     print("Simulating for ", t, "ms")
-    nu.simulate(t)
-    return flask.jsonify(value=1)
+    events = nu.simulate(t)
+
+    return flask.jsonify(spikeEvents=events)
 
 
 @app.route('/ping', methods=['GET'])

@@ -105,15 +105,23 @@ def connect(projections):
     """
     Makes connections from selections specified by the user.
     """
+    global spike_det
+
     for device_name in projections:
         model = projections[device_name]['specs']['model']
-        nest_device = nest.Create(model)
+        if (model == 'poisson_generator'):
+            nest_device = nest.Create(model, 1, {"rate": 80000.0})
+        else:
+            nest_device = nest.Create(model)
         for selection in projections[device_name]['connectees']:
             nest_neurons = get_gids(selection)
             synapse_model = selection['synModel']
 
             if model == "spike_detector":
+                spike_det = nest_device
                 nest.Connect(nest_neurons, nest_device)
+            elif model == "voltmeter":
+                voltmeter = nest_device
             else:
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
@@ -127,3 +135,12 @@ def get_connections():
 def simulate(t):
     nest.SetKernelStatus({'print_time': True})
     nest.Simulate(t)
+
+    n_spikes = nest.GetStatus(spike_det)[0]['n_events']
+    events = nest.GetStatus(spike_det)[0]['events']
+    print("Number of spikes: %i" % n_spikes)
+    spike_events = { 'senders': [ float(y) for y in events['senders']], 'times': [float(x) for x in events['times']] }
+    print(spike_events)
+
+    return spike_events
+
