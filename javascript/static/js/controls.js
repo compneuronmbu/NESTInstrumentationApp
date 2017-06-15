@@ -248,6 +248,7 @@ var Controls = function ( drag_objects, camera, domElement )
             }
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
+            boxInFocus.updateColors();
             boxInFocus.updateLineStart();
         }
         else if ( make_connection )
