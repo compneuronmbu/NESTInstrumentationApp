@@ -202,6 +202,7 @@ function makeConnections()
 
   // create object to be sent
   var projections = {};
+  projections['internal'] = modelParameters.projections;
   $("#infoconnected").html( "Gathering selections to be connected ..." );
   for (device in deviceBoxMap)
   {
@@ -241,7 +242,7 @@ function getConnections()
             {
               input: "dummyData"
             }).done(function(data){
-              $("#infoconnected").html( data.connections.length.toString() + " connection(s)" );
+              $("#infoconnected").html( data.connections.toString() + " connection(s)" );
             });
 }
 

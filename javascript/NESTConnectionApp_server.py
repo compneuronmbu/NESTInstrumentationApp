@@ -55,9 +55,14 @@ def synapses_ajax():
 def connect_ajax():
     if flask.request.method == 'POST':
         pp = pprint.PrettyPrinter(indent=4)
-        selections = flask.request.json
-        pp.pprint(selections)
-        nu.connect(selections)
+        connections = flask.request.json
+        internal_projections = connections['internal']
+        del connections['internal']
+        print("#############################")
+        pp.pprint(internal_projections)
+        print("#############################")
+        nu.connect_internal_projections(internal_projections)
+        nu.connect_to_devices(connections)
         return "returnValue"
 
 
@@ -65,9 +70,9 @@ def connect_ajax():
 def get_connections_ajax():
     print("Recieved ", flask.request.args.get('input'))
     connections = nu.get_connections()
-    return flask.jsonify(
-        connections=[{'pre': c[0], 'post': c[1]}
-                     for c in connections])
+    return flask.jsonify(connections=len(connections))
+    #    connections=[{'pre': c[0], 'post': c[1]}
+    #                 for c in connections])
 
 
 @app.route('/simulate', methods=['GET'])

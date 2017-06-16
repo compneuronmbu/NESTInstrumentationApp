@@ -101,14 +101,25 @@ def printGIDs(selection):
     return (gids, tp.GetPosition(gids))
 
 
-def connect(projections):
+def connect_internal_projections(internal_projections):
+    """
+    Makes connections from specifications of internal projections.
+    """
+    for proj in internal_projections:
+        pre = proj[0]
+        post = proj[1]
+        conndict = proj[2]
+        tp.ConnectLayers(layers[pre], layers[post], conndict)
+
+
+def connect_to_devices(device_projections):
     """
     Makes connections from selections specified by the user.
     """
-    for device_name in projections:
-        model = projections[device_name]['specs']['model']
+    for device_name in device_projections:
+        model = device_projections[device_name]['specs']['model']
         nest_device = nest.Create(model)
-        for selection in projections[device_name]['connectees']:
+        for selection in device_projections[device_name]['connectees']:
             nest_neurons = get_gids(selection)
             synapse_model = selection['synModel']
 
@@ -117,7 +128,7 @@ def connect(projections):
             else:
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
-    print(nest.GetConnections())
+    # print(nest.GetConnections())
 
 
 def get_connections():
