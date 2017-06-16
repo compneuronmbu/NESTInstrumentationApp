@@ -365,7 +365,8 @@ function loadFromJSON(textJSON)
             box.makeLine();
             var radius = target.geometry.boundingSphere.radius;
             box.setLineTarget(target.name);
-            box.updateLineEnd({x: target.position.x - radius, y: target.position.y}, target.name);
+            box.lineToDevice(target.position, radius, target.name);
+
             box.updateColors();
 
             deviceBoxMap[device].push(box);
