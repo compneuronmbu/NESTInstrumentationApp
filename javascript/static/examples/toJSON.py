@@ -10,10 +10,12 @@ def convert(specs, conn_specs):
     layers = specs[0]
 
     for layer in layers:
+        name = layer[0]
+        if "meter" in name or "Detector" in name or "Generator" in name:
+            continue
         layer_dict = {"neurons": []}
         print layer
         layer_dict['elements'] = layer[1]['elements']
-        name = layer[0]
         layer_dict['name'] = name
         try:
             ext = layer[1]['extent']
