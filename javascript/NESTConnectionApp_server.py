@@ -79,8 +79,54 @@ def get_connections_ajax():
 def simulate_ajax():
     t = flask.request.args.get('time')
     print("Simulating for ", t, "ms")
+    nu.prepare_simulation()
     nu.simulate(t)
+    nu.cleanup_simulation()
     return flask.jsonify(value=1)
+
+
+@app.route('/stream', methods=['GET'])
+def stream_ajax():
+    t = flask.request.args.get('time')
+    import time
+    import random
+
+    print("Recieved time:", t)
+
+    def generate():
+        for i in range(10):
+            time.sleep(random.random())
+            yield str(i) + " "
+
+    return flask.Response(generate())
+
+
+@app.route('/streamSimulate', methods=['GET'])
+def streamSimulate_ajax():
+    t = flask.request.args.get('time')
+    print("Recieved time:", t)
+    steps = 10000
+    dt = float(t) / steps
+
+    def generate():
+        nu.prepare_simulation()
+        for i in range(steps):
+            print(i)
+            nu.simulate(dt)
+            if i % 10 == 0:
+                continue
+            results = nu.get_device_results()
+            if results:
+                #print("######### dump ########")
+                # Adding a /n to be able to split multiple JSONs in same string
+                jsonResult = flask.json.dumps(results) + "|"
+                #print(jsonResult)
+                # print(type(jsonResult))
+                #print("######### dump end ########")
+                yield jsonResult
+        nu.cleanup_simulation()
+
+    return flask.Response(generate())
 
 
 @app.route('/ping', methods=['GET'])

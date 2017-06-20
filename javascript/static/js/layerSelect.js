@@ -52,16 +52,11 @@ function init()
     // POINTS
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
-    
-    var xmlReq = new XMLHttpRequest();
-    xmlReq.onreadystatechange = function() {
-        if (xmlReq.readyState == 4 && xmlReq.status == 200) {
-            modelParameters = JSON.parse(this.responseText);
-            Brain( camera, scene );
-        }
-    };
-    xmlReq.open("get", "static/examples/brunel_converted.json", true);
-    xmlReq.send();
+
+    $.getJSON("/static/examples/brunel_converted.json", function ( data ) {
+        modelParameters = data;
+        Brain( camera, scene );
+    });
 
     // RENDERER
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -168,6 +163,66 @@ function getSelectedShape()
 }
 
 
+function getGIDPoint(gid)
+{
+    /*
+    * Gets layer and point index for a specified GID.
+    */
+    var minGID = 0;
+    for (var l in layer_points)
+    {
+        minGID += 1;  // from the GID of the layer
+        var pos = layer_points[l].points.geometry.attributes.position;
+        if (gid <= minGID + pos.count)
+        {
+            // point is in this layer
+            var pointIndex = 3*(gid - minGID - 1);
+            return {layer: l, pointIndex: pointIndex};
+        }
+        minGID += pos.count;
+    }
+}
+
+function colorFromVm(response)
+{
+    var time = 0;
+    var V_m = 0;
+    var point;
+    var prevPoints;
+    var updateLayers = [];
+    for (var device in response)
+    {
+        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        if (deviceModel === "voltmeter")
+        {
+            for (gid in response[device])
+            {
+                point = getGIDPoint(gid);
+                V_m = response[device][gid][1];
+                colorVm = mapVmToColor(V_m, -70., -50.);
+
+                var points = layer_points[point.layer].points;
+                var colors = points.geometry.getAttribute("customColor").array;
+
+                colors[ point.pointIndex ]     = colorVm[0];
+                colors[ point.pointIndex + 1 ] = colorVm[1];
+                colors[ point.pointIndex + 2 ] = colorVm[2];
+                points.geometry.attributes.customColor.needsUpdate = true;
+            }
+        }
+    }
+}
+
+function mapVmToColor(Vm, minVm, maxVm)
+{
+    var clampedVm;
+    clampedVm = (Vm < minVm) ? minVm : Vm;
+    clampedVm = (Vm > maxVm) ? maxVm : Vm;
+    var colorRG = (clampedVm - minVm) / (maxVm - minVm);
+    return [colorRG, colorRG, 1.0];
+}
+
+
 function makeNetwork()
 {
   $.ajax({
@@ -266,6 +321,46 @@ function runSimulation()
                   console.log("Server responded");
                 });
     }
+}
+
+
+function stream()
+{
+    makeConnections();
+    var last_response_len = -1;
+    $.ajax('/streamSimulate',
+            {
+                data: {time: "10000"},
+                 xhrFields: {
+                     onprogress: function(e)
+                     {
+                         var this_response, response = e.currentTarget.response;
+                         if (last_response_len === -1)
+                         {
+                            this_response = response;
+                            last_response_len = response.length;
+                         }
+                         else
+                         {
+                            this_response = response.substring(last_response_len);
+                            last_response_len = response.length;
+                         }
+                         // console.log("##################")
+                         var responseArray = this_response.split("|");
+                         last_response = responseArray[responseArray.length - 2];
+                         if (last_response !== "")
+                         {
+                             var this_responseJSON = JSON.parse(last_response);
+                             colorFromVm(this_responseJSON);
+                         }
+                     }
+                }
+            }
+            ).done(function(data)
+           {
+                // console.log("Complete response:", data);
+           })
+           console.log("Request sent");
 }
 
 

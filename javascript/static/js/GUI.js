@@ -74,6 +74,11 @@ class GuiButtons extends React.Component{
                                   function={loadSelection} button_id='loadSelectionButton'/>
             </div>
 
+            <div id="gui-box">
+                <SelectionsButton text='Stream'
+                                  function={stream} button_id='streamButton'/>
+            </div>
+
           </div>
         );
     }

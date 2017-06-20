@@ -4,9 +4,10 @@ import nest.topology as tp
 
 def make_network(networkSpecs):
     nest.ResetKernel()
-    global layers, syn_models
+    global layers, syn_models, rec_devices
     layers = {}
     syn_models = {}
+    rec_devices = []
     for layer in networkSpecs['layers']:
         neurons = layer['neurons']
         pos = [[float(neuron['x']), float(neuron['y'])]
@@ -116,9 +117,19 @@ def connect_to_devices(device_projections):
     """
     Makes connections from selections specified by the user.
     """
+    global rec_devices
     for device_name in device_projections:
+        print(device_projections[device_name])
         model = device_projections[device_name]['specs']['model']
-        nest_device = nest.Create(model)
+        if model == "poisson_generator":
+            nest_device = nest.Create(model, 1, {'rate': 70000.0})
+        else:
+            nest_device = nest.Create(model)
+
+        # If it is a recording device, add it to the list
+        if 'record_to' in nest.GetStatus(nest_device)[0]:
+            rec_devices.append([device_name, nest_device])
+
         for selection in device_projections[device_name]['connectees']:
             nest_neurons = get_gids(selection)
             synapse_model = selection['synModel']
@@ -128,13 +139,64 @@ def connect_to_devices(device_projections):
             else:
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
+        #if model == "poisson_generator":
+        # import pprint
+        # print("############################# "+device_name+" #########################")
+        # print(nest_device)
+        # pprint.pprint(nest.GetConnections(nest_device))
+
     # print(nest.GetConnections())
+    # print("Recording devices after connecting", rec_devices)
 
 
 def get_connections():
     return nest.GetConnections()
 
 
+def prepare_simulation():
+    print("Preparing simulation")
+    nest.Prepare()
+
+
 def simulate(t):
-    nest.SetKernelStatus({'print_time': True})
-    nest.Simulate(t)
+    # nest.SetKernelStatus({'print_time': True})
+    nest.set_verbosity("M_ERROR")  # TODO: this should be moved
+    nest.Run(t)
+
+
+def cleanup_simulation():
+    print("Cleaning up after simulation")
+    nest.Cleanup()
+
+
+def get_device_results():
+    #  print(rec_devices)
+    #  import pprint
+    got_results = False
+    results = {}
+    for device in rec_devices:
+        device_name = device[0]
+        device_gid = device[1]
+        status = nest.GetStatus(device_gid)[0]
+        #  pprint.pprint(status)
+        if status['n_events'] > 0:
+            got_results = True
+            #  print("Status:")
+            #  pprint.pprint(status)
+            events = {}
+            device_events = status['events']
+            # for node in device_events['senders']:
+            #    events[node] = []
+            for e in range(status['n_events']):
+                if 'voltmeter' in device_name:
+                    events[device_events['senders'][e]] = [
+                        device_events['times'][e], device_events['V_m'][e]]
+                else:
+                    events[device_events['senders'][e]] = [
+                        device_events['times'][e]]
+            results[device_name] = events
+            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+    if got_results:
+        return results
+    else:
+        return None

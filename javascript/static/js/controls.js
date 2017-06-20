@@ -68,6 +68,26 @@ var Controls = function ( drag_objects, camera, domElement )
         outlineScene.remove(outlineMesh);
     }
 
+    function serverPrintGids()
+    {
+        // ############ Send points to server for GID feedback ############
+        // Send network specs to the server which makes the network
+        makeNetwork();
+
+        // send selection
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/selector",
+            data: JSON.stringify(boxInFocus.getSelectionInfo()),
+            success: function (data) {
+                console.log(data.title);
+                console.log(data.article);
+            },
+            dataType: "json"
+        });
+    }
+
     function onMouseDown( event )
     {
         //event.preventDefault();
@@ -313,22 +333,7 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.selectedNeuronType = getSelectedDropDown("neuronType");
             boxInFocus.selectedSynModel = getSelectedDropDown("synapseModel");
 
-            // ############ Send points to server for GID feedback ############
-            // Send network specs to the server which makes the network
-            makeNetwork();
-
-            // send selection
-            $.ajax({
-                type: "POST",
-                contentType: "application/json; charset=utf-8",
-                url: "/selector",
-                data: JSON.stringify(boxInFocus.getSelectionInfo()),
-                success: function (data) {
-                    console.log(data.title);
-                    console.log(data.article);
-                },
-                dataType: "json"
-            });
+            serverPrintGids();
 
             requestAnimationFrame( render );
         }
@@ -352,6 +357,7 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.makeSelectionPoints();
             boxInFocus.updateColors();
             boxInFocus.updateLineStart();
+            serverPrintGids();
         }
         else if ( make_connection )
         {
