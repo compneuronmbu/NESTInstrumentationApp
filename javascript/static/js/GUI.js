@@ -76,7 +76,7 @@ class GuiButtons extends React.Component{
 
             <div id="gui-box">
                 <SelectionsButton text='Stream'
-                                  function={stream} button_id='streamButton'/>
+                                  function={streamSimulate} button_id='streamButton'/>
             </div>
 
           </div>

@@ -35,6 +35,7 @@ var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
 var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
+var serverUpdateEvent;
 
 init();
 
@@ -68,7 +69,28 @@ function init()
 
     Controls( circle_objects, camera, renderer.domElement );
 
+    serverUpdateEvent = new EventSource("/simulationData");
+    serverUpdateEvent.onmessage = handleMessage;
+
     //render();
+}
+
+function handleMessage(e)
+{
+    // console.log(e);
+    var recordedData = JSON.parse(e.data);
+    var t;
+    for (var device in recordedData)
+    {
+        for (var gid in recordedData[device])
+        {
+            t = recordedData[device][gid][0];
+        }
+    }
+    $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+    // console.log(recordedData);
+    colorFromVm(recordedData);
+
 }
 
 function toScreenXY (point_pos) {
@@ -222,57 +244,32 @@ function mapVmToColor(Vm, minVm, maxVm)
     return [colorRG, colorRG, 1.0];
 }
 
-
-function makeNetwork()
+function makeProjections()
 {
-  $.ajax({
-      type: "POST",
-      contentType: "application/json; charset=utf-8",
-      url: "/network",
-      data: JSON.stringify(modelParameters),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
-      dataType: "json"
-  });
+    var projections = {};
+    projections['internal'] = modelParameters.projections;
+    $("#infoconnected").html( "Gathering selections to be connected ..." );
+    for (device in deviceBoxMap)
+    {
+      deviceModel = device.slice(0, device.lastIndexOf("_"));
+      projections[device] = {
+          specs: {
+              model: deviceModel
+          },
+          connectees: []
+      };
+      for (i in deviceBoxMap[device])
+      {
+          projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
+      }
+    }
+    return projections;
 }
 
 function makeConnections()
 {
-  $("#infoconnected").html( "Making network ..." );
-  makeNetwork();
-  // send synapse specifications
-  $.ajax({
-      type: "POST",
-      contentType: "application/json; charset=utf-8",
-      url: "/synapses",
-      data: JSON.stringify(synModels),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
-      dataType: "json"
-  });
-
   // create object to be sent
-  var projections = {};
-  projections['internal'] = modelParameters.projections;
-  $("#infoconnected").html( "Gathering selections to be connected ..." );
-  for (device in deviceBoxMap)
-  {
-    deviceModel = device.slice(0, device.lastIndexOf("_"));
-    projections[device] = {
-        specs: {
-            model: deviceModel
-        },
-        connectees: []
-    };
-    for (i in deviceBoxMap[device])
-    {
-        projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
-    }
-  }
+  var projections = makeProjections();
 
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
@@ -280,13 +277,11 @@ function makeConnections()
       type: "POST",
       contentType: "application/json; charset=utf-8",
       url: "/connect",
-      data: JSON.stringify(projections),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
+      data: JSON.stringify({network: modelParameters,
+                            synapses: synModels,
+                            projections: projections}),
       dataType: "json"
-  });
+      });
   getConnections();
 }
 
@@ -303,66 +298,39 @@ function getConnections()
 
 function runSimulation()
 {
-    // Make the network and connections before simulating
-    makeConnections();
+    var projections = makeProjections();
     $("#infoconnected").html( "Simulating ..." );
-    $.getJSON("/simulate",
-            {
-              time: "10000"
-            }).done(function(data){
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/simulate",
+        data: JSON.stringify({network: modelParameters,
+                      synapses: synModels,
+                      projections: projections,
+                      time: "10000"}),
+        dataType: "json"
+        }).done(function(data){
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
             });
-
-    // ping the server a few times
-    for (var i = 0; i < 3; ++i)
-    {
-        $.getJSON("/ping").done(function(data){
-                  console.log("Server responded");
-                });
-    }
 }
 
-
-function stream()
+function streamSimulate()
 {
-    makeConnections();
-    var last_response_len = -1;
-    $.ajax('/streamSimulate',
-            {
-                data: {time: "10000"},
-                 xhrFields: {
-                     onprogress: function(e)
-                     {
-                         var this_response, response = e.currentTarget.response;
-                         if (last_response_len === -1)
-                         {
-                            this_response = response;
-                            last_response_len = response.length;
-                         }
-                         else
-                         {
-                            this_response = response.substring(last_response_len);
-                            last_response_len = response.length;
-                         }
-                         // console.log("##################")
-                         var responseArray = this_response.split("|");
-                         last_response = responseArray[responseArray.length - 2];
-                         if (last_response !== "")
-                         {
-                             var this_responseJSON = JSON.parse(last_response);
-                             colorFromVm(this_responseJSON);
-                         }
-                     }
-                }
-            }
-            ).done(function(data)
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/streamSimulate",
+        data: JSON.stringify({network: modelParameters,
+                      synapses: synModels,
+                      projections: makeProjections(),
+                      time: "10000"}),
+        dataType: "json"
+        }).done(function(data)
            {
-                // console.log("Complete response:", data);
-           })
-           console.log("Request sent");
+                console.log("Simulation started successfully");
+           });
 }
-
 
 function saveSelection()
 {

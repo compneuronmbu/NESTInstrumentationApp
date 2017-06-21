@@ -92,6 +92,8 @@ def get_gids(selection_dict):
         ur[1] = y_limit_end
     cntr = [0.0, 0.0]
     mask = make_mask(ll, ur, mask_type, cntr)
+    print("Layers:")
+    print(layers)
     gids = tp.SelectNodesByMask(layers[name],
                                 cntr, mask)
     return gids
@@ -102,6 +104,14 @@ def printGIDs(selection):
     return (gids, tp.GetPosition(gids))
 
 
+def connect_all(projections):
+    internal_projections = projections['internal']
+    del projections['internal']
+    print("Connecting internal projections")
+    connect_internal_projections(internal_projections)
+    print("Connecting devices")
+    connect_to_devices(projections)
+
 def connect_internal_projections(internal_projections):
     """
     Makes connections from specifications of internal projections.
@@ -110,7 +120,10 @@ def connect_internal_projections(internal_projections):
         pre = proj[0]
         post = proj[1]
         conndict = proj[2]
+        print("Connecting %s and %s" % (layers[pre], layers[post]))
+        print("Using ", conndict)
         tp.ConnectLayers(layers[pre], layers[post], conndict)
+        print("Success")
 
 
 def connect_to_devices(device_projections):

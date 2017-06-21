@@ -72,14 +72,11 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         // ############ Send points to server for GID feedback ############
         // Send network specs to the server which makes the network
-        makeNetwork();
-
-        // send selection
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/selector",
-            data: JSON.stringify(boxInFocus.getSelectionInfo()),
+            data: JSON.stringify({network: modelParameters, info: boxInFocus.getSelectionInfo()}),
             success: function (data) {
                 console.log(data.title);
                 console.log(data.article);
