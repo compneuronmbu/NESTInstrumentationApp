@@ -4,9 +4,10 @@ import nest.topology as tp
 
 def make_network(networkSpecs):
     nest.ResetKernel()
-    global layers, syn_models
+    global layers, syn_models, rec_devices
     layers = {}
     syn_models = {}
+    rec_devices = []
     for layer in networkSpecs['layers']:
         neurons = layer['neurons']
         pos = [[float(neuron['x']), float(neuron['y'])]
@@ -91,6 +92,8 @@ def get_gids(selection_dict):
         ur[1] = y_limit_end
     cntr = [0.0, 0.0]
     mask = make_mask(ll, ur, mask_type, cntr)
+    print("Layers:")
+    print(layers)
     gids = tp.SelectNodesByMask(layers[name],
                                 cntr, mask)
     return gids
@@ -101,20 +104,49 @@ def printGIDs(selection):
     return (gids, tp.GetPosition(gids))
 
 
-def connect(projections):
+def connect_all(projections):
+    internal_projections = projections['internal']
+    del projections['internal']
+    print("Connecting internal projections")
+    connect_internal_projections(internal_projections)
+    print("Connecting devices")
+    connect_to_devices(projections)
+
+def connect_internal_projections(internal_projections):
+    """
+    Makes connections from specifications of internal projections.
+    """
+    for proj in internal_projections:
+        pre = proj[0]
+        post = proj[1]
+        conndict = proj[2]
+        print("Connecting %s and %s" % (layers[pre], layers[post]))
+        print("Using ", conndict)
+        tp.ConnectLayers(layers[pre], layers[post], conndict)
+        print("Success")
+
+
+def connect_to_devices(device_projections):
     """
     Makes connections from selections specified by the user.
     """
+
+    global rec_devices
     global spike_det
     spike_det = ""
-
-    for device_name in projections:
-        model = projections[device_name]['specs']['model']
-        if (model == 'poisson_generator'):
-            nest_device = nest.Create(model, 1, {"rate": 80000.0})
+    for device_name in device_projections:
+        print(device_projections[device_name])
+        model = device_projections[device_name]['specs']['model']
+        if model == "poisson_generator":
+            nest_device = nest.Create(model, 1, {'rate': 70000.0})
         else:
             nest_device = nest.Create(model)
-        for selection in projections[device_name]['connectees']:
+
+        # If it is a recording device, add it to the list
+        if 'record_to' in nest.GetStatus(nest_device)[0]:
+            rec_devices.append([device_name, nest_device])
+
+        for selection in device_projections[device_name]['connectees']:
             nest_neurons = get_gids(selection)
             synapse_model = selection['synModel']
 
@@ -126,25 +158,82 @@ def connect(projections):
             else:
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
-    print(nest.GetConnections())
+        #if model == "poisson_generator":
+        # import pprint
+        # print("############################# "+device_name+" #########################")
+        # print(nest_device)
+        # pprint.pprint(nest.GetConnections(nest_device))
+
+    # print(nest.GetConnections())
+    # print("Recording devices after connecting", rec_devices)
 
 
 def get_connections():
     return nest.GetConnections()
 
 
+def prepare_simulation():
+    print("Preparing simulation")
+    nest.Prepare()
+
+
 def simulate(t):
-    nest.SetKernelStatus({'print_time': True})
-    nest.Simulate(t)
+    #nest.SetKernelStatus({'print_time': True})
+    #nest.Simulate(t)
 
-    if ( spike_det == "" ):
-        return {'senders': [], 'times': []}
+    #if ( spike_det == "" ):
+    #    return {'senders': [], 'times': []}
     
-    n_spikes = nest.GetStatus(spike_det)[0]['n_events']
-    events = nest.GetStatus(spike_det)[0]['events']
-    print("Number of spikes: %i" % n_spikes)
-    spike_events = { 'senders': [ float(y) for y in events['senders']], 'times': [float(x) for x in events['times']] }
-    print(spike_events)
+   # n_spikes = nest.GetStatus(spike_det)[0]['n_events']
+    #events = nest.GetStatus(spike_det)[0]['events']
+    #print("Number of spikes: %i" % n_spikes)
+    #spike_events = { 'senders': [ float(y) for y in events['senders']], 'times': [float(x) for x in events['times']] }
+    #print(spike_events)
 
-    return spike_events
+    #return spike_events
 
+    # nest.SetKernelStatus({'print_time': True})
+
+    # TODO: this should be moved
+    # nest.set_verbosity("M_ERROR")
+    nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
+    nest.Run(t)
+
+
+def cleanup_simulation():
+    print("Cleaning up after simulation")
+    nest.Cleanup()
+
+
+def get_device_results():
+    #  print(rec_devices)
+    #  import pprint
+    got_results = False
+    results = {}
+    for device in rec_devices:
+        device_name = device[0]
+        device_gid = device[1]
+        status = nest.GetStatus(device_gid)[0]
+        #  pprint.pprint(status)
+        if status['n_events'] > 0:
+            got_results = True
+            #  print("Status:")
+            #  pprint.pprint(status)
+            events = {}
+            device_events = status['events']
+            # for node in device_events['senders']:
+            #    events[node] = []
+            for e in range(status['n_events']):
+                if 'voltmeter' in device_name:
+                    events[device_events['senders'][e]] = [
+                        device_events['times'][e], device_events['V_m'][e]]
+                else:
+                    events[device_events['senders'][e]] = [
+                        device_events['times'][e]]
+            results[device_name] = events
+            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+    if got_results:
+        return results
+    else:
+        return None

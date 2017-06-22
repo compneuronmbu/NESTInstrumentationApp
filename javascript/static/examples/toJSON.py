@@ -1,18 +1,21 @@
 import json
 import numpy as np
+import pprint
 
 
-def convert(specs):
+def convert(specs, conn_specs):
     json_dict = {"layers": []}
     json_dict['syn_models'] = specs[2]
     json_dict['models'] = {s[1]: s[0] for s in specs[1]}
     layers = specs[0]
 
     for layer in layers:
+        name = layer[0]
+        if "meter" in name or "Detector" in name or "Generator" in name:
+            continue
         layer_dict = {"neurons": []}
         print layer
         layer_dict['elements'] = layer[1]['elements']
-        name = layer[0]
         layer_dict['name'] = name
         try:
             ext = layer[1]['extent']
@@ -54,5 +57,9 @@ def convert(specs):
         json_dict["layers"].append(layer_dict)
 
         # print(json.dumps(json_dict))
+    json_dict["projections"] = conn_specs
+    print("##############################")
+    pprint.pprint(json_dict)
+    print("##############################")
     with open('brunel_converted.json', 'w') as fp:
         json.dump(json_dict, fp)

@@ -29,11 +29,13 @@ var deviceBoxMap = {};
 
 var nSelected = 0;
 var deviceCounter = 1;
+var uniqueID = 1;
 
 var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
 var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
+var serverUpdateEvent;
 
 init();
 
@@ -51,16 +53,11 @@ function init()
     // POINTS
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
-    
-    var xmlReq = new XMLHttpRequest();
-    xmlReq.onreadystatechange = function() {
-        if (xmlReq.readyState == 4 && xmlReq.status == 200) {
-            modelParameters = JSON.parse(this.responseText);
-            Brain( camera, scene );
-        }
-    };
-    xmlReq.open("get", "static/examples/brunel_converted.json", true);
-    xmlReq.send();
+
+    $.getJSON("/static/examples/brunel_converted.json", function ( data ) {
+        modelParameters = data;
+        Brain( camera, scene );
+    });
 
     // RENDERER
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -72,7 +69,28 @@ function init()
 
     Controls( circle_objects, camera, renderer.domElement );
 
+    serverUpdateEvent = new EventSource("/simulationData");
+    serverUpdateEvent.onmessage = handleMessage;
+
     //render();
+}
+
+function handleMessage(e)
+{
+    // console.log(e);
+    var recordedData = JSON.parse(e.data);
+    var t;
+    for (var device in recordedData)
+    {
+        for (var gid in recordedData[device])
+        {
+            t = recordedData[device][gid][0];
+        }
+    }
+    $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+    // console.log(recordedData);
+    colorFromVm(recordedData);
+
 }
 
 function toScreenXY (point_pos) {
@@ -166,61 +184,92 @@ function getSelectedShape()
     return selectedShape;
 }
 
-function makeSelectionInfo(ll, ur)
+
+function getGIDPoint(gid)
 {
-    return;
+    /*
+    * Gets layer and point index for a specified GID.
+    */
+    var minGID = 0;
+    for (var l in layer_points)
+    {
+        minGID += 1;  // from the GID of the layer
+        var pos = layer_points[l].points.geometry.attributes.position;
+        if (gid <= minGID + pos.count)
+        {
+            // point is in this layer
+            var pointIndex = 3*(gid - minGID - 1);
+            return {layer: l, pointIndex: pointIndex};
+        }
+        minGID += pos.count;
+    }
 }
 
-
-function makeNetwork()
+function colorFromVm(response)
 {
-  $.ajax({
-      type: "POST",
-      contentType: "application/json; charset=utf-8",
-      url: "/network",
-      data: JSON.stringify(modelParameters),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
-      dataType: "json"
-  });
+    var time = 0;
+    var V_m = 0;
+    var point;
+    var prevPoints;
+    var updateLayers = [];
+    for (var device in response)
+    {
+        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        if (deviceModel === "voltmeter")
+        {
+            for (gid in response[device])
+            {
+                point = getGIDPoint(gid);
+                V_m = response[device][gid][1];
+                colorVm = mapVmToColor(V_m, -70., -50.);
+
+                var points = layer_points[point.layer].points;
+                var colors = points.geometry.getAttribute("customColor").array;
+
+                colors[ point.pointIndex ]     = colorVm[0];
+                colors[ point.pointIndex + 1 ] = colorVm[1];
+                colors[ point.pointIndex + 2 ] = colorVm[2];
+                points.geometry.attributes.customColor.needsUpdate = true;
+            }
+        }
+    }
+}
+
+function mapVmToColor(Vm, minVm, maxVm)
+{
+    var clampedVm;
+    clampedVm = (Vm < minVm) ? minVm : Vm;
+    clampedVm = (Vm > maxVm) ? maxVm : Vm;
+    var colorRG = (clampedVm - minVm) / (maxVm - minVm);
+    return [colorRG, colorRG, 1.0];
+}
+
+function makeProjections()
+{
+    var projections = {};
+    projections['internal'] = modelParameters.projections;
+    $("#infoconnected").html( "Gathering selections to be connected ..." );
+    for (device in deviceBoxMap)
+    {
+      deviceModel = device.slice(0, device.lastIndexOf("_"));
+      projections[device] = {
+          specs: {
+              model: deviceModel
+          },
+          connectees: []
+      };
+      for (i in deviceBoxMap[device])
+      {
+          projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
+      }
+    }
+    return projections;
 }
 
 function makeConnections()
 {
-  $("#infoconnected").html( "Making network ..." );
-  makeNetwork();
-  // send synapse specifications
-  $.ajax({
-      type: "POST",
-      contentType: "application/json; charset=utf-8",
-      url: "/synapses",
-      data: JSON.stringify(synModels),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
-      dataType: "json"
-  });
-
   // create object to be sent
-  var projections = {};
-  $("#infoconnected").html( "Gathering selections to be connected ..." );
-  for (device in deviceBoxMap)
-  {
-    deviceModel = device.slice(0, device.lastIndexOf("_"));
-    projections[device] = {
-        specs: {
-            model: deviceModel
-        },
-        connectees: []
-    };
-    for (i in deviceBoxMap[device])
-    {
-        projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
-    }
-  }
+  var projections = makeProjections();
 
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
@@ -228,13 +277,11 @@ function makeConnections()
       type: "POST",
       contentType: "application/json; charset=utf-8",
       url: "/connect",
-      data: JSON.stringify(projections),
-      success: function (data) {
-          console.log(data.title);
-          console.log(data.article);
-      },
+      data: JSON.stringify({network: modelParameters,
+                            synapses: synModels,
+                            projections: projections}),
       dataType: "json"
-  });
+      });
   getConnections();
 }
 
@@ -245,35 +292,64 @@ function getConnections()
             {
               input: "dummyData"
             }).done(function(data){
-              $("#infoconnected").html( data.connections.length.toString() + " connection(s)" );
+              $("#infoconnected").html( data.connections.toString() + " connection(s)" );
             });
 }
 
 function runSimulation()
 {
-    // Make the network and connections before simulating
-    makeConnections();
+    var projections = makeProjections();
     $("#infoconnected").html( "Simulating ..." );
-    $.getJSON("/simulate",
-            {
-              time: "100"
-            }).done(function(data){
-              var spikeEvents = data.spikeEvents;
-              console.log("spikeEvents", spikeEvents)
-              makeSpikeTrain(spikeEvents);
+
+    //$.getJSON("/simulate",
+    //        {
+    //          time: "100"
+    //        }).done(function(data){
+    //          var spikeEvents = data.spikeEvents;
+    //          console.log("spikeEvents", spikeEvents)
+    //          makeSpikeTrain(spikeEvents);
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/simulate",
+        data: JSON.stringify({network: modelParameters,
+                      synapses: synModels,
+                      projections: projections,
+                      time: "10000"}),
+        dataType: "json"
+        }).done(function(data){
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
+              makeSpikeTrain(spikeEvents)
             });
-
-    // ping the server a few times
-    for (var i = 0; i < 3; ++i)
-    {
-        $.getJSON("/ping").done(function(data){
-                  console.log("Server responded");
-                });
-    }
 }
 
+function streamSimulate()
+{
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/streamSimulate",
+        data: JSON.stringify({network: modelParameters,
+                      synapses: synModels,
+                      projections: makeProjections(),
+                      time: "10000"}),
+        dataType: "json"
+        }).done(function(data)
+           {
+                console.log("Simulation started successfully");
+           });
+}
+
+function abortSimulation()
+{
+    $.ajax({
+        url: "/abortSimulation",
+        }).done(function(data)
+           {
+                console.log(data);
+           });
+}
 
 function saveSelection()
 {
@@ -282,6 +358,7 @@ function saveSelection()
     console.log("##################");
     console.log("deviceBoxMap", deviceBoxMap);
     console.log("circle_objects", circle_objects);
+    console.log("selectionBoxArray", selectionBoxArray);
     console.log("##################");
 
     // create object to be saved
@@ -318,6 +395,7 @@ function loadSelection()
 function loadFromJSON(textJSON)
 {
     var inputObj = JSON.parse( textJSON );
+    var IDsCreated = [];
     for (device in inputObj.projections)
     {
         var deviceModel = device.slice(0, device.lastIndexOf("_"));
@@ -335,19 +413,44 @@ function loadFromJSON(textJSON)
         for (i in inputObj.projections[device].connectees)
         {
             var boxSpecs = inputObj.projections[device].connectees[i];
-            var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
-            layerSelected = boxSpecs.name;
-            box.selectedNeuronType = boxSpecs.neuronType;
-            box.selectedSynModel = boxSpecs.synModel;
-            box.selectedShape = boxSpecs.maskShape;
 
-            selectionBoxArray.push(box);
-            box.makeBox();
+            // if not created yet, the box must be created
+            if ( IDsCreated.indexOf(boxSpecs.uniqueID) === -1 )
+            {
+                IDsCreated.push(boxSpecs.uniqueID);
+                var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                box.uniqueID = boxSpecs.uniqueID;
+
+                // update our uniqueID count only if box.uniqueID is greater
+                uniqueID = ( boxSpecs.uniqueID > uniqueID ) ? boxSpecs.uniqueID : uniqueID;
+                
+                box.layerName = boxSpecs.name;
+                box.selectedNeuronType = boxSpecs.neuronType;
+                box.selectedSynModel = boxSpecs.synModel;
+                box.selectedShape = boxSpecs.maskShape;
+
+                selectionBoxArray.push(box);
+                box.makeBox();
+            }
+            // if the box is already created, it must be found
+            else
+            {
+                for (i in selectionBoxArray)
+                {
+                    if (selectionBoxArray[i].uniqueID === boxSpecs.uniqueID)
+                    {
+                        var box = selectionBoxArray[i];
+                        break;
+                    }
+                }
+            }
 
             box.makeLine();
             var radius = target.geometry.boundingSphere.radius;
             box.setLineTarget(target.name);
-            box.updateLineEnd({x: target.position.x - radius, y: target.position.y}, target.name)
+            box.lineToDevice(target.position, radius, target.name);
+
+            box.updateColors();
 
             deviceBoxMap[device].push(box);
         }
@@ -370,12 +473,6 @@ function handleFileUpload( event )
 function addDeviceToProjections( device )
 {
     var deviceName = device + "_" + String(deviceCounter++);
-    /*projections[deviceName] = {
-        specs: {
-            model: device
-        },
-        connectees: []
-    };*/
     deviceBoxMap[deviceName] = [];
 }
 

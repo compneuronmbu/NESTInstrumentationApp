@@ -68,10 +68,26 @@ var Controls = function ( drag_objects, camera, domElement )
         outlineScene.remove(outlineMesh);
     }
 
+    function serverPrintGids()
+    {
+        // ############ Send points to server for GID feedback ############
+        // Send network specs to the server which makes the network
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/selector",
+            data: JSON.stringify({network: modelParameters, info: boxInFocus.getSelectionInfo()}),
+            success: function (data) {
+                console.log(data.title);
+                console.log(data.article);
+            },
+            dataType: "json"
+        });
+    }
+
     function onMouseDown( event )
     {
         //event.preventDefault();
-        //if (controls.shiftDown === true) return;
         if (event.target.localName === "canvas")
         {
             event.preventDefault();
@@ -249,6 +265,8 @@ var Controls = function ( drag_objects, camera, domElement )
             }
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
+            boxInFocus.updateColors();
+            boxInFocus.updateLineStart();
         }
         else if ( make_connection )
         {
@@ -267,7 +285,7 @@ var Controls = function ( drag_objects, camera, domElement )
                     var radius = deviceInFocus.geometry.boundingSphere.radius;
                     for (var i in deviceBoxMap[deviceName])
                     {
-                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x - radius, y: deviceInFocus.position.y}, deviceName);
+                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x, y: deviceInFocus.position.y}, deviceName, radius);
                     }
                 }
             }
@@ -278,7 +296,6 @@ var Controls = function ( drag_objects, camera, domElement )
     {
         event.preventDefault();
         event.stopPropagation();
-        //if (controls.shiftDown === true) return;
 
         if ( make_selection_box )
         {
@@ -295,6 +312,7 @@ var Controls = function ( drag_objects, camera, domElement )
 	    	var bounds = findBounds(mouseUpCoords, mouseDownCorrected);
 
 	    	boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
+            boxInFocus.uniqueID = uniqueID++;
 	    	layerSelected = boxInFocus.layerName;
 
 	    	// If we didn't click on a layer, it will cause problems further down
@@ -312,22 +330,7 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.selectedNeuronType = getSelectedDropDown("neuronType");
             boxInFocus.selectedSynModel = getSelectedDropDown("synapseModel");
 
-            // ############ Send points to server for GID feedback ############
-            // Send network specs to the server which makes the network
-            makeNetwork();
-
-            // send selection
-            $.ajax({
-                type: "POST",
-                contentType: "application/json; charset=utf-8",
-                url: "/selector",
-                data: JSON.stringify(boxInFocus.getSelectionInfo()),
-                success: function (data) {
-                    console.log(data.title);
-                    console.log(data.article);
-                },
-                dataType: "json"
-            });
+            serverPrintGids();
 
             requestAnimationFrame( render );
         }
@@ -350,7 +353,8 @@ var Controls = function ( drag_objects, camera, domElement )
             boxInFocus.removePoints();
             boxInFocus.makeSelectionPoints();
             boxInFocus.updateColors();
-            boxInFocus.updateLineStart(toObjectCoordinates({x: boxInFocus.ur.x, y: renderer.getSize().height - (boxInFocus.ll.y + boxInFocus.ur.y) / 2.0}))
+            boxInFocus.updateLineStart();
+            serverPrintGids();
         }
         else if ( make_connection )
         {
@@ -369,7 +373,7 @@ var Controls = function ( drag_objects, camera, domElement )
                 intersect_target = intersects[ 0 ].object;
                 var radius = intersect_target.geometry.boundingSphere.radius;
                 boxInFocus.setLineTarget(intersect_target.name);
-                boxInFocus.updateLineEnd({x: intersect_target.position.x - radius, y: intersect_target.position.y}, intersect_target.name)
+                boxInFocus.lineToDevice(intersect_target.position, radius, intersect_target.name)
 
                 deviceBoxMap[intersect_target.name].push(boxInFocus);
             }
