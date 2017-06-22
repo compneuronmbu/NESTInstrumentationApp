@@ -77,8 +77,8 @@ function init()
 
 function handleMessage(e)
 {
-    console.log(e);
     var recordedData = JSON.parse(e.data);
+    // console.log(recordedData);
     var t;
     for (var device in recordedData)
     {
@@ -90,6 +90,7 @@ function handleMessage(e)
     $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
     // console.log(recordedData);
     colorFromVm(recordedData);
+    colorFromSpike(recordedData);
 
 }
 
@@ -210,8 +211,6 @@ function colorFromVm(response)
     var time = 0;
     var V_m = 0;
     var point;
-    var prevPoints;
-    var updateLayers = [];
     for (var device in response)
     {
         var deviceModel = device.slice(0, device.lastIndexOf("_"));
@@ -229,6 +228,33 @@ function colorFromVm(response)
                 colors[ point.pointIndex ]     = colorVm[0];
                 colors[ point.pointIndex + 1 ] = colorVm[1];
                 colors[ point.pointIndex + 2 ] = colorVm[2];
+                points.geometry.attributes.customColor.needsUpdate = true;
+            }
+        }
+    }
+}
+
+function colorFromSpike(response)
+{
+    var time = 0;
+    var V_m = 0;
+    var point;
+    for (var device in response)
+    {
+        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        if (deviceModel === "spike_detector")
+        {
+            for (gid in response[device])
+            {
+                point = getGIDPoint(gid);
+                colorSpike = [0.9, 0.0, 0.0];
+
+                var points = layer_points[point.layer].points;
+                var colors = points.geometry.getAttribute("customColor").array;
+
+                colors[ point.pointIndex ]     = colorSpike[0];
+                colors[ point.pointIndex + 1 ] = colorSpike[1];
+                colors[ point.pointIndex + 2 ] = colorSpike[2];
                 points.geometry.attributes.customColor.needsUpdate = true;
             }
         }

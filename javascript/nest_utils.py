@@ -135,7 +135,6 @@ def connect_to_devices(device_projections):
     global spike_det
     spike_det = ""
     for device_name in device_projections:
-        print(device_projections[device_name])
         model = device_projections[device_name]['specs']['model']
         if model == "poisson_generator":
             nest_device = nest.Create(model, 1, {'rate': 70000.0})

@@ -8,7 +8,7 @@ import nest_utils as nu
 
 app = flask.Flask(__name__)
 subscriptions = []
-abort = False
+abort_sub = []
 
 
 @app.route('/')
@@ -93,27 +93,31 @@ def g_simulate(network, synapses, projections, t):
     nu.make_synapse_models(synapses)
     nu.connect_all(projections)
 
+    q = gevent.queue.Queue()
+    abort_sub.append(q)
+
     steps = 10000
+    sleep_t = 0.00001  # sleep time
     dt = float(t) / steps
     print("dt=%f" % dt)
     nu.prepare_simulation()
-    global abort
     for i in range(steps):
-        if abort:
-            print("Simulation aborted")
-            abort = False
-            break
+        if not q.empty():
+            abort = q.get()
+            if abort:
+                print("Simulation aborted")
+                break
         print("Step", i)
         nu.simulate(dt)
         # if i % 10 == 0:
         #    continue
         results = nu.get_device_results()
         if results:
-            print("g_simulate:", results)
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
-            gevent.sleep(0)  # yield this context to send data to client
+        # yield this context to check abort and send data
+        gevent.sleep(sleep_t)
     nu.cleanup_simulation()
 
 
@@ -135,8 +139,8 @@ def streamSimulate():
 
 @app.route('/abortSimulation')
 def abortSimulation():
-    global abort
-    abort = True
+    for sub in abort_sub:
+        sub.put(True)
     return flask.Response(status=204)
 
 
