@@ -88,10 +88,13 @@ function handleMessage(e)
         }
     }
     $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
-    // console.log(recordedData);
-    colorFromVm(recordedData);
-    colorFromSpike(recordedData);
+    var spiked = colorFromSpike(recordedData);
+    colorFromVm(recordedData, spiked);
 
+    for (var layer in layer_points)
+    {
+        layer_points[layer].points.geometry.attributes.customColor.needsUpdate = true;
+    }
 }
 
 function toScreenXY (point_pos) {
@@ -206,7 +209,7 @@ function getGIDPoint(gid)
     }
 }
 
-function colorFromVm(response)
+function colorFromVm(response, spiked)
 {
     var time = 0;
     var V_m = 0;
@@ -218,17 +221,20 @@ function colorFromVm(response)
         {
             for (gid in response[device])
             {
-                point = getGIDPoint(gid);
-                V_m = response[device][gid][1];
-                colorVm = mapVmToColor(V_m, -70., -50.);
+                if (spiked.indexOf(gid) === -1)  // if GID did not spike
+                {
+                    point = getGIDPoint(gid);
+                    V_m = response[device][gid][1];
+                    colorVm = mapVmToColor(V_m, -70., -50.);
 
-                var points = layer_points[point.layer].points;
-                var colors = points.geometry.getAttribute("customColor").array;
+                    var points = layer_points[point.layer].points;
+                    var colors = points.geometry.getAttribute("customColor").array;
 
-                colors[ point.pointIndex ]     = colorVm[0];
-                colors[ point.pointIndex + 1 ] = colorVm[1];
-                colors[ point.pointIndex + 2 ] = colorVm[2];
-                points.geometry.attributes.customColor.needsUpdate = true;
+                    colors[ point.pointIndex ]     = colorVm[0];
+                    colors[ point.pointIndex + 1 ] = colorVm[1];
+                    colors[ point.pointIndex + 2 ] = colorVm[2];
+                    //points.geometry.attributes.customColor.needsUpdate = true;
+                }
             }
         }
     }
@@ -239,6 +245,7 @@ function colorFromSpike(response)
     var time = 0;
     var V_m = 0;
     var point;
+    var spikedGIDs = [];
     for (var device in response)
     {
         var deviceModel = device.slice(0, device.lastIndexOf("_"));
@@ -255,10 +262,12 @@ function colorFromSpike(response)
                 colors[ point.pointIndex ]     = colorSpike[0];
                 colors[ point.pointIndex + 1 ] = colorSpike[1];
                 colors[ point.pointIndex + 2 ] = colorSpike[2];
-                points.geometry.attributes.customColor.needsUpdate = true;
+                //points.geometry.attributes.customColor.needsUpdate = true;
+                spikedGIDs.push(gid);
             }
         }
     }
+    return spikedGIDs;
 }
 
 function mapVmToColor(Vm, minVm, maxVm)
@@ -268,6 +277,18 @@ function mapVmToColor(Vm, minVm, maxVm)
     clampedVm = (Vm > maxVm) ? maxVm : Vm;
     var colorRG = (clampedVm - minVm) / (maxVm - minVm);
     return [colorRG, colorRG, 1.0];
+}
+
+function resetBoxColors()
+{
+    for (device in deviceBoxMap)
+    {
+        for (i in deviceBoxMap[device])
+        {
+            deviceBoxMap[device][i].updateColors();
+        }
+    }
+    
 }
 
 function makeProjections()
@@ -374,6 +395,7 @@ function abortSimulation()
         }).done(function(data)
            {
                 console.log(data);
+                resetBoxColors();
            });
 }
 

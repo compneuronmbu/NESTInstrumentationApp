@@ -283,6 +283,7 @@ class SelectionBox {
 		var selectionBounds = this.getSelectionBounds();
 		var centreX = (selectionBounds.ll.x + selectionBounds.ur.x) / 2;
 		var direction = 1;
+		var endLength = 0.015;
 
 		var endPos = (newEndPos === undefined) ? curve.points[3] : newEndPos;
     	if ( endPos.x < centreX )
@@ -296,14 +297,14 @@ class SelectionBox {
     	}
 
 		curve.points[0].y = (selectionBounds.ll.y + selectionBounds.ur.y) / 2;
-		curve.points[1].x = curve.points[0].x + direction * -0.05;
+		curve.points[1].x = curve.points[0].x + direction * -endLength;
 		curve.points[1].y = curve.points[0].y;
 
 		if ( newEndPos !== undefined )
 		{
         	curve.points[3].x = newEndPos.x + direction * radius;
         	curve.points[3].y = newEndPos.y;
-        	curve.points[2].x = curve.points[3].x + direction * 0.05;
+        	curve.points[2].x = curve.points[3].x + direction * endLength;
         	curve.points[2].y = curve.points[3].y;
 		}
 		for (var i=0; i<=this.CURVE_SEGMENTS; ++i)
