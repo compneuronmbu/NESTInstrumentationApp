@@ -109,6 +109,7 @@ def g_simulate(network, synapses, projections, t):
         #    continue
         results = nu.get_device_results()
         if results:
+            print("g_simulate:", results)
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)

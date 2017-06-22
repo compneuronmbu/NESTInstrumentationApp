@@ -77,7 +77,7 @@ function init()
 
 function handleMessage(e)
 {
-    // console.log(e);
+    console.log(e);
     var recordedData = JSON.parse(e.data);
     var t;
     for (var device in recordedData)
@@ -320,7 +320,7 @@ function runSimulation()
         }).done(function(data){
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
-              makeSpikeTrain(spikeEvents)
+              //makeSpikeTrain(spikeEvents)
             });
 }
 

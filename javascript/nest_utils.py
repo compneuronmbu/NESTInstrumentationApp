@@ -155,6 +155,7 @@ def connect_to_devices(device_projections):
                 nest.Connect(nest_neurons, nest_device)
             elif model == "voltmeter":
                 voltmeter = nest_device
+                nest.Connect(nest_device, nest_neurons, syn_spec=synapse_model)
             else:
                 nest.Connect(nest_device, nest_neurons,
                              syn_spec=synapse_model)
@@ -226,12 +227,12 @@ def get_device_results():
             #    events[node] = []
             for e in range(status['n_events']):
                 if 'voltmeter' in device_name:
-                    events[device_events['senders'][e]] = [
+                    events[str(device_events['senders'][e])] = [
                         device_events['times'][e], device_events['V_m'][e]]
                 else:
-                    events[device_events['senders'][e]] = [
+                    events[str(device_events['senders'][e])] = [
                         device_events['times'][e]]
-            results[device_name] = events
+            results[str(device_name)] = events
             nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
     if got_results:
         return results
