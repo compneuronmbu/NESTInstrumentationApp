@@ -173,7 +173,11 @@ def prepare_simulation():
 
 def simulate(t):
     # nest.SetKernelStatus({'print_time': True})
-    nest.set_verbosity("M_ERROR")  # TODO: this should be moved
+
+    # TODO: this should be moved
+    # nest.set_verbosity("M_ERROR")
+    nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
     nest.Run(t)
 
 

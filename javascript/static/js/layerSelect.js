@@ -332,6 +332,16 @@ function streamSimulate()
            });
 }
 
+function abortSimulation()
+{
+    $.ajax({
+        url: "/abortSimulation",
+        }).done(function(data)
+           {
+                console.log(data);
+           });
+}
+
 function saveSelection()
 {
     console.log("##################");
