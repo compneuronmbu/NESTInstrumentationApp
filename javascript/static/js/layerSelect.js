@@ -251,8 +251,6 @@ function getConnections()
 
 function runSimulation()
 {
-    var t;
-
     // Make the network and connections before simulating
     makeConnections();
     $("#infoconnected").html( "Simulating ..." );
@@ -274,8 +272,6 @@ function runSimulation()
                   console.log("Server responded");
                 });
     }
-
-    //makeSpikeTrain();
 }
 
 

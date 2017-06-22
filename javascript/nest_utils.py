@@ -106,6 +106,7 @@ def connect(projections):
     Makes connections from selections specified by the user.
     """
     global spike_det
+    spike_det = ""
 
     for device_name in projections:
         model = projections[device_name]['specs']['model']
@@ -136,6 +137,9 @@ def simulate(t):
     nest.SetKernelStatus({'print_time': True})
     nest.Simulate(t)
 
+    if ( spike_det == "" ):
+        return {'senders': [], 'times': []}
+    
     n_spikes = nest.GetStatus(spike_det)[0]['n_events']
     events = nest.GetStatus(spike_det)[0]['events']
     print("Number of spikes: %i" % n_spikes)
