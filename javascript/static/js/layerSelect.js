@@ -283,9 +283,9 @@ function resetBoxColors()
 {
     for (device in deviceBoxMap)
     {
-        for (i in deviceBoxMap[device])
+        for (i in deviceBoxMap[device].connectees)
         {
-            deviceBoxMap[device][i].updateColors();
+            deviceBoxMap[device].connectees[i].updateColors();
         }
     }
     
@@ -298,16 +298,13 @@ function makeProjections()
     $("#infoconnected").html( "Gathering selections to be connected ..." );
     for (device in deviceBoxMap)
     {
-      deviceModel = device.slice(0, device.lastIndexOf("_"));
       projections[device] = {
-          specs: {
-              model: deviceModel
-          },
+          specs: deviceBoxMap[device].specs,
           connectees: []
       };
-      for (i in deviceBoxMap[device])
+      for (i in deviceBoxMap[device].connectees)
       {
-          projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
+          projections[device].connectees.push(deviceBoxMap[device].connectees[i].getSelectionInfo())
       }
     }
     return projections;
@@ -317,6 +314,7 @@ function makeConnections()
 {
   // create object to be sent
   var projections = makeProjections();
+  console.log(projections);
 
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
@@ -413,16 +411,14 @@ function saveSelection()
     var projections = {};
     for (device in deviceBoxMap)
     {
-      deviceModel = device.slice(0, device.lastIndexOf("_"));
+      deviceModel = deviceBoxMap[device].specs.model;
       projections[device] = {
-          specs: {
-              model: deviceModel
-          },
+          specs: deviceBoxMap[device].specs,
           connectees: []
       };
-      for (i in deviceBoxMap[device])
+      for (i in deviceBoxMap[device].connectees)
       {
-          projections[device].connectees.push(deviceBoxMap[device][i].getInfoForSaving())
+          projections[device].connectees.push(deviceBoxMap[device].connectees[i].getInfoForSaving())
       }
     }
     console.log("projections", projections);
@@ -443,10 +439,11 @@ function loadSelection()
 function loadFromJSON(textJSON)
 {
     var inputObj = JSON.parse( textJSON );
+    console.log(inputObj)
     var IDsCreated = [];
     for (device in inputObj.projections)
     {
-        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        var deviceModel = inputObj.projections[device].specs.model;
         if (deviceModel === "poisson_generator")
         {
             makeStimulationDevice( deviceModel );
@@ -499,8 +496,8 @@ function loadFromJSON(textJSON)
             box.lineToDevice(target.position, radius, target.name);
 
             box.updateColors();
-
-            deviceBoxMap[device].push(box);
+            console.log(deviceBoxMap)
+            deviceBoxMap[device].connectees.push(box);
         }
     }
 }
@@ -517,45 +514,38 @@ function handleFileUpload( event )
     fr.readAsText(event.target.files[0]);
 }
 
-
-function addDeviceToProjections( device )
+function makeDevice( device, col, map, params={} )
 {
-    var deviceName = device + "_" + String(deviceCounter++);
-    deviceBoxMap[deviceName] = [];
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    geometry.computeBoundingSphere(); // needed for loading
+    var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
+    var circle = new THREE.Mesh( geometry, material );
+    var deviceName = device + "_" + String( deviceCounter++ );
+    circle.name = deviceName;
+
+    scene.add( circle );
+    circle_objects.push( circle );
+
+    deviceBoxMap[deviceName] = {specs: {model: device,
+                                        params: params},
+                                connectees: []};
 }
 
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
     var col = 0xB28080
-    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    geometry.computeBoundingSphere(); // needed for loading
     var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-    var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
-    var circle = new THREE.Mesh( geometry, material );
-    circle.name = device + "_" + String(deviceCounter);
-
-    scene.add( circle );
-    circle_objects.push( circle );
-
-    addDeviceToProjections( device );
+    var params = { rate: 65000.0 }
+    makeDevice( device, col, map, params );
 }
 
 function makeRecordingDevice( device )
 {
     console.log("making recording device of type", device)
     var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
-    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    geometry.computeBoundingSphere(); // needed for loading
     var map = new THREE.TextureLoader().load( "static/js/textures/multimeter_white.png" );
-    var material = new THREE.MeshBasicMaterial( { color: col, map: map } );
-    var circle = new THREE.Mesh( geometry, material );
-    circle.name = device + "_" + String(deviceCounter);
-
-    scene.add( circle );
-    circle_objects.push( circle );
-
-    addDeviceToProjections( device );
+    makeDevice( device, col, map );
 }
 
 function render()

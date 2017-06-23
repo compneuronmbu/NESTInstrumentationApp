@@ -283,9 +283,9 @@ var Controls = function ( drag_objects, camera, domElement )
                     makeOutline(deviceInFocus);
                     var deviceName = deviceInFocus.name
                     var radius = deviceInFocus.geometry.boundingSphere.radius;
-                    for (var i in deviceBoxMap[deviceName])
+                    for (var i in deviceBoxMap[deviceName].connectees)
                     {
-                        deviceBoxMap[deviceName][i].updateLineEnd({x: deviceInFocus.position.x, y: deviceInFocus.position.y}, deviceName, radius);
+                        deviceBoxMap[deviceName].connectees[i].updateLineEnd({x: deviceInFocus.position.x, y: deviceInFocus.position.y}, deviceName, radius);
                     }
                 }
             }
@@ -375,7 +375,7 @@ var Controls = function ( drag_objects, camera, domElement )
                 boxInFocus.setLineTarget(intersect_target.name);
                 boxInFocus.lineToDevice(intersect_target.position, radius, intersect_target.name)
 
-                deviceBoxMap[intersect_target.name].push(boxInFocus);
+                deviceBoxMap[intersect_target.name].connectees.push(boxInFocus);
             }
             else
             {
@@ -407,10 +407,10 @@ var Controls = function ( drag_objects, camera, domElement )
                 }
                 for (device in deviceBoxMap)
                 {
-                    index = deviceBoxMap[device].indexOf(boxInFocus);
+                    index = deviceBoxMap[device].connectees.indexOf(boxInFocus);
                     if ( index > -1 )
                     {
-                        deviceBoxMap[device].splice(index, 1);
+                        deviceBoxMap[device].connectees.splice(index, 1);
                     }
                 }
                 console.log("dbm", deviceBoxMap)
@@ -420,9 +420,9 @@ var Controls = function ( drag_objects, camera, domElement )
             {
                 // remove connection lines
                 var deviceName = deviceInFocus.name;
-                for (var i in deviceBoxMap[deviceName])
+                for (var i in deviceBoxMap[deviceName].connectees)
                 {
-                    deviceBoxMap[deviceName][i].removeLines( deviceName );
+                    deviceBoxMap[deviceName].connectees[i].removeLines( deviceName );
                 }
                 removeOutline()
                 for (i in circle_objects)
@@ -433,7 +433,7 @@ var Controls = function ( drag_objects, camera, domElement )
                         circle_objects.splice(i, 1);
                     }
                 }
-                delete deviceBoxMap[deviceName];
+                delete deviceBoxMap[deviceName].connectees;
                 deviceInFocus = undefined;
             }
         }
