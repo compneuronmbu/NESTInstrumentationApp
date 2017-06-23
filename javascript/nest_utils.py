@@ -227,7 +227,8 @@ def get_device_results():
             for e in range(status['n_events']):
                 if 'voltmeter' in device_name:
                     events[str(device_events['senders'][e])] = [
-                        device_events['times'][e], device_events['V_m'][e]]
+                        device_events['times'][e],
+                        round(device_events['V_m'][e])]
                 else:
                     events[str(device_events['senders'][e])] = [
                         device_events['times'][e]]

@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 import pprint
 import gevent
 import gevent.wsgi
@@ -107,7 +108,9 @@ def g_simulate(network, synapses, projections, t):
             if abort:
                 print("Simulation aborted")
                 break
-        print("Step", i)
+        if i % 10 == 0 and i > 0:
+            sys.stdout.write("\rStep %i" % i)
+            sys.stdout.flush()
         nu.simulate(dt)
         # if i % 10 == 0:
         #    continue
@@ -118,6 +121,7 @@ def g_simulate(network, synapses, projections, t):
                 sub.put(jsonResult)
         # yield this context to check abort and send data
         gevent.sleep(sleep_t)
+    print("")
     nu.cleanup_simulation()
 
 
