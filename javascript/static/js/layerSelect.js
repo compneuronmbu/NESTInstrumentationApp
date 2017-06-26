@@ -36,7 +36,7 @@ var stimulationButtons = { "poissonGenerator": false };
 var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
 var serverUpdateEvent;
-var serverUpdateEvent2;
+var serverUpdatePlotEvent;
 
 var spikeTrain;
 var madePlot = false;
@@ -76,8 +76,8 @@ function init()
     serverUpdateEvent = new EventSource("/simulationData");
     serverUpdateEvent.onmessage = handleMessage;
 
-    serverUpdateEvent2 = new EventSource("/simulationData2");
-    serverUpdateEvent2.onmessage = handleMessage2;
+    serverUpdatePlotEvent = new EventSource("/simulationPlotData");
+    serverUpdatePlotEvent.onmessage = getPlotEvents;
 
     //render();
 }
@@ -311,13 +311,6 @@ function runSimulation()
 
     $("#infoconnected").html( "Simulating ..." );
 
-    //$.getJSON("/simulate",
-    //        {
-    //          time: "100"
-    //        }).done(function(data){
-    //          var spikeEvents = data.spikeEvents;
-    //          console.log("spikeEvents", spikeEvents)
-    //          makeSpikeTrain(spikeEvents);
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
@@ -328,9 +321,6 @@ function runSimulation()
                       time: "1000"}),
         dataType: "json"
         }).done(function(data){
-              //var spikeEvents = data.spikeEvents;
-              console.log("spikeEvents", spikeEvents);
-              //makeSpikeTrain(spikeEvents);
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
             });

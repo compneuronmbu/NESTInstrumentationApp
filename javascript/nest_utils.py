@@ -227,7 +227,7 @@ def get_device_results():
         return None
 
 
-def get_device_results2():
+def get_plot_device_results():
     got_results = False
 
     spike_events = {'senders': [], 'times': []}

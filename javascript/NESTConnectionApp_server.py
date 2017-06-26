@@ -8,7 +8,7 @@ import nest_utils as nu
 
 app = flask.Flask(__name__)
 subscriptions = []
-subscriptions2 = []
+plot_devices = []
 abort = False
 
 
@@ -86,10 +86,11 @@ def simulate_ajax():
     #print("Simulating for ", t, "ms ...")
     #nu.simulate(t, return_events=True)
     #nu.cleanup_simulation()
-    return flask.Response(status=204)
+    #return flask.Response(status=204)
     #return flask.jsonify(spikeEvents=events)
 
     gevent.spawn(g_simulate2, network, synapses, projections, t)
+    return flask.Response(status=204)
 
 def g_simulate2(network, synapses, projections, t):
     nu.make_network(network)
@@ -103,15 +104,15 @@ def g_simulate2(network, synapses, projections, t):
     for i in range(steps):
         print("Step", i)
         nu.simulate(dt)
-        # if i % 10 == 0:
+        #if i % 100 == 0:
         #    continue
-        results = nu.get_device_results2()
+        results = nu.get_plot_device_results()
         if results:
             results['dt'] = dt;
             jsonResult = flask.json.dumps(results)
-            for sub in subscriptions2:
+            for sub in plot_devices:
                 sub.put(jsonResult)
-            gevent.sleep(0.5)  # yield this context to send data to client
+            gevent.sleep(0.3)  # yield this context to send data to client
     nu.cleanup_simulation()
 
 
@@ -182,19 +183,19 @@ def simulationData():
     return flask.Response(gen(), mimetype="text/event-stream")
 
 
-@app.route('/simulationData2')
-def simulationData2():
+@app.route('/simulationPlotData')
+def simulationPlotData():
 
     def gen():
         q = gevent.queue.Queue()
-        subscriptions2.append(q)
+        plot_devices.append(q)
         try:
             while True:
                 result = q.get()
                 ev = str("data: " + result + "\n\n")
                 yield ev
         except GeneratorExit:
-            subscriptions2.remove(q)
+            plot_devices.remove(q)
     return flask.Response(gen(), mimetype="text/event-stream")
 
 
