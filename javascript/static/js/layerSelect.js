@@ -535,7 +535,8 @@ function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
     var col = 0xB28080
-    var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+    //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+    var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
     var params = { rate: 65000.0 }
     makeDevice( device, col, map, params );
 }
@@ -543,8 +544,22 @@ function makeStimulationDevice( device )
 function makeRecordingDevice( device )
 {
     console.log("making recording device of type", device)
-    var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
-    var map = new THREE.TextureLoader().load( "static/js/textures/multimeter_white.png" );
+    if (device === "voltmeter")
+    {
+        var col = 0xBDB280;
+        var map = new THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
+    }
+    else if (device === "spike_detector")
+    {
+        var col = 0x809980;
+        var map = new THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
+    }
+    else
+    {
+        var col = 0xBDB280;
+        var map = new THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
+    }
+    
     makeDevice( device, col, map );
 }
 
