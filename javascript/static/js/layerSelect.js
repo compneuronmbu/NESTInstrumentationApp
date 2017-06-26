@@ -537,7 +537,7 @@ function makeStimulationDevice( device )
     var col = 0xB28080
     //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
     var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
-    var params = { rate: 65000.0 }
+    var params = { rate: 70000.0 }
     makeDevice( device, col, map, params );
 }
 
