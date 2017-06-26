@@ -84,9 +84,9 @@ def simulate_ajax():
 
     #nu.prepare_simulation()
     #print("Simulating for ", t, "ms ...")
-    #events = nu.simulate(t, return_events=True)
+    #nu.simulate(t, return_events=True)
     #nu.cleanup_simulation()
-     #return flask.Response(status=204)
+    return flask.Response(status=204)
     #return flask.jsonify(spikeEvents=events)
 
     gevent.spawn(g_simulate2, network, synapses, projections, t)
@@ -96,7 +96,7 @@ def g_simulate2(network, synapses, projections, t):
     nu.make_synapse_models(synapses)
     nu.connect_all(projections)
 
-    steps = 10
+    steps = 1000
     dt = float(t) / steps
     print("dt=%f" % dt)
     nu.prepare_simulation()
@@ -111,7 +111,7 @@ def g_simulate2(network, synapses, projections, t):
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions2:
                 sub.put(jsonResult)
-            gevent.sleep(1)  # yield this context to send data to client
+            gevent.sleep(0.5)  # yield this context to send data to client
     nu.cleanup_simulation()
 
 

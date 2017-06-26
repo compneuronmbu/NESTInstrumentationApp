@@ -133,7 +133,8 @@ def connect_to_devices(device_projections):
 
     global rec_devices
     global spike_det
-    spike_det = ""
+    spike_det = []
+
     for device_name in device_projections:
         print(device_projections[device_name])
         model = device_projections[device_name]['specs']['model']
@@ -151,7 +152,7 @@ def connect_to_devices(device_projections):
             synapse_model = selection['synModel']
 
             if model == "spike_detector":
-                spike_det = nest_device
+                spike_det.append(nest_device)
                 nest.Connect(nest_neurons, nest_device)
             else:
                 nest.Connect(nest_device, nest_neurons,
@@ -186,20 +187,6 @@ def simulate(t, return_events=False):
     nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
 
     nest.Run(t)
-
-    if( return_events ):
-        if ( spike_det == "" ):
-            return {'senders': [], 'times': []}
-        
-        n_spikes = nest.GetStatus(spike_det)[0]['n_events']
-        events = nest.GetStatus(spike_det)[0]['events']
-        print("Number of spikes: %i" % n_spikes)
-        spike_events = { 'senders': [ float(y) for y in events['senders']], 'times': [float(x) for x in events['times']] }
-        #print(spike_events)
-
-        return spike_events
-    else:
-        return 0
 
 
 def cleanup_simulation():
@@ -241,48 +228,19 @@ def get_device_results():
 
 
 def get_device_results2():
-    #  print(rec_devices)
-    #  import pprint
     got_results = False
 
-    if ( spike_det == "" ):
-        return {'senders': [], 'times': []}
-    
-    n_spikes = nest.GetStatus(spike_det)[0]['n_events']
-    if n_spikes > 0:
-        got_results = True
-        events = nest.GetStatus(spike_det)[0]['events']
-        print("Number of spikes: %i" % n_spikes)
-        spike_events = { 'senders': [ float(y) for y in events['senders']], 'times': [float(x) for x in events['times']] }
-    #print(spike_events)
+    spike_events = {'senders': [], 'times': []}
+
+    for detectors in spike_det:
+        n_spikes = nest.GetStatus(detectors)[0]['n_events']
+        if n_spikes > 0:
+            got_results = True
+            events = nest.GetStatus(detectors)[0]['events']
+            print("Number of spikes: %i" % n_spikes)
+            spike_events['senders'] += [ float(y) for y in events['senders']]
+            spike_events['times'] += [float(x) for x in events['times']]
     if got_results:
         return spike_events
     else:
         return None
-
-   # for device in rec_devices:
-   #     device_name = device[0]
-   #     device_gid = device[1]
-   #     status = nest.GetStatus(device_gid)[0]
-        #  pprint.pprint(status)
-   #     if status['n_events'] > 0:
-   #         got_results = True
-            #  print("Status:")
-            #  pprint.pprint(status)
-   #         events = {}
-   #         device_events = status['events']
-            # for node in device_events['senders']:
-            #    events[node] = []
-   #         for e in range(status['n_events']):
-   #             if 'voltmeter' in device_name:
-   #                 events[str(device_events['senders'][e])] = [
-   #                     device_events['times'][e], device_events['V_m'][e]]
-   #             else:
-   #                 events[str(device_events['senders'][e])] = [
-   #                     device_events['times'][e]]
-   #         results[device_name] = events
-   #         nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
-   # if got_results:
-   #     return results
-   # else:
-   #     return None

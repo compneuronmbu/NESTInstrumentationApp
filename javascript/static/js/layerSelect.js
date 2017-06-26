@@ -39,6 +39,7 @@ var serverUpdateEvent;
 var serverUpdateEvent2;
 
 var spikeTrain;
+var madePlot = false;
 
 init();
 
@@ -307,6 +308,7 @@ function runSimulation()
     var projections = makeProjections();
 
     makeDevicePlot();
+
     $("#infoconnected").html( "Simulating ..." );
 
     //$.getJSON("/simulate",
@@ -323,7 +325,7 @@ function runSimulation()
         data: JSON.stringify({network: modelParameters,
                       synapses: synModels,
                       projections: projections,
-                      time: "200"}),
+                      time: "1000"}),
         dataType: "json"
         }).done(function(data){
               //var spikeEvents = data.spikeEvents;
