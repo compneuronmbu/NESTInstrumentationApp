@@ -8,6 +8,7 @@ import nest_utils as nu
 
 app = flask.Flask(__name__)
 subscriptions = []
+subscriptions2 = []
 abort = False
 
 
@@ -77,15 +78,41 @@ def simulate_ajax():
     projections = data['projections']
     t = data['time']
 
+    #nu.make_network(network)
+    #nu.make_synapse_models(synapses)
+    #nu.connect_all(projections)
+
+    #nu.prepare_simulation()
+    #print("Simulating for ", t, "ms ...")
+    #events = nu.simulate(t, return_events=True)
+    #nu.cleanup_simulation()
+     #return flask.Response(status=204)
+    #return flask.jsonify(spikeEvents=events)
+
+    gevent.spawn(g_simulate2, network, synapses, projections, t)
+
+def g_simulate2(network, synapses, projections, t):
     nu.make_network(network)
     nu.make_synapse_models(synapses)
     nu.connect_all(projections)
 
+    steps = 10
+    dt = float(t) / steps
+    print("dt=%f" % dt)
     nu.prepare_simulation()
-    print("Simulating for ", t, "ms ...")
-    nu.simulate(t)
+    for i in range(steps):
+        print("Step", i)
+        nu.simulate(dt)
+        # if i % 10 == 0:
+        #    continue
+        results = nu.get_device_results2()
+        if results:
+            results['dt'] = dt;
+            jsonResult = flask.json.dumps(results)
+            for sub in subscriptions2:
+                sub.put(jsonResult)
+            gevent.sleep(1)  # yield this context to send data to client
     nu.cleanup_simulation()
-    return flask.Response(status=204)
 
 
 def g_simulate(network, synapses, projections, t):
@@ -109,7 +136,6 @@ def g_simulate(network, synapses, projections, t):
         #    continue
         results = nu.get_device_results()
         if results:
-            print("g_simulate:", results)
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
@@ -153,6 +179,22 @@ def simulationData():
                 yield ev
         except GeneratorExit:
             subscriptions.remove(q)
+    return flask.Response(gen(), mimetype="text/event-stream")
+
+
+@app.route('/simulationData2')
+def simulationData2():
+
+    def gen():
+        q = gevent.queue.Queue()
+        subscriptions2.append(q)
+        try:
+            while True:
+                result = q.get()
+                ev = str("data: " + result + "\n\n")
+                yield ev
+        except GeneratorExit:
+            subscriptions2.remove(q)
     return flask.Response(gen(), mimetype="text/event-stream")
 
 
