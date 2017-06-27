@@ -32,6 +32,8 @@ var deviceBoxMap = {};
 var nSelected = 0;
 var deviceCounter = 1;
 var uniqueID = 1;
+var newDevicePos = [0.0, 0.15, -0.15, 0.3, -0.3];
+var newDeviceIndex = 0;
 
 var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
@@ -527,8 +529,14 @@ function makeDevice( device, col, map, params={} )
     var deviceName = device + "_" + String( deviceCounter++ );
     circle.name = deviceName;
 
+    circle.position.y = newDevicePos[newDeviceIndex];
+    newDeviceIndex = (newDeviceIndex + 1 === newDevicePos.length) ? 0 : ++newDeviceIndex;
+
     scene.add( circle );
     circle_objects.push( circle );
+
+    controls.deviceInFocus = circle;
+    controls.makeOutline(controls.deviceInFocus);
 
     deviceBoxMap[deviceName] = {specs: {model: device,
                                         params: params},
