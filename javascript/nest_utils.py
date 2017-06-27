@@ -134,14 +134,16 @@ def connect_to_devices(device_projections):
     global rec_devices
     global spike_det
     spike_det = []
+    params_to_floatify = ['rate', 'amplitude', 'frequency']
 
     for device_name in device_projections:
-        print(device_projections[device_name])
         model = device_projections[device_name]['specs']['model']
-        if model == "poisson_generator":
-            nest_device = nest.Create(model, 1, {'rate': 70000.0})
-        else:
-            nest_device = nest.Create(model)
+        params = device_projections[device_name]['specs']['params']
+        # floatify params
+        for key in params:
+            if key in params_to_floatify:
+                params[key] = float(params[key])
+        nest_device = nest.Create(model, 1, params)
 
         # If it is a recording device, add it to the list
         if 'record_to' in nest.GetStatus(nest_device)[0]:
@@ -215,7 +217,8 @@ def get_device_results():
             for e in range(status['n_events']):
                 if 'voltmeter' in device_name:
                     events[str(device_events['senders'][e])] = [
-                        device_events['times'][e], device_events['V_m'][e]]
+                        device_events['times'][e],
+                        round(device_events['V_m'][e])]
                 else:
                     events[str(device_events['senders'][e])] = [
                         device_events['times'][e]]

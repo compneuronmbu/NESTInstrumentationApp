@@ -94,12 +94,21 @@ class SelectionBox {
 			if (layer_points.hasOwnProperty(name))
 	        {
 				var bbox = layer_points[name].points.geometry.boundingBox;
-				if ( (roomMouseDown.x >= bbox.min.x) && (roomMouseDown.y >= bbox.min.y) && (roomMouseDown.x <= bbox.max.x) && (roomMouseDown.y <= bbox.max.y) )
+				var shiftX = Math.abs(0.1 * (bbox.max.x - bbox.min.x));
+				var shiftY = Math.abs(0.1 * (bbox.max.y - bbox.min.y));
+				if ( (roomMouseDown.x >= bbox.min.x - shiftX)
+					  && (roomMouseDown.y >= bbox.min.y - shiftY)
+					  && (roomMouseDown.x <= bbox.max.x + shiftX)
+					  && (roomMouseDown.y <= bbox.max.y + shiftY) )
 				{
 					this.layerName = name;
 					break;
 				}
-				else if ( ( this.layerName === "" ) && (roomMouseUp.x >= bbox.min.x) && (roomMouseUp.y >= bbox.min.y) && (roomMouseUp.x <= bbox.max.x) && (roomMouseUp.y <= bbox.max.y) )
+				else if ( ( this.layerName === "" )
+					      && (roomMouseUp.x >= bbox.min.x - shiftX)
+					      && (roomMouseUp.y >= bbox.min.y - shiftY)
+					      && (roomMouseUp.x <= bbox.max.x + shiftX)
+					      && (roomMouseUp.y <= bbox.max.y + shiftY) )
 				{
 					this.layerName = name;
 				}
@@ -283,6 +292,7 @@ class SelectionBox {
 		var selectionBounds = this.getSelectionBounds();
 		var centreX = (selectionBounds.ll.x + selectionBounds.ur.x) / 2;
 		var direction = 1;
+		var endLength = 0.015;
 
 		var endPos = (newEndPos === undefined) ? curve.points[3] : newEndPos;
     	if ( endPos.x < centreX )
@@ -296,14 +306,14 @@ class SelectionBox {
     	}
 
 		curve.points[0].y = (selectionBounds.ll.y + selectionBounds.ur.y) / 2;
-		curve.points[1].x = curve.points[0].x + direction * -0.05;
+		curve.points[1].x = curve.points[0].x + direction * -endLength;
 		curve.points[1].y = curve.points[0].y;
 
 		if ( newEndPos !== undefined )
 		{
         	curve.points[3].x = newEndPos.x + direction * radius;
         	curve.points[3].y = newEndPos.y;
-        	curve.points[2].x = curve.points[3].x + direction * 0.05;
+        	curve.points[2].x = curve.points[3].x + direction * endLength;
         	curve.points[2].y = curve.points[3].y;
 		}
 		for (var i=0; i<=this.CURVE_SEGMENTS; ++i)

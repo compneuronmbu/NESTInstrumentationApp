@@ -84,8 +84,8 @@ function init()
 
 function handleMessage(e)
 {
-    console.log(e);
     var recordedData = JSON.parse(e.data);
+    // console.log(recordedData);
     var t;
     for (var device in recordedData)
     {
@@ -95,9 +95,13 @@ function handleMessage(e)
         }
     }
     $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
-    // console.log(recordedData);
-    colorFromVm(recordedData);
+    var spiked = colorFromSpike(recordedData);
+    colorFromVm(recordedData, spiked);
 
+    for (var layer in layer_points)
+    {
+        layer_points[layer].points.geometry.attributes.customColor.needsUpdate = true;
+    }
 }
 
 function toScreenXY (point_pos) {
@@ -212,13 +216,11 @@ function getGIDPoint(gid)
     }
 }
 
-function colorFromVm(response)
+function colorFromVm(response, spiked)
 {
     var time = 0;
     var V_m = 0;
     var point;
-    var prevPoints;
-    var updateLayers = [];
     for (var device in response)
     {
         var deviceModel = device.slice(0, device.lastIndexOf("_"));
@@ -226,20 +228,53 @@ function colorFromVm(response)
         {
             for (gid in response[device])
             {
+                if (spiked.indexOf(gid) === -1)  // if GID did not spike
+                {
+                    point = getGIDPoint(gid);
+                    V_m = response[device][gid][1];
+                    colorVm = mapVmToColor(V_m, -70., -50.);
+
+                    var points = layer_points[point.layer].points;
+                    var colors = points.geometry.getAttribute("customColor").array;
+
+                    colors[ point.pointIndex ]     = colorVm[0];
+                    colors[ point.pointIndex + 1 ] = colorVm[1];
+                    colors[ point.pointIndex + 2 ] = colorVm[2];
+                    //points.geometry.attributes.customColor.needsUpdate = true;
+                }
+            }
+        }
+    }
+}
+
+function colorFromSpike(response)
+{
+    var time = 0;
+    var V_m = 0;
+    var point;
+    var spikedGIDs = [];
+    for (var device in response)
+    {
+        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        if (deviceModel === "spike_detector")
+        {
+            for (gid in response[device])
+            {
                 point = getGIDPoint(gid);
-                V_m = response[device][gid][1];
-                colorVm = mapVmToColor(V_m, -70., -50.);
+                colorSpike = [0.9, 0.0, 0.0];
 
                 var points = layer_points[point.layer].points;
                 var colors = points.geometry.getAttribute("customColor").array;
 
-                colors[ point.pointIndex ]     = colorVm[0];
-                colors[ point.pointIndex + 1 ] = colorVm[1];
-                colors[ point.pointIndex + 2 ] = colorVm[2];
-                points.geometry.attributes.customColor.needsUpdate = true;
+                colors[ point.pointIndex ]     = colorSpike[0];
+                colors[ point.pointIndex + 1 ] = colorSpike[1];
+                colors[ point.pointIndex + 2 ] = colorSpike[2];
+                //points.geometry.attributes.customColor.needsUpdate = true;
+                spikedGIDs.push(gid);
             }
         }
     }
+    return spikedGIDs;
 }
 
 function mapVmToColor(Vm, minVm, maxVm)
@@ -251,6 +286,18 @@ function mapVmToColor(Vm, minVm, maxVm)
     return [colorRG, colorRG, 1.0];
 }
 
+function resetBoxColors()
+{
+    for (device in deviceBoxMap)
+    {
+        for (i in deviceBoxMap[device].connectees)
+        {
+            deviceBoxMap[device].connectees[i].updateColors();
+        }
+    }
+    
+}
+
 function makeProjections()
 {
     var projections = {};
@@ -258,16 +305,13 @@ function makeProjections()
     $("#infoconnected").html( "Gathering selections to be connected ..." );
     for (device in deviceBoxMap)
     {
-      deviceModel = device.slice(0, device.lastIndexOf("_"));
       projections[device] = {
-          specs: {
-              model: deviceModel
-          },
+          specs: deviceBoxMap[device].specs,
           connectees: []
       };
-      for (i in deviceBoxMap[device])
+      for (i in deviceBoxMap[device].connectees)
       {
-          projections[device].connectees.push(deviceBoxMap[device][i].getSelectionInfo())
+          projections[device].connectees.push(deviceBoxMap[device].connectees[i].getSelectionInfo())
       }
     }
     return projections;
@@ -277,6 +321,7 @@ function makeConnections()
 {
   // create object to be sent
   var projections = makeProjections();
+  console.log(projections);
 
   $("#infoconnected").html( "Connecting ..." );
   // send selected connections
@@ -350,6 +395,7 @@ function abortSimulation()
         }).done(function(data)
            {
                 console.log(data);
+                resetBoxColors();
            });
 }
 
@@ -367,16 +413,14 @@ function saveSelection()
     var projections = {};
     for (device in deviceBoxMap)
     {
-      deviceModel = device.slice(0, device.lastIndexOf("_"));
+      deviceModel = deviceBoxMap[device].specs.model;
       projections[device] = {
-          specs: {
-              model: deviceModel
-          },
+          specs: deviceBoxMap[device].specs,
           connectees: []
       };
-      for (i in deviceBoxMap[device])
+      for (i in deviceBoxMap[device].connectees)
       {
-          projections[device].connectees.push(deviceBoxMap[device][i].getInfoForSaving())
+          projections[device].connectees.push(deviceBoxMap[device].connectees[i].getInfoForSaving())
       }
     }
     console.log("projections", projections);
@@ -397,10 +441,11 @@ function loadSelection()
 function loadFromJSON(textJSON)
 {
     var inputObj = JSON.parse( textJSON );
+    console.log(inputObj)
     var IDsCreated = [];
     for (device in inputObj.projections)
     {
-        var deviceModel = device.slice(0, device.lastIndexOf("_"));
+        var deviceModel = inputObj.projections[device].specs.model;
         if (deviceModel === "poisson_generator")
         {
             makeStimulationDevice( deviceModel );
@@ -453,8 +498,8 @@ function loadFromJSON(textJSON)
             box.lineToDevice(target.position, radius, target.name);
 
             box.updateColors();
-
-            deviceBoxMap[device].push(box);
+            console.log(deviceBoxMap)
+            deviceBoxMap[device].connectees.push(box);
         }
     }
 }
@@ -471,45 +516,53 @@ function handleFileUpload( event )
     fr.readAsText(event.target.files[0]);
 }
 
-
-function addDeviceToProjections( device )
+function makeDevice( device, col, map, params={} )
 {
-    var deviceName = device + "_" + String(deviceCounter++);
-    deviceBoxMap[deviceName] = [];
+    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+    geometry.computeBoundingSphere(); // needed for loading
+    var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
+    var circle = new THREE.Mesh( geometry, material );
+    var deviceName = device + "_" + String( deviceCounter++ );
+    circle.name = deviceName;
+
+    scene.add( circle );
+    circle_objects.push( circle );
+
+    deviceBoxMap[deviceName] = {specs: {model: device,
+                                        params: params},
+                                connectees: []};
 }
 
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
     var col = 0xB28080
-    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    geometry.computeBoundingSphere(); // needed for loading
-    var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-    var material = new THREE.MeshBasicMaterial( { color: col, map: map} );
-    var circle = new THREE.Mesh( geometry, material );
-    circle.name = device + "_" + String(deviceCounter);
-
-    scene.add( circle );
-    circle_objects.push( circle );
-
-    addDeviceToProjections( device );
+    //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+    var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+    var params = { rate: 70000.0 }
+    makeDevice( device, col, map, params );
 }
 
 function makeRecordingDevice( device )
 {
     console.log("making recording device of type", device)
-    var col = ( device === "voltmeter" ) ? 0xBDB280 : 0x809980;
-    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    geometry.computeBoundingSphere(); // needed for loading
-    var map = new THREE.TextureLoader().load( "static/js/textures/multimeter_white.png" );
-    var material = new THREE.MeshBasicMaterial( { color: col, map: map } );
-    var circle = new THREE.Mesh( geometry, material );
-    circle.name = device + "_" + String(deviceCounter);
-
-    scene.add( circle );
-    circle_objects.push( circle );
-
-    addDeviceToProjections( device );
+    if (device === "voltmeter")
+    {
+        var col = 0xBDB280;
+        var map = new THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
+    }
+    else if (device === "spike_detector")
+    {
+        var col = 0x809980;
+        var map = new THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
+    }
+    else
+    {
+        var col = 0xBDB280;
+        var map = new THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
+    }
+    
+    makeDevice( device, col, map );
 }
 
 function render()
