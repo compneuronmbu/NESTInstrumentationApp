@@ -82,7 +82,8 @@ body {
     background-image: linear-gradient(#B28080, #916969);
 }
 
-#poissonButton:active{
+#poissonButton:active,
+#poissonButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #B28080;
@@ -138,7 +139,8 @@ body {
     background-image: linear-gradient(#BDB280, #ADA375);
 }
 
-#voltmeterButton:active{
+#voltmeterButton:active,
+#VoltmeterButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #BDB280;
@@ -176,7 +178,8 @@ body {
     background-image: linear-gradient(#809980, #6F856F);
 }
 
-#spikeDetectorButton:active{
+#spikeDetectorButton:active,
+#spikeDetectorButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #809980;
