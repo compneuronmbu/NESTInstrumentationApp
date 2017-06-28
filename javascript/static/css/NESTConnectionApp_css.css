@@ -69,10 +69,7 @@ body {
   background-image: linear-gradient(#BA8888, #B28080);
 }
 
-#poissonButton:hover,
-#poissonButton:focus,
-#poissonButton:active,
-#poissonButton.active {
+#poissonButton:hover{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -85,8 +82,7 @@ body {
     background-image: linear-gradient(#B28080, #916969);
 }
 
-#poissonButton:active,
-#poissonButton.active {
+#poissonButton:active{
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #B28080;
@@ -129,10 +125,7 @@ body {
   background-image: linear-gradient(#C9BE88, #BDB280);
 }
 
-#voltmeterButton:hover,
-#voltmeterButton:focus,
-#voltmeterButton:active,
-#voltmeterButton.active {
+#voltmeterButton:hover{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -145,8 +138,7 @@ body {
     background-image: linear-gradient(#BDB280, #ADA375);
 }
 
-#voltmeterButton:active,
-#voltmeterButton.active {
+#voltmeterButton:active{
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #BDB280;
@@ -171,10 +163,7 @@ body {
   background-image: linear-gradient(#8BA68B, #809980);
 }
 
-#spikeDetectorButton:hover,
-#spikeDetectorButton:focus,
-#spikeDetectorButton:active,
-#spikeDetectorButton.active {
+#spikeDetectorButton:hover{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -187,8 +176,7 @@ body {
     background-image: linear-gradient(#809980, #6F856F);
 }
 
-#spikeDetectorButton:active,
-#spikeDetectorButton.active {
+#spikeDetectorButton:active{
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #809980;
