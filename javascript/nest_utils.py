@@ -132,8 +132,6 @@ def connect_to_devices(device_projections):
     """
 
     global rec_devices
-    global spike_det
-    spike_det = []
     params_to_floatify = ['rate', 'amplitude', 'frequency']
 
     for device_name in device_projections:
@@ -154,7 +152,6 @@ def connect_to_devices(device_projections):
             synapse_model = selection['synModel']
 
             if model == "spike_detector":
-                spike_det.append(nest_device)
                 nest.Connect(nest_neurons, nest_device)
             else:
                 nest.Connect(nest_device, nest_neurons,
@@ -233,17 +230,27 @@ def get_device_results():
 def get_plot_device_results():
     got_results = False
 
-    spike_events = {'senders': [], 'times': []}
+    recording_events = {'spike_det': {'senders': [], 'times': []}, 'rec_dev': {'senders': [], 'times': [], 'V_m': []}}
 
-    for detectors in spike_det:
-        n_spikes = nest.GetStatus(detectors)[0]['n_events']
+    for dev in rec_devices:
+        n_spikes = nest.GetStatus(dev[1])[0]['n_events']
         if n_spikes > 0:
             got_results = True
-            events = nest.GetStatus(detectors)[0]['events']
+            events = nest.GetStatus(dev[1])[0]['events']
             print("Number of spikes: %i" % n_spikes)
-            spike_events['senders'] += [ float(y) for y in events['senders']]
-            spike_events['times'] += [float(x) for x in events['times']]
+            if 'spike_detector' in dev[0]:
+                recording_events['spike_det']['senders'] += [ float(y) for y in events['senders']]
+                recording_events['spike_det']['times'] += [float(x) for x in events['times']]
+            else:
+                print(events)
+                #recording_events['rec_dev']['senders'] += [ float(y) for y in events['senders']]
+                #recording_events['rec_dev']['times'][events['times']] = 
+                recording_events['rec_dev']['times'] += [float(x) for x in events['times']]
+                recording_events['rec_dev']['V_m'] += [float(x) for x in events['V_m']]
+                #recording_events['rec_dev']['V_m'].append([float(x) for x in events['V_m']])
+                print(recording_events)
+
     if got_results:
-        return spike_events
+        return recording_events
     else:
         return None

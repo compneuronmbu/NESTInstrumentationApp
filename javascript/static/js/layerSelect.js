@@ -363,12 +363,13 @@ function runSimulation()
         data: JSON.stringify({network: modelParameters,
                       synapses: synModels,
                       projections: projections,
-                      time: "1000"}),
+                      time: "100"}),
         dataType: "json"
         }).done(function(data){
               console.log("Simulation finished");
               $("#infoconnected").html( "Simulation finished" );
             });
+
 }
 
 function streamSimulate()

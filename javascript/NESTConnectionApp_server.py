@@ -98,7 +98,7 @@ def g_simulate2(network, synapses, projections, t):
     nu.make_synapse_models(synapses)
     nu.connect_all(projections)
 
-    steps = 1000
+    steps = int(t)
     dt = float(t) / steps
     print("dt=%f" % dt)
     nu.prepare_simulation()
