@@ -13,6 +13,8 @@ var outlineScene;
 var outlineMaterial;
 var outlineMesh;
 
+var controls;
+
 var layer_points = {};
 
 var mouseDownCoords = { x: 0, y: 0 };
@@ -30,6 +32,8 @@ var deviceBoxMap = {};
 var nSelected = 0;
 var deviceCounter = 1;
 var uniqueID = 1;
+var newDevicePos = [0.0, 0.15, -0.15, 0.3, -0.3];
+var newDeviceIndex = 0;
 
 var circle_objects = [];
 var stimulationButtons = { "poissonGenerator": false };
@@ -71,7 +75,7 @@ function init()
 
     container.appendChild( renderer.domElement );
 
-    Controls( circle_objects, camera, renderer.domElement );
+    controls = new Controls( circle_objects, camera, renderer.domElement );
 
     serverUpdateEvent = new EventSource("/simulationData");
     serverUpdateEvent.onmessage = handleMessage;
@@ -168,18 +172,18 @@ function findBounds (pos1, pos2)
 function makeRectangularShape()
 {
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    rectangleButtoncss.css({backgroundColor: '#FF6633'});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    ellipticalButtoncss.css({backgroundColor: '#F1EEEC'});
 
     selectedShape = 'Rectangle';
 }
 function makeEllipticalShape()
 {
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    rectangleButtoncss.css({backgroundColor: '#F1EEEC'});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    ellipticalButtoncss.css({backgroundColor: '#FF6633'});
 
     selectedShape = 'Ellipse';
 }
@@ -526,8 +530,14 @@ function makeDevice( device, col, map, params={} )
     var deviceName = device + "_" + String( deviceCounter++ );
     circle.name = deviceName;
 
+    circle.position.y = newDevicePos[newDeviceIndex];
+    newDeviceIndex = (newDeviceIndex + 1 === newDevicePos.length) ? 0 : ++newDeviceIndex;
+
     scene.add( circle );
     circle_objects.push( circle );
+
+    controls.deviceInFocus = circle;
+    controls.makeOutline(controls.deviceInFocus);
 
     deviceBoxMap[deviceName] = {specs: {model: device,
                                         params: params},

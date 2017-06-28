@@ -26,29 +26,30 @@ body {
   float: right;
   width: var(--gui_width);
   height: 100vh;
-  background-color: #80B2B2;
+  background-color: #ECF0F1;
 }
 
 #gui-box-title
 {
   text-align: center;
+  font-family:Monospace;
   padding-top: 3px;
   padding-bottom: 3px;
-  margin-bottom:11px;
+  margin-bottom: 10px;
   font-weight: bold;
-  background-color: #568f8f;
+  background-color: #F1EEEC;
 }
 
 #gui-box
 {
   border-radius: 4px;
   padding-bottom: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
   text-align: center;
-  background-color: #609f9f;
+  background-color: #FFFFFF;
 }
 
-#poissonButton
+#poissonButton_old
 {
   background-color: #B28080;
   font-size: var(--selection_button_font_size);
@@ -56,7 +57,48 @@ body {
   width: var(--selection_button_width);
 }
 
-#voltmeterButton
+#poissonButton
+{
+  text-shadow: 0.5px 0.5px 0 #333;
+  color: #fff;
+  background-color: #B28080;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#BA8888), to(#B28080));
+  background-image: -moz-linear-gradient(#BA8888, #B28080);
+  background-image: -ms-linear-gradient(#BA8888, #B28080);
+  background-image: -o-linear-gradient(#BA8888, #B28080);
+  background-image: linear-gradient(#BA8888, #B28080);
+}
+
+#poissonButton:hover,
+#poissonButton:focus,
+#poissonButton:active,
+#poissonButton.active {
+    border-color: #ADADAD;
+    border-bottom-color: #999999;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #916969;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#B28080), to(#916969));
+    background-image: -moz-linear-gradient(#B28080, #916969);
+    background-image: -o-linear-gradient(#B28080, #916969);
+    background-image: linear-gradient(#B28080, #916969);
+}
+
+#poissonButton:active,
+#poissonButton.active {
+    border-color: #999999;
+    border-bottom-color: #ADADAD;
+    background-color: #B28080;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#916969), to(#B28080));
+    background-image: -moz-linear-gradient(#916969, #B28080);
+    background-image: -ms-linear-gradient(#916969, #B28080);
+    background-image: -o-linear-gradient(#916969, #B28080);
+    background-image: linear-gradient(#916969, #B28080);
+}
+
+
+#voltmeterButton_old
 {
   background-color: #BDB280;
   font-size: var(--selection_button_font_size);
@@ -64,13 +106,97 @@ body {
   width: var(--selection_button_width);
 }
 
-#spikeDetectorButton
+#spikeDetectorButton_old
 {
   background-color: #809980;
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
   margin-top: 7px;
+}
+
+#voltmeterButton
+{
+  margin-top: 3px;
+  margin-bottom: 3px;
+  text-shadow: 0.5px 0.5px 0 #333;
+  color: #fff;
+  background-color: #BDB280;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#C9BE88), to(#BDB280));
+  background-image: -moz-linear-gradient(#C9BE88, #BDB280);
+  background-image: -ms-linear-gradient(#C9BE88, #BDB280);
+  background-image: -o-linear-gradient(#C9BE88, #BDB280);
+  background-image: linear-gradient(#C9BE88, #BDB280);
+}
+
+#voltmeterButton:hover,
+#voltmeterButton:focus,
+#voltmeterButton:active,
+#voltmeterButton.active {
+    border-color: #ADADAD;
+    border-bottom-color: #999999;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #ADA375;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#BDB280), to(#ADA375));
+    background-image: -moz-linear-gradient(#BDB280, #ADA375);
+    background-image: -o-linear-gradient(#BDB280, #ADA375);
+    background-image: linear-gradient(#BDB280, #ADA375);
+}
+
+#voltmeterButton:active,
+#voltmeterButton.active {
+    border-color: #999999;
+    border-bottom-color: #ADADAD;
+    background-color: #BDB280;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ADA375), to(#BDB280));
+    background-image: -moz-linear-gradient(#ADA375, #BDB280);
+    background-image: -ms-linear-gradient(#ADA375, #BDB280);
+    background-image: -o-linear-gradient(#ADA375, #BDB280);
+    background-image: linear-gradient(#ADA375, #BDB280);
+}
+
+#spikeDetectorButton
+{
+  margin-top: 3px;
+  margin-bottom: 3px;
+  text-shadow: 0.5px 0.5px 0 #333;
+  color: #fff;
+  background-color: #809980;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#8BA68B), to(#809980));
+  background-image: -moz-linear-gradient(#8BA68B, #809980);
+  background-image: -ms-linear-gradient(#8BA68B, #809980);
+  background-image: -o-linear-gradient(#8BA68B, #809980);
+  background-image: linear-gradient(#8BA68B, #809980);
+}
+
+#spikeDetectorButton:hover,
+#spikeDetectorButton:focus,
+#spikeDetectorButton:active,
+#spikeDetectorButton.active {
+    border-color: #ADADAD;
+    border-bottom-color: #999999;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #6F856F;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#809980), to(#6F856F));
+    background-image: -moz-linear-gradient(#809980, #6F856F);
+    background-image: -o-linear-gradient(#809980, #6F856F);
+    background-image: linear-gradient(#809980, #6F856F);
+}
+
+#spikeDetectorButton:active,
+#spikeDetectorButton.active {
+    border-color: #999999;
+    border-bottom-color: #ADADAD;
+    background-color: #809980;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6F856F), to(#809980));
+    background-image: -moz-linear-gradient(#6F856F, #809980);
+    background-image: -ms-linear-gradient(#6F856F, #809980);
+    background-image: -o-linear-gradient(#6F856F, #809980);
+    background-image: linear-gradient(#6F856F, #809980);
 }
 
 #info {
@@ -100,8 +226,8 @@ body {
 }
 
 #rectangleButton {
-  background-color: #607d8b;
-  border: 1px solid #999;
+  background-color: #FF6633;
+  border: 0px;
   font-size: 17px;
   font-weight: bold;
   line-height: 34px;
@@ -115,7 +241,7 @@ body {
 }
 
 #ellipticalButton {
-  background-color: #609f9f;
+  background-color: #F1EEEC;
   border: 0px;
   font-size: 17px;
   font-weight: bold;
@@ -139,5 +265,190 @@ body {
   font-size: var(--selection_button_font_size);
   height: var(--selection_button_heigt);
   width: var(--selection_button_width);
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
+
+
+/* ------------------------------------------
+ * CSS3 GITHUB BUTTONS (Nicolas Gallagher)
+ * Licensed under Unlicense
+ * http://github.com/necolas/css3-github-buttons
+ * --------------------------------------- */
+
+
+/* =============================================================================
+   Base Button
+   ========================================================================== */
+
+.button {
+    position: relative;
+    overflow: visible;
+    display: inline-block;
+    padding: 0.5em 1em;
+    border: 1px solid #d4d4d4;
+    margin: 0;
+    text-decoration: none;
+    text-align: center;
+    text-shadow: 1px 1px 0 #fff;
+    font:11px/normal sans-serif;
+    color: #333;
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    background-color: #ececec;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+    background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+    background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+    background-image: -o-linear-gradient(#f4f4f4, #ececec);
+    background-image: linear-gradient(#f4f4f4, #ececec);
+    -moz-background-clip: padding; /* for Firefox 3.6 */
+    background-clip: padding-box;
+    border-radius: 0.2em;
+    /* IE hacks */
+    zoom: 1;
+    *display: inline;
+}
+
+.button:hover,
+.button:focus,
+.button:active,
+.button.active {
+    border-color: #3072b3;
+    border-bottom-color: #2a65a0;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    color: #fff;
+    background-color: #3c8dde;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#599bdc), to(#3072b3));
+    background-image: -moz-linear-gradient(#599bdc, #3072b3);
+    background-image: -o-linear-gradient(#599bdc, #3072b3);
+    background-image: linear-gradient(#599bdc, #3072b3);
+}
+
+.button:active,
+.button.active {
+    border-color: #2a65a0;
+    border-bottom-color: #3884cd;
+    background-color: #3072b3;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3072b3), to(#599bdc));
+    background-image: -moz-linear-gradient(#3072b3, #599bdc);
+    background-image: -ms-linear-gradient(#3072b3, #599bdc);
+    background-image: -o-linear-gradient(#3072b3, #599bdc);
+    background-image: linear-gradient(#3072b3, #599bdc);
+}
+
+/* overrides extra padding on button elements in Firefox */
+.button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+/* =============================================================================
+   Button extensions
+   ========================================================================== */
+
+/* Danger button
+   ========================================================================== */
+
+.button.danger {
+    color: #900;
+}
+
+.button.danger:hover,
+.button.danger:focus,
+.button.danger:active {
+    border-color: #b53f3a;
+    border-bottom-color: #a0302a;
+    color: #fff;
+    background-color: #dc5f59;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#dc5f59), to(#b33630));
+    background-image: -moz-linear-gradient(#dc5f59, #b33630);
+    background-image: -ms-linear-gradient(#dc5f59, #b33630);
+    background-image: -o-linear-gradient(#dc5f59, #b33630);
+    background-image: linear-gradient(#dc5f59, #b33630);
+}
+
+.button.danger:active,
+.button.danger.active {
+    border-color: #a0302a;
+    border-bottom-color: #bf4843;
+    background-color: #b33630;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#b33630), to(#dc5f59));
+    background-image: -moz-linear-gradient(#b33630, #dc5f59);
+    background-image: -ms-linear-gradient(#b33630, #dc5f59);
+    background-image: -o-linear-gradient(#b33630, #dc5f59);
+    background-image: linear-gradient(#b33630, #dc5f59);
+}
+
+/* Pill button
+   ========================================================================== */
+
+.button.pill {
+    border-radius: 50em;
+}
+
+/* Disabled button
+   ========================================================================== */
+
+.button.disable {
+    opacity: 0.5;
+}
+
+.button.big {
+    font-size: 12px;
+}
+
+/* =============================================================================
+   Button groups
+   ========================================================================== */
+
+/* Standard group
+   ========================================================================== */
+
+.button-group {
+    display: inline-block;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* IE hacks */
+    zoom: 1;
+    *display: inline;
+}
+
+.button + .button,
+.button + .button-group,
+.button-group + .button,
+.button-group + .button-group {
+    margin-left: 15px;
+}
+
+.button-group li {
+    float: left;
+    padding: 0;
+    margin: 0;
+}
+
+.button-group .button {
+    float: left;
+    margin-left: -1px;
+}
+
+.button-group > .button:not(:first-child):not(:last-child),
+.button-group li:not(:first-child):not(:last-child) .button {
+    border-radius: 0;
+}
+
+.button-group > .button:first-child,
+.button-group li:first-child .button {
+    margin-left: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.button-group > .button:last-child,
+.button-group li:last-child > .button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
