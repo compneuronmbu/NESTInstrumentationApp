@@ -172,18 +172,18 @@ function findBounds (pos1, pos2)
 function makeRectangularShape()
 {
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    rectangleButtoncss.css({backgroundColor: '#FF6633'});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    ellipticalButtoncss.css({backgroundColor: '#F1EEEC'});
 
     selectedShape = 'Rectangle';
 }
 function makeEllipticalShape()
 {
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#609f9f', border: 0 + 'px'});
+    rectangleButtoncss.css({backgroundColor: '#F1EEEC'});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#607d8b', border: 1 + 'px solid #999'});
+    ellipticalButtoncss.css({backgroundColor: '#FF6633'});
 
     selectedShape = 'Ellipse';
 }

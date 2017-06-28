@@ -33,8 +33,10 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Mask shape
                 </div>
-                <SelectionsButton button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
-                <SelectionsButton button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
+                <SelectionsButton button_class ='selectionsButton'
+                button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
+                <SelectionsButton button_class ='selectionsButton'
+                button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
             </div>
 
             <div id="gui-box">
@@ -43,6 +45,7 @@ class GuiButtons extends React.Component{
                 </div>
                 <SelectionsButton text='poissonGenerator'
                     function={function () {makeStimulationDevice("poisson_generator");}}
+                    button_class ='button pill big'
                     button_id='poissonButton' />
             </div>
 
@@ -52,33 +55,47 @@ class GuiButtons extends React.Component{
                 </div>
                 <SelectionsButton text='voltmeter' 
                     function={function () {makeRecordingDevice("voltmeter");}}
+                    button_class ='button pill big'
                     button_id='voltmeterButton' />
+                <br/>
                 <SelectionsButton text='spikeDetector'
                     function={function () {makeRecordingDevice("spike_detector");}}
+                    button_class ='button pill big'
                     button_id='spikeDetectorButton' />
             </div>
 
             <div id="gui-box">
-                <SelectionsButton text='Connect'
-                                  function={makeConnections} button_id='getSelectionsButton'/>
-                <SelectionsButton text='Simulate'
-                                  function={runSimulation} button_id='runSimulationButton'/>
-            </div>
-
-            <div id="gui-box">
-                <a id="downloadAnchorElem" style={{display: "none"}}/>
-                <SelectionsButton text='Save'
-                                  function={saveSelection} button_id='saveSelectionButton'/>
-                <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
-                <SelectionsButton text='Load'
-                                  function={loadSelection} button_id='loadSelectionButton'/>
-            </div>
-
-            <div id="gui-box">
-                <SelectionsButton text='Stream'
-                                  function={streamSimulate} button_id='streamButton'/>
-                <SelectionsButton text='Abort'
-                                  function={abortSimulation} button_id='streamButton'/>
+                <div id="gui-box-title">
+                    Buttons!
+                </div>
+                <div className="button-group">
+                    <SelectionsButton text='Connect'
+                                      function={makeConnections} button_class ='button'
+                                      button_id='getSelectionsButton'/>
+                    <SelectionsButton text='Simulate'
+                                      function={runSimulation} button_class ='button'
+                                      button_id='runSimulationButton'/>
+                </div>
+                <br/><a>------------</a><br/>
+                <div className="button-group">
+                    <a id="downloadAnchorElem" style={{display: "none"}}/>
+                    <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
+                    <SelectionsButton text='Save'
+                                      function={saveSelection} button_class ='button'
+                                      button_id='saveSelectionButton'/>
+                    <SelectionsButton text='Load'
+                                      function={loadSelection} button_class ='button'
+                                      button_id='loadSelectionButton'/>
+                </div>
+                <br/><a>------------</a><br/>
+                <div className="button-group">
+                    <SelectionsButton text='Stream'
+                                      function={streamSimulate} button_class ='button'
+                                      button_id='streamButton'/>
+                    <SelectionsButton text='Abort'
+                                      function={abortSimulation} button_class ='button danger'
+                                      button_id='streamButton'/>
+                </div>
             </div>
 
           </div>
@@ -152,7 +169,7 @@ class SelectionsButton extends React.Component {
 
   render() {
     return ( 
-      <button className="selectionsButton" id={this.props.button_id} onClick={this.handleClicked}>
+      <button className={this.props.button_class} id={this.props.button_id} onClick={this.handleClicked}>
         {this.props.text}
       </button>
     );
