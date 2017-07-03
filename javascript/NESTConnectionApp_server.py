@@ -49,6 +49,7 @@ def connect_ajax():
         synapses = data['synapses']
         projections = data['projections']
 
+        #TODO make_nodes
         nu.make_network(network)
         nu.make_synapse_models(synapses)
         nu.connect_all(projections)
@@ -58,7 +59,8 @@ def connect_ajax():
 
 @app.route('/connections', methods=['GET'])
 def get_connections_ajax():
-    print("Recieved ", flask.request.args.get('input'))
+    #TODO num_connections 
+    print("Received ", flask.request.args.get('input'))
     connections = nu.get_connections()
     return flask.jsonify(connections=len(connections))
     #    connections=[{'pre': c[0], 'post': c[1]}
@@ -90,6 +92,7 @@ def simulate_ajax():
     #return flask.Response(status=204)
     #return flask.jsonify(spikeEvents=events)
 
+    #TODO: kjører linje 97 med en gang?
     gevent.spawn(g_simulate2, network, synapses, projections, t)
     return flask.Response(status=204)
 
@@ -98,8 +101,9 @@ def g_simulate2(network, synapses, projections, t):
     nu.make_synapse_models(synapses)
     nu.connect_all(projections)
 
-    steps = int(t)
+    steps = 10
     dt = float(t) / steps
+    #dt = 10
     print("dt=%f" % dt)
     nu.prepare_simulation()
     for i in range(steps):
@@ -109,6 +113,7 @@ def g_simulate2(network, synapses, projections, t):
         #    continue
         results = nu.get_plot_device_results()
         if results:
+            #TODO timestamp ikke dt
             results['dt'] = dt;
             jsonResult = flask.json.dumps(results)
             for sub in plot_devices:
@@ -185,6 +190,7 @@ def simulationData():
         try:
             while True:
                 result = q.get()
+                # todo: trenger vi str??
                 ev = str("data: " + result + "\n\n")
                 yield ev
         except GeneratorExit:

@@ -36,14 +36,9 @@ var newDevicePos = [0.0, 0.15, -0.15, 0.3, -0.3];
 var newDeviceIndex = 0;
 
 var circle_objects = [];
-var stimulationButtons = { "poissonGenerator": false };
-var recordingButtons = { "spikeDetector": false, "voltmeter": false }; 
 
 var serverUpdateEvent;
 var serverUpdatePlotEvent;
-
-var spikeTrain;
-var madePlot = false;
 
 init();
 
@@ -142,6 +137,7 @@ function toObjectCoordinates( screenPos )
 // Finds the ll and ur coordinates of the selected square
 function findBounds (pos1, pos2)
 {
+    // TODO: sjekk max funksjon!
     var ll = {};
     var ur = {};
 
@@ -171,6 +167,7 @@ function findBounds (pos1, pos2)
 
 function makeRectangularShape()
 {
+    // TODO: ta fra stylesheet
     var rectangleButtoncss = $("#rectangleButton");
     rectangleButtoncss.css({backgroundColor: '#FF6633'});
     var ellipticalButtoncss = $("#ellipticalButton");
@@ -406,6 +403,7 @@ function abortSimulation()
 
 function saveSelection()
 {
+    //TODO: velge hvilken fil man vil lagre til
     console.log("##################");
     console.log("    Selections");
     console.log("##################");

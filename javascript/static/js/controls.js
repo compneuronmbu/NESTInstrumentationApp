@@ -219,7 +219,7 @@ class Controls
                     borderRadius: 50 + '%'
                 } );
             }
-
+            //TODO max
             if ( mRelPos.x < 0 && mRelPos.y < 0 )
             {
                 this.marquee.css(
@@ -321,6 +321,7 @@ class Controls
         }
         else if ( this.deviceInFocus != undefined && this.mouseDown )
         {
+            // TODO: dokumentasjon og funskjoner
             var relScreenPos = toObjectCoordinates(
             {
                 x: event.clientX,
@@ -414,6 +415,7 @@ class Controls
         }
         else if ( this.make_connection )
         {
+            //Todo: samme kode som før
             console.log( "make connection" );
             this.raycaster = new THREE.Raycaster();
             var rect = this.domElement.getBoundingClientRect();
@@ -448,6 +450,7 @@ class Controls
 
     onKeyUp( event )
     {
+        // TODO kommentar!
         if ( event.keyCode == 46 )
         {
             if ( this.boxInFocus !== undefined )

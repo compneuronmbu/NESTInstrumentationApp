@@ -401,6 +401,7 @@ class SelectionBox {
 
 	getSelectionInfo()
 	{
+		// TODO offsett feil
 		var selectedBBoxXYZ = {
 		    "ll": toObjectCoordinates(this.ll),
 		    "ur": toObjectCoordinates(this.ur) 
@@ -456,6 +457,7 @@ class SelectionBox {
 		var resizeGeometry = new THREE.BufferGeometry();
         var resizePos = new Float32Array( 24 );
 
+        // TODO kommenter z
         var posArray = [
         	{x: selectionBounds.ll.x, y: selectionBounds.ll.y, z: 0.0001},
         	{x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2, y: selectionBounds.ll.y, z: 0.0001},

@@ -1,8 +1,11 @@
 import nest
 import nest.topology as tp
+import numpy as np
 
 
 def make_network(networkSpecs):
+    # TODO: sjekke om gjort fra før
+    # TODo: gjør om til klasse
     nest.ResetKernel()
     global layers, syn_models, rec_devices
     layers = {}
@@ -31,6 +34,7 @@ def make_mask(lower_left, upper_right, mask_type, cntr):
     :param cntr: Coordinates for the center of the layer.
     :returns: A NEST ``Mask`` object.
     """
+    #TODO samme i nest og js, rectangular/rectangle osv
 
     if mask_type == 'Rectangle':
         mask_t = 'rectangular'
@@ -105,6 +109,7 @@ def printGIDs(selection):
 
 
 def connect_all(projections):
+    #TODO separer internal projections fra projections
     internal_projections = projections['internal']
     del projections['internal']
     print("Connecting internal projections")
@@ -151,7 +156,9 @@ def connect_to_devices(device_projections):
             nest_neurons = get_gids(selection)
             synapse_model = selection['synModel']
 
+            # TODO if voltmeter eller multimeter
             if model == "spike_detector":
+                # TODo syn_spec her, ikke voltmeter
                 nest.Connect(nest_neurons, nest_device)
             else:
                 nest.Connect(nest_device, nest_neurons,
@@ -174,7 +181,7 @@ def prepare_simulation():
     print("Preparing simulation")
     nest.Prepare()
 
-
+# TODO burde hete run
 def simulate(t, return_events=False):
     #nest.SetKernelStatus({'print_time': True})
     #nest.Simulate(t)
@@ -198,6 +205,7 @@ def get_device_results():
     #  import pprint
     got_results = False
     results = {}
+    # TODO for device_name, device_gid
     for device in rec_devices:
         device_name = device[0]
         device_gid = device[1]
@@ -212,6 +220,8 @@ def get_device_results():
             # for node in device_events['senders']:
             #    events[node] = []
             for e in range(status['n_events']):
+                #TODO: if voltmeter... utenfor løkken
+                #TODO numpy i json?
                 if 'voltmeter' in device_name:
                     events[str(device_events['senders'][e])] = [
                         device_events['times'][e],
@@ -221,6 +231,7 @@ def get_device_results():
                         device_events['times'][e]]
             results[device_name] = events
             nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+    # TODO trenger ikke, kan sjekke results
     if got_results:
         return results
     else:
@@ -230,7 +241,10 @@ def get_device_results():
 def get_plot_device_results():
     got_results = False
 
-    recording_events = {'spike_det': {'senders': [], 'times': []}, 'rec_dev': {'senders': [], 'times': [], 'V_m': []}}
+    recording_events = {'spike_det': {'senders': [], 'times': []}, 'rec_dev': {'times': [], 'V_m': []}}
+
+    time_array = []
+    vm_array = []
 
     for dev in rec_devices:
         n_spikes = nest.GetStatus(dev[1])[0]['n_events']
@@ -243,14 +257,29 @@ def get_plot_device_results():
                 recording_events['spike_det']['times'] += [float(x) for x in events['times']]
             else:
                 print(events)
+                vm_count = -1
+                for count, t in enumerate(events['times']):
+                    if t not in time_array:
+                        time_array.append(t)
+                        vm_array.append([])
+                        vm_count += 1
+                    vm_array[vm_count].append(events['V_m'][count])
                 #recording_events['rec_dev']['senders'] += [ float(y) for y in events['senders']]
                 #recording_events['rec_dev']['times'][events['times']] = 
-                recording_events['rec_dev']['times'] += [float(x) for x in events['times']]
-                recording_events['rec_dev']['V_m'] += [float(x) for x in events['V_m']]
+                #recording_events['rec_dev']['times'] += [float(x) for x in events['times']]
+                #recording_events['rec_dev']['V_m'] += [float(x) for x in events['V_m']]
                 #recording_events['rec_dev']['V_m'].append([float(x) for x in events['V_m']])
-                print(recording_events)
+                #TODO: move out.
+                #recording_events['rec_dev']['num_senders'] = n_spikes
+                recording_events['rec_dev']['times'] += time_array
+                recording_events['rec_dev']['V_m'] += vm_array
+                nest.SetStatus(dev[1], 'n_events', 0)
+                #print(recording_events)
+                #print(time_array)
+                #print(vm_array)
 
     if got_results:
+        print(recording_events)
         return recording_events
     else:
         return None
