@@ -91,7 +91,7 @@ function makeDevicePlot()
         firstTime = 1;
 
         spikeTrain.selectAll("circle").remove();
-        membrain.select("#pathId").remove();
+        membrain.selectAll("path.line").remove();
 
         VmTime  = [];
         Vm = [];
@@ -234,11 +234,12 @@ function makeVoltmeterPlot(events, timestamp)
                return potY(d);  
             }});
 
-    var path = membrain.selectAll('path').data(Vm).attr("id", "pathId");
+    var path = membrain.selectAll('path').data(Vm);
   
     path.attr('d', line)
         .attr("d", function(d) { return line(Vm); });
     path.enter().append('path').attr('d', line)
+        .classed('line', true)
         .attr("d", function(d) { return line(Vm); })
         .style('stroke-width', 2)
         .style('stroke', 'steelblue');
