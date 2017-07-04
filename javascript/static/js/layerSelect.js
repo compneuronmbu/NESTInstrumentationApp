@@ -40,6 +40,8 @@ var circle_objects = [];
 var serverUpdateEvent;
 var serverUpdatePlotEvent;
 
+var devicePlots;
+
 init();
 
 
@@ -71,6 +73,8 @@ function init()
     container.appendChild( renderer.domElement );
 
     controls = new Controls( circle_objects, camera, renderer.domElement );
+
+    devicePlots = new DevicePlots();
 
     serverUpdateEvent = new EventSource("/simulationData");
     serverUpdateEvent.onmessage = handleMessage;
@@ -353,7 +357,7 @@ function runSimulation()
 {
     var projections = makeProjections();
 
-    makeDevicePlot();
+    devicePlots.makeDevicePlot();
 
     $("#infoconnected").html( "Simulating ..." );
 
