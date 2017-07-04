@@ -8,9 +8,14 @@ class DevicePlots {
     {
         this.margin = {top: 30, right: 75, bottom: 2, left: 75};
         this.height = 200;
+
         this.madePlot = false;
+
+        // The two plots
         this.spikeTrain;
-        this.membrain;
+        this.membrane;
+
+        // Axis values
         this.x;
         this.y;
         this.potY;
@@ -36,16 +41,18 @@ class DevicePlots {
         var yAxis = d3.svg.axis().scale(this.y).orient("left");
         var yAxisPot = d3.svg.axis().scale(this.y).orient("left");
 
-        if( !this.madePlot)
+        if( !this.madePlot )
         {
-
+            // Make the framework for the spikeTrain and membrane plots.
             var svg = d3.select("#spikeTrain")
                 .append("svg")
                 .attr("width", width)
                 .attr("height", this.height);
 
-            this.spikeTrain = svg.append("g").attr("class", "spikeTrain").attr("transform", "translate(0," + this.height/2 + ")");
-            this.membrain = svg.append("g").attr("class", "membrain");
+            this.spikeTrain = svg.append("g")
+                                .attr("class", "spikeTrain")
+                                .attr("transform", "translate(0," + this.height/2 + ")");
+            this.membrane = svg.append("g").attr("class", "membrane");
 
             this.spikeTrain.append("g")
                 .attr("class", "x axis")
@@ -73,12 +80,12 @@ class DevicePlots {
                 .attr("transform", "translate( 3, "+ (this.height / 2 - this.margin.top) / 2 +")rotate(-90)")
                 .text("Neuron ID");
 
-            this.membrain.append("g")
+            this.membrane.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate("+( this.margin.left )+", 0)")
                 .call(yAxisPot);
 
-            this.membrain.append("text")
+            this.membrane.append("text")
                 .attr("class", "axis")
                 .attr("text-anchor", "middle")
                 .attr("fill","white")
@@ -91,11 +98,13 @@ class DevicePlots {
         }
         else
         {
+            // Have to reset these values incase we press stream button again. We don't want to remake the framework,
+            // just remove the old data.
             this.lastTime = 1;
             this.firstTime = 1;
 
             this.spikeTrain.selectAll("circle").remove();
-            this.membrain.selectAll("path.line").remove();
+            this.membrane.selectAll("path.line").remove();
 
             this.spikeTime = [];
             this.senders = [];
@@ -106,12 +115,16 @@ class DevicePlots {
 
     makeXAxis(timestamp)
     {
+        // Make the shared x-axis for both plots.
+
         this.lastTime = timestamp;
 
         this.firstTime = this.lastTime - 70 < 1 ? 1:this.lastTime - 50;
 
         this.x.domain([this.firstTime, this.lastTime]);
         var xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(10);
+
+        // The x-axis is attached to the plot on the bottom, the spike train.
         this.spikeTrain.select(".x.axis").transition().duration(0).call(xAxis);
     }
 
@@ -133,20 +146,25 @@ class DevicePlots {
             }
         }
 
+        // Remove values that are outside of axis domain
         this.spikeTime = this.spikeTime.slice(toRemove );
         this.senders = this.senders.slice(toRemove);
 
+        // Add the newly simulated events.
         this.spikeTime.push.apply(this.spikeTime, spikeEvents.times);
         this.senders.push.apply(this.senders, spikeEvents.senders);
 
+        // Update y-axis in case new senders have started spiking
         this.y.domain([Math.min.apply(Math, this.senders)-10, Math.max.apply(Math, this.senders)]);
         var yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(5);
         this.spikeTrain.select(".y.axis").transition().duration(0).call(yAxis);
 
+        // The spike events are given as circles.
         var circle = this.spikeTrain.selectAll("circle")
             .data(this.spikeTime);
 
-        //update all circles to new positions
+        // Update all circles to new positions. 
+        // Cirles are given by center x-position, center y-position and radius of the circle.
         circle.transition()
             .duration(0)
             .attr("cx",(d, i) => {
@@ -157,6 +175,7 @@ class DevicePlots {
             })
             .attr("r", 3);
 
+        // Create any new circles needed
         circle.enter().append("circle")
             .attr("cx", (d, i) => {
                 return this.x(this.spikeTime[i]);
@@ -164,8 +183,8 @@ class DevicePlots {
             .attr("cy", (d, i) => {
                 return this.y(this.senders[i]);
                 } )
-            .attr("r", 3); //create any new circles needed
-        circle.exit().remove();//remove unneeded circles
+            .attr("r", 3);
+        circle.exit().remove(); // Remove unneeded circles
 
         // TODO: Make into lines:
         /*spikeTrain.selectAll("line")
@@ -208,14 +227,17 @@ class DevicePlots {
             }
         }
 
+        // Remove values that are outside of axis domain
         this.VmTime = this.VmTime.slice(toRemove );
         this.Vm = this.Vm.slice(toRemove);
 
+        // Add the newly simulated events.
         this.VmTime.push.apply(this.VmTime, events.times);
         this.Vm.push.apply(this.Vm, events.V_m);
 
         var no_neurons = events.V_m[0].length;
 
+        // Update y-axis to handle changing membrane potential.
         var maxVms = events.V_m.map(function(d) { return d3.max(d)});
         var minVms = events.V_m.map(function(d) { return d3.min(d)});
 
@@ -224,8 +246,11 @@ class DevicePlots {
 
         this.potY.domain([d3.min([yMin, d3.min(minVms)]), d3.max([yMax, d3.max(maxVms)])]);
         var yAxis = d3.svg.axis().scale(this.potY).orient("left").ticks(5);
-        this.membrain.select(".y.axis").transition().duration(0).call(yAxis);
+        this.membrane.select(".y.axis").transition().duration(0).call(yAxis);
 
+        // The potential is plotted using line and path. Line needs the x and y positions to each point,
+        // and path goes through all data makes a path with all the lines.
+        // NB! We only plot the membrane potential of the first neuron in the selection!!
         var line = d3.svg.line()
             .interpolate("basis")
             .x((d, i) => { return this.x(this.VmTime[i]); })
@@ -240,7 +265,7 @@ class DevicePlots {
                    return this.potY(d);  
                 }});
 
-        var path = this.membrain.selectAll('path').data(this.Vm);
+        var path = this.membrane.selectAll('path').data(this.Vm);
       
         path.attr('d', line(this.Vm));
         path.enter().append('path').attr('d', line(this.Vm))
