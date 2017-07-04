@@ -3,6 +3,8 @@
   --selection_button_font_size: 14px;
   --selection_button_heigt: 25px;
   --selection_button_width: 150px;
+  --shape_selected_background: #FF6633;
+  --shape_not_selected_background: #F1EEEC;
 }
 
 body {

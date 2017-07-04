@@ -6,6 +6,9 @@
 
 var Brain = function ( camera, scene )
 {
+	/*
+	 * Creates the layers.
+	 */
 	function initLayers( )
 	{
 	    var layers = modelParameters.layers;
@@ -50,7 +53,7 @@ var Brain = function ( camera, scene )
 	                layer_points[layers[layer].name] =
 	                {
 	                    points: initPoints( layers[layer].neurons, offsett_x, offsett_y ),
-	                    offsetts: {x: offsett_x, y: offsett_y}
+	                    offsets: {x: offsett_x, y: offsett_y}
 	                };
 
 	                if ( i % no_cols == 0 )
@@ -89,6 +92,9 @@ var Brain = function ( camera, scene )
 	    requestAnimationFrame( render );
 	}
 
+	/*
+	 * Creates the points representing nodes.
+	 */
 	function initPoints( neurons, offsett_x, offsett_y )
 	{
 	    var geometry = new THREE.BufferGeometry();
@@ -153,6 +159,9 @@ var Brain = function ( camera, scene )
 	    return points;
 	}
 
+	/*
+	 * Creates legends for the layers.
+	 */
 	make_layer_names = function()
 	{
 	    console.log("Making layer names");
@@ -195,6 +204,9 @@ var Brain = function ( camera, scene )
 	    }
 	}
 
+	/*
+	 * Fills a list with names of models and synapse models.
+	 */
 	function makeModelNameLists()
 	{
 		var nModels = modelParameters.models;

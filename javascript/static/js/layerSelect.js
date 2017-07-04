@@ -24,7 +24,7 @@ var modelParameters;
 var layerSelected = "";
 var neuronModels = ['All'];
 var synModels = [];
-var selectedShape = "Rectangle";
+var selectedShape = "rectangular";
 var layerNamesMade = false;
 var selectionBoxArray = [];
 var deviceBoxMap = {};
@@ -43,6 +43,9 @@ var serverUpdatePlotEvent;
 init();
 
 
+/*
+ * Initializes the app.
+ */
 function init()
 {
     container = document.getElementById( 'main_body' );
@@ -72,6 +75,7 @@ function init()
 
     controls = new Controls( circle_objects, camera, renderer.domElement );
 
+    // Server-Sent Events
     serverUpdateEvent = new EventSource("/simulationData");
     serverUpdateEvent.onmessage = handleMessage;
 
@@ -81,6 +85,9 @@ function init()
     //render();
 }
 
+/*
+ * Handles response from Server-Sent Events.
+ */
 function handleMessage(e)
 {
     var recordedData = JSON.parse(e.data);
@@ -103,6 +110,9 @@ function handleMessage(e)
     }
 }
 
+/*
+ * Converts coordinates of a point in space to coordinates on screen.
+ */
 function toScreenXY (point_pos) {
 
     var point_vector = new THREE.Vector3(point_pos.x, point_pos.y, point_pos.z);
@@ -114,6 +124,9 @@ function toScreenXY (point_pos) {
         y: renderer.getSize().height - ( - point_vector.y + 1) * renderer.getSize().height / 2 };
 }
 
+/*
+ * Converts coordinates on the screen to coordinates in space.
+ */
 function toObjectCoordinates( screenPos )
 {
     var vector = new THREE.Vector3();
@@ -134,74 +147,72 @@ function toObjectCoordinates( screenPos )
     return pos
 }
 
-// Finds the ll and ur coordinates of the selected square
+/*
+ * Finds the ll and ur coordinates of the selected square
+ */
 function findBounds (pos1, pos2)
 {
-    // TODO: sjekk max funksjon!
     var ll = {};
     var ur = {};
-
-    if( pos1.x < pos2.x )
-    {
-        ll.x = pos1.x;
-        ur.x = pos2.x;
-    }
-    else
-    {
-        ll.x = pos2.x;
-        ur.x = pos1.x;
-    }
-
-    if ( pos1.y < pos2.y )
-    {
-        ll.y = pos1.y;
-        ur.y = pos2.y;
-    }
-    else
-    {
-        ll.y = pos2.y;
-        ur.y = pos1.y;
-    }
+    ll.x = Math.min(pos1.x, pos2.x);
+    ll.y = Math.min(pos1.y, pos2.y);
+    ur.x = Math.max(pos1.x, pos2.x);
+    ur.y = Math.max(pos1.y, pos2.y);
     return ({ll: ll, ur: ur});
 }
 
+/*
+ * Callback for the rectangular shape button.
+ */
 function makeRectangularShape()
 {
-    // TODO: ta fra stylesheet
+    var selectedColor = window.getComputedStyle(document.body).getPropertyValue('--shape_selected_background');
+    var unselectedColor = window.getComputedStyle(document.body).getPropertyValue('--shape_not_selected_background');
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#FF6633'});
+    rectangleButtoncss.css({backgroundColor: selectedColor});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#F1EEEC'});
+    ellipticalButtoncss.css({backgroundColor: unselectedColor});
 
-    selectedShape = 'Rectangle';
+    selectedShape = 'rectangular';
 }
+
+/*
+ * Callback for the elliptical shape button.
+ */
 function makeEllipticalShape()
 {
+    var selectedColor = window.getComputedStyle(document.body).getPropertyValue('--shape_selected_background');
+    var unselectedColor = window.getComputedStyle(document.body).getPropertyValue('--shape_not_selected_background');
     var rectangleButtoncss = $("#rectangleButton");
-    rectangleButtoncss.css({backgroundColor: '#F1EEEC'});
+    rectangleButtoncss.css({backgroundColor: unselectedColor});
     var ellipticalButtoncss = $("#ellipticalButton");
-    ellipticalButtoncss.css({backgroundColor: '#FF6633'});
+    ellipticalButtoncss.css({backgroundColor: selectedColor});
 
-    selectedShape = 'Ellipse';
+    selectedShape = 'elliptical';
 }
 
+/*
+ * Gets the selected value of a drop-down menu.
+ */
 function getSelectedDropDown(id)
 {
     var dd = document.getElementById(id);
     return dd.options[dd.selectedIndex].value;
 }
 
+/*
+ * Returns the currently selected selection shape.
+ */
 function getSelectedShape()
 {
     return selectedShape;
 }
 
-
+/*
+ * Gets layer and point index for a specified GID.
+ */
 function getGIDPoint(gid)
 {
-    /*
-    * Gets layer and point index for a specified GID.
-    */
     var minGID = 0;
     for (var l in layer_points)
     {
@@ -217,6 +228,10 @@ function getGIDPoint(gid)
     }
 }
 
+/*
+ * Colours node points given their membrane potential, skipping nodes that
+ * just spiked.
+ */
 function colorFromVm(response, spiked)
 {
     var time = 0;
@@ -233,6 +248,7 @@ function colorFromVm(response, spiked)
                 {
                     point = getGIDPoint(gid);
                     V_m = response[device][gid][1];
+                    // TODO: Vm range should be variable
                     colorVm = mapVmToColor(V_m, -70., -50.);
 
                     var points = layer_points[point.layer].points;
@@ -248,6 +264,9 @@ function colorFromVm(response, spiked)
     }
 }
 
+/*
+ * Colours spiking node points.
+ */
 function colorFromSpike(response)
 {
     var time = 0;
@@ -278,6 +297,9 @@ function colorFromSpike(response)
     return spikedGIDs;
 }
 
+/*
+ * Maps the membrane potential to a colour.
+ */
 function mapVmToColor(Vm, minVm, maxVm)
 {
     var clampedVm;
@@ -287,6 +309,9 @@ function mapVmToColor(Vm, minVm, maxVm)
     return [colorRG, colorRG, 1.0];
 }
 
+/*
+ * Resets colours in the box.
+ */
 function resetBoxColors()
 {
     for (device in deviceBoxMap)
@@ -299,10 +324,13 @@ function resetBoxColors()
     
 }
 
+/*
+ * Creates an object with specs and connectees for each device.
+ */
 function makeProjections()
 {
     var projections = {};
-    projections['internal'] = modelParameters.projections;
+    // projections['internal'] = modelParameters.projections;
     $("#infoconnected").html( "Gathering selections to be connected ..." );
     for (device in deviceBoxMap)
     {
@@ -318,6 +346,9 @@ function makeProjections()
     return projections;
 }
 
+/*
+ * Sends data to the server, creating the connections.
+ */
 function makeConnections()
 {
   // create object to be sent
@@ -332,13 +363,16 @@ function makeConnections()
       url: "/connect",
       data: JSON.stringify({network: modelParameters,
                             synapses: synModels,
+                            internalProjections: modelParameters.projections,
                             projections: projections}),
       dataType: "json"
       });
   getConnections();
 }
 
-
+/*
+ * Gets the number of connections from the server.
+ */
 function getConnections()
 {
   $.getJSON("/connections",
@@ -349,6 +383,9 @@ function getConnections()
             });
 }
 
+/*
+ * Runs a simulation.
+ */
 function runSimulation()
 {
     var projections = makeProjections();
@@ -363,16 +400,21 @@ function runSimulation()
         url: "/simulate",
         data: JSON.stringify({network: modelParameters,
                       synapses: synModels,
+                      internalProjections: modelParameters.projections,
                       projections: projections,
                       time: "100"}),
         dataType: "json"
         }).done(function(data){
               console.log("Simulation finished");
+              console.log(data);
               $("#infoconnected").html( "Simulation finished" );
             });
 
 }
 
+/*
+ * Runs a simulation.
+ */
 function streamSimulate()
 {
     $.ajax({
@@ -381,6 +423,7 @@ function streamSimulate()
         url: "/streamSimulate",
         data: JSON.stringify({network: modelParameters,
                       synapses: synModels,
+                      internalProjections: modelParameters.projections,
                       projections: makeProjections(),
                       time: "10000"}),
         dataType: "json"
@@ -390,6 +433,9 @@ function streamSimulate()
            });
 }
 
+/*
+ * Aborts the current simulation.
+ */
 function abortSimulation()
 {
     $.ajax({
@@ -401,9 +447,11 @@ function abortSimulation()
            });
 }
 
+/*
+ * Saves selections to file.
+ */
 function saveSelection()
 {
-    //TODO: velge hvilken fil man vil lagre til
     console.log("##################");
     console.log("    Selections");
     console.log("##################");
@@ -412,6 +460,12 @@ function saveSelection()
     console.log("selectionBoxArray", selectionBoxArray);
     console.log("##################");
 
+    var filename = prompt("Please enter a name for the file:", "Untitled selection");
+    if (filename === null || filename === "")
+    {
+        // User canceled saving
+        return;
+    }
     // create object to be saved
     var projections = {};
     for (device in deviceBoxMap)
@@ -432,15 +486,22 @@ function saveSelection()
     jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dlObject));
     var dlAnchorElem = document.getElementById('downloadAnchorElem');
     dlAnchorElem.setAttribute("href", jsonStr);
-    dlAnchorElem.setAttribute("download", "connectionData.json");
+    dlAnchorElem.setAttribute("download", filename + ".json");
     dlAnchorElem.click();
 }
 
+/*
+ * Loads selections from a file.
+ */
 function loadSelection()
 {
     document.getElementById('uploadAnchorElem').click();
 }
 
+/*
+ * Creates the devices, selections, and connections, given a JSON with
+ * connection data.
+ */
 function loadFromJSON(textJSON)
 {
     var inputObj = JSON.parse( textJSON );
@@ -507,6 +568,9 @@ function loadFromJSON(textJSON)
     }
 }
 
+/*
+ * Callback function for file upload when loading a JSON file.
+ */
 function handleFileUpload( event )
 {
     console.log("file uploaded")
@@ -519,6 +583,9 @@ function handleFileUpload( event )
     fr.readAsText(event.target.files[0]);
 }
 
+/*
+ * Creates a device, with given colour, texture map, and optional parameters.
+ */
 function makeDevice( device, col, map, params={} )
 {
     var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
@@ -542,6 +609,9 @@ function makeDevice( device, col, map, params={} )
                                 connectees: []};
 }
 
+/*
+ * Creates a stimulation device.
+ */
 function makeStimulationDevice( device )
 {
     console.log("making stimulation device of type", device)
@@ -552,6 +622,9 @@ function makeStimulationDevice( device )
     makeDevice( device, col, map, params );
 }
 
+/*
+ * Creates a recording device.
+ */
 function makeRecordingDevice( device )
 {
     console.log("making recording device of type", device)

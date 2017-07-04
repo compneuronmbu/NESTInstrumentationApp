@@ -30,6 +30,9 @@ class SelectionBox {
     	this.CURVE_SEGMENTS = 100;
 	}
 
+	/*
+	 * Finds which points lie within the box, and colors them.
+	 */
 	selectPoints()
 	{
 	    var xypos;
@@ -75,6 +78,9 @@ class SelectionBox {
         }
 	}
 
+	/*
+	 * Finds the name of the layer in which the selection box is located.
+	 */
 	getLayerName()
 	{
 		var mouseDownCorrected = {
@@ -116,6 +122,9 @@ class SelectionBox {
 		}
 	}
 
+	/*
+	 * Updtes the colors of the points within the box.
+	 */
 	updateColors()
 	{
 		var points = layer_points[this.layerName].points;
@@ -168,6 +177,9 @@ class SelectionBox {
         this.selectedPointIDs = newPoints;
 	}
 
+	/*
+	 * Makes a box in space and adds it to the scene.
+	 */
 	makeBox()
 	{
 		var objectBoundsLL = toObjectCoordinates(this.ll);
@@ -175,11 +187,11 @@ class SelectionBox {
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
 
-		if ( this.selectedShape == "Rectangle" )
+		if ( this.selectedShape == "rectangular" )
 		{
 			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 		}
-		else if ( this.selectedShape == "Ellipse" )
+		else if ( this.selectedShape == "elliptical" )
 		{
 			var ellipseShape = new THREE.Shape();
 			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
@@ -200,6 +212,9 @@ class SelectionBox {
 	    scene.add( this.box );
 	}
 
+	/*
+	 * Updates the dimensions of the box.
+	 */
 	updateBox()
 	{
 		var objectBoundsLL = toObjectCoordinates(this.ll);
@@ -207,11 +222,11 @@ class SelectionBox {
 	    var xLength = objectBoundsUR.x - objectBoundsLL.x;
 	    var yLength = objectBoundsUR.y - objectBoundsLL.y;
 
-	    if ( this.selectedShape == "Rectangle" )
+	    if ( this.selectedShape == "rectangular" )
 		{
 			var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
 		}
-		else if ( this.selectedShape == "Ellipse" )
+		else if ( this.selectedShape == "elliptical" )
 		{
 			var ellipseShape = new THREE.Shape();
 			ellipseShape.ellipse(0, 0, Math.abs(xLength/2), Math.abs(yLength/2), 0, 2 * Math.PI, 0);
@@ -228,6 +243,9 @@ class SelectionBox {
 	    this.box.position.copy(boxPosition);
 	}
 
+	/*
+	 * Removes the box from the scene and resets the colours of the points.
+	 */
 	removeBox()
 	{
 		scene.remove(this.box);
@@ -259,6 +277,10 @@ class SelectionBox {
         }
 	}
 
+	/*
+	 * Creates a line representing a connection, that is to be connected to a
+	 * device.
+	 */
 	makeLine()
 	{
 		var selectionBounds = this.getSelectionBounds();
@@ -279,11 +301,17 @@ class SelectionBox {
 		this.curves.push({curveObject: this.currentCurveObject, curve: this.currentCurve, target: ""});
 	}
 
+	/*
+	 * Sets a target for the line that was created last.
+	 */
 	setLineTarget( device )
 	{
 		this.curves[this.curves.length - 1].target = device;
 	}
 
+	/*
+	 * Updates the endpoint of a line.
+	 */
 	updateLine( newEndPos, curveIndex, radius )
 	{
 		var curveObject = this.curves[curveIndex].curveObject;
@@ -323,6 +351,9 @@ class SelectionBox {
 		curveObject.geometry.verticesNeedUpdate = true;
 	}
 
+	/*
+	 * Updates the start position of all lines of this selection box.
+	 */
 	updateLineStart()
     {
         for (var i in this.curves)
@@ -331,6 +362,9 @@ class SelectionBox {
     	}
     }
 
+	/*
+	 * Updates the end positions of lines connecting to a specific target device.
+	 */
     updateLineEnd( newPos, target, radius=0 )
     {
         for (var i in this.curves)
@@ -342,6 +376,9 @@ class SelectionBox {
         }
     }
 
+	/*
+	 * Connects a line to a target device.
+	 */
     lineToDevice(targetPos, radius, target)
     {
     	var selectionBounds = this.getSelectionBounds();
@@ -356,12 +393,19 @@ class SelectionBox {
     	}
     }
 
+	/*
+	 * Removes the line that was created last.
+	 */
     removeLine()
     {
     	scene.remove(this.currentCurveObject);
     	this.curves.pop();
     }
 
+	/*
+	 * Removes all lines, or optionally a line connected to a specific target
+	 * device.
+	 */
     removeLines( target = "" )
     {
     	for ( var i = 0; i < this.curves.length ; ++i )
@@ -383,6 +427,9 @@ class SelectionBox {
     	}
     }
 
+	/*
+	 * Gets lower left and upper right coordinates in scene coordinates.
+	 */
 	getSelectionBounds()
 	{
 		var roomLL = toObjectCoordinates(this.ll);
@@ -399,22 +446,25 @@ class SelectionBox {
 			    };
 	}
 
+	/*
+	 * Returns data of this selection box to be sent to the server for
+	 * connecting. Coordinates here has to be converted to room coordinates.
+	 */
 	getSelectionInfo()
 	{
-		// TODO offsett feil
 		var selectedBBoxXYZ = {
 		    "ll": toObjectCoordinates(this.ll),
 		    "ur": toObjectCoordinates(this.ur) 
 		};
 		var selectionBox = {
 		    "ll": {
-		        x: selectedBBoxXYZ.ll.x - layer_points[this.layerName].offsetts.x,
-		        y: -(selectedBBoxXYZ.ll.y - layer_points[this.layerName].offsetts.y),
+		        x: selectedBBoxXYZ.ll.x - layer_points[this.layerName].offsets.x,
+		        y: -(selectedBBoxXYZ.ll.y - layer_points[this.layerName].offsets.y),
 		        z: 0
 		    },
 		    "ur": {
-		        x: selectedBBoxXYZ.ur.x - layer_points[this.layerName].offsetts.x,
-		        y: -(selectedBBoxXYZ.ur.y - layer_points[this.layerName].offsetts.y),
+		        x: selectedBBoxXYZ.ur.x - layer_points[this.layerName].offsets.x,
+		        y: -(selectedBBoxXYZ.ur.y - layer_points[this.layerName].offsets.y),
 		        z: 0
 		    }
 		};
@@ -435,6 +485,9 @@ class SelectionBox {
 		return selectionInfo;
 	}
 
+	/*
+	 * Returns data of this selection box to be saved.
+	 */
 	getInfoForSaving()
 	{
 		var selectionInfo = {
@@ -450,6 +503,9 @@ class SelectionBox {
 		return selectionInfo;
 	}
 
+	/*
+	 * Create points that can be used to resize the box.
+	 */
 	makeSelectionPoints()
 	{
 		var selectionBounds = this.getSelectionBounds();
@@ -457,7 +513,8 @@ class SelectionBox {
 		var resizeGeometry = new THREE.BufferGeometry();
         var resizePos = new Float32Array( 24 );
 
-        // TODO kommenter z
+        // We have to move the points a tiny bit towards the camera to make it 
+        // appear over everything else.
         var posArray = [
         	{x: selectionBounds.ll.x, y: selectionBounds.ll.y, z: 0.0001},
         	{x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2, y: selectionBounds.ll.y, z: 0.0001},
@@ -486,6 +543,9 @@ class SelectionBox {
         }
 	}
 
+	/*
+	 * Make a single resize point and add it to the scene.
+	 */
 	makePoint(pos, name)
 	{
 		var geometry = new THREE.CircleBufferGeometry( 0.009, 32 );
@@ -499,6 +559,9 @@ class SelectionBox {
 		return point;
 	}
 
+	/*
+	 * Remove all resize points.
+	 */
 	removePoints()
 	{
 		for (var i = 0; i < this.resizePoints.length ; ++i)
@@ -508,24 +571,32 @@ class SelectionBox {
 		this.resizePoints = [];
 	}
 
-	// Takes a position and detect if it is within the boundary box
+	/*
+	 * Takes a position and detect if it is within the boundary box
+	 */
 	withinBounds(pos)
 	{
-	    if ( this.selectedShape == 'Rectangle' )
+	    if ( this.selectedShape == 'rectangular' )
 	    {
 	        return this.withinRectangleBounds(pos);
 	    }
-	    else if ( this.selectedShape == 'Ellipse' )
+	    else if ( this.selectedShape == 'elliptical' )
 	    {
 	        return this.withinEllipticalBounds(pos);
 	    }
 	}
 
+	/*
+	 * Checks if a position is within the selection box. Rectangle version.
+	 */
 	withinRectangleBounds(pos)
 	{
 	    return ( (pos.x >= this.ll.x) && (pos.x <= this.ur.x) && (pos.y >= this.ll.y) && (pos.y <= this.ur.y) );
 	}
 
+	/*
+	 * Checks if a position is within the selection box. Ellipse version.
+	 */
 	withinEllipticalBounds(pos)
 	{
 	    var x_side = (this.ur.x - this.ll.x) / 2;
