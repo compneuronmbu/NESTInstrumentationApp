@@ -33,13 +33,13 @@ class DevicePlots {
     {
         var width = container.clientWidth / 2;
 
-        this.x = d3.scale.linear().range([this.margin.left, width - this.margin.right]);
-        this.y = d3.scale.linear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
-        this.potY = d3.scale.linear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
+        this.x = d3.scaleLinear().range([this.margin.left, width - this.margin.right]);
+        this.y = d3.scaleLinear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
+        this.potY = d3.scaleLinear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
         
-        var xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(10);
-        var yAxis = d3.svg.axis().scale(this.y).orient("left");
-        var yAxisPot = d3.svg.axis().scale(this.y).orient("left");
+        var xAxis = d3.axisBottom(this.x).ticks(10);
+        var yAxis = d3.axisLeft(this.y).ticks(5);
+        var yAxisPot = d3.axisLeft(this.y).ticks(5);
 
         if( !this.madePlot )
         {
@@ -122,7 +122,7 @@ class DevicePlots {
         this.firstTime = this.lastTime - 70 < 1 ? 1:this.lastTime - 50;
 
         this.x.domain([this.firstTime, this.lastTime]);
-        var xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(10);
+        var xAxis = d3.axisBottom(this.x).ticks(10);
 
         // The x-axis is attached to the plot on the bottom, the spike train.
         this.spikeTrain.select(".x.axis").transition().duration(0).call(xAxis);
@@ -154,9 +154,12 @@ class DevicePlots {
         this.spikeTime.push.apply(this.spikeTime, spikeEvents.times);
         this.senders.push.apply(this.senders, spikeEvents.senders);
 
+        console.log("time", this.spikeTime)
+        console.log("senders", this.senders )
+
         // Update y-axis in case new senders have started spiking
         this.y.domain([Math.min.apply(Math, this.senders)-10, Math.max.apply(Math, this.senders)]);
-        var yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(5);
+        var yAxis = d3.axisLeft(this.y).ticks(5);
         this.spikeTrain.select(".y.axis").transition().duration(0).call(yAxis);
 
         // The spike events are given as circles.
@@ -245,14 +248,13 @@ class DevicePlots {
         var yMax = this.potY.domain()[1];
 
         this.potY.domain([d3.min([yMin, d3.min(minVms)]), d3.max([yMax, d3.max(maxVms)])]);
-        var yAxis = d3.svg.axis().scale(this.potY).orient("left").ticks(5);
+        var yAxis = d3.axisLeft(this.potY).ticks(5);
         this.membrane.select(".y.axis").transition().duration(0).call(yAxis);
 
         // The potential is plotted using line and path. Line needs the x and y positions to each point,
         // and path goes through all data makes a path with all the lines.
         // NB! We only plot the membrane potential of the first neuron in the selection!!
-        var line = d3.svg.line()
-            .interpolate("basis")
+        var line = d3.line()
             .x((d, i) => { return this.x(this.VmTime[i]); })
             .y((d, i) => { 
                 if (no_neurons > 1 && d[0] !== undefined)

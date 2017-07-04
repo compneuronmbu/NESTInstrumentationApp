@@ -103,7 +103,7 @@ function handleMessage( e )
     var data = JSON.parse(e.data);
     var recordedData = data['stream_results'];
     var deviceData = data['plot_results'];
-    //console.log(data);
+    console.log(data);
 
     var t = deviceData['time'];
     $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );

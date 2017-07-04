@@ -213,7 +213,6 @@ def get_device_results():
                     events[str(device_events['senders'][e])] = [
                         device_events['times'][e]]
             results[device_name] = events
-            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
         # For plotting: (All should just be one dictionary eventually...)
         if 'spike_detector' in device_name:
