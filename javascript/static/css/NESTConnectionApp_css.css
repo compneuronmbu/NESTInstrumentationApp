@@ -3,6 +3,8 @@
   --selection_button_font_size: 14px;
   --selection_button_heigt: 25px;
   --selection_button_width: 150px;
+  --shape_selected_background: #FF6633;
+  --shape_not_selected_background: #F1EEEC;
 }
 
 body {
@@ -217,7 +219,7 @@ body {
 }
 
 #rectangleButton {
-  background-color: #FF6633;
+  background-color: var(--shape_selected_background);
   border: 0px;
   font-size: 17px;
   font-weight: bold;
@@ -232,7 +234,7 @@ body {
 }
 
 #ellipticalButton {
-  background-color: #F1EEEC;
+  background-color: var(--shape_not_selected_background);
   border: 0px;
   font-size: 17px;
   font-weight: bold;

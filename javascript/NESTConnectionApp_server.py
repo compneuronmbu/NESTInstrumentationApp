@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function
 import sys
 import pprint
@@ -30,7 +31,7 @@ def add_blog_ajax():
         # print(selection)
         data = flask.request.json
         # pp.pprint(data)
-        nu.make_network(data['network'])
+        nu.make_nodes(data['network'])
         gids, positions = nu.printGIDs(data['info'])
         print(gids)
         pp.pprint(positions)
@@ -46,22 +47,22 @@ def connect_ajax():
         data = flask.request.json
         network = data['network']
         synapses = data['synapses']
+        internal_projections = data['internalProjections']
         projections = data['projections']
 
-        #TODO make_nodes
-        nu.make_network(network)
+        nu.make_nodes(network)
         nu.make_synapse_models(synapses)
-        nu.connect_all(projections)
+        nu.connect_internal_projections(internal_projections)
+        nu.connect_to_devices(projections)
 
         return flask.Response(status=204)
 
 
 @app.route('/connections', methods=['GET'])
 def get_connections_ajax():
-    #TODO num_connections 
     print("Received ", flask.request.args.get('input'))
-    connections = nu.get_connections()
-    return flask.jsonify(connections=len(connections))
+    n_connections = nu.get_num_connections()
+    return flask.jsonify(connections=n_connections)
     #    connections=[{'pre': c[0], 'post': c[1]}
     #                 for c in connections])
 
@@ -72,25 +73,27 @@ def simulate_ajax():
     data = flask.request.json
     network = data['network']
     synapses = data['synapses']
+    internal_projections = data['internalProjections']
     projections = data['projections']
     t = data['time']
 
-    nu.make_network(network)
+    nu.make_nodes(network)
     nu.make_synapse_models(synapses)
-    nu.connect_all(projections)
+    nu.connect_internal_projections(internal_projections)
+    nu.connect_to_devices(projections)
 
     nu.prepare_simulation()
     print("Simulating for ", t, "ms ...")
-    nu.simulate(t, return_events=True)
+    nu.run(t, return_events=True)
     nu.cleanup_simulation()
 
     return flask.Response(status=204)
 
-
-def g_simulate(network, synapses, projections, t):
-    nu.make_network(network)
+def g_simulate(network, synapses, internal_projections, projections, t):
+    nu.make_nodes(network)
     nu.make_synapse_models(synapses)
-    nu.connect_all(projections)
+    nu.connect_internal_projections(internal_projections)
+    nu.connect_to_devices(projections)
 
     q = gevent.queue.Queue()
     abort_sub.append(q)
@@ -109,7 +112,7 @@ def g_simulate(network, synapses, projections, t):
         #if i % 10 == 0 and i > 0:
         #    sys.stdout.write("\rStep %i" % i)
         #    sys.stdout.flush()
-        nu.simulate(dt)
+        nu.run(dt)
         # if i % 10 == 0:
         #    continue
         results = nu.get_device_results()
@@ -130,11 +133,13 @@ def streamSimulate():
     data = flask.request.json
     network = data['network']
     synapses = data['synapses']
+    internal_projections = data['internalProjections']
     projections = data['projections']
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, synapses, projections, t)
+    gevent.spawn(g_simulate, network, synapses, internal_projections,
+                 projections, t)
 
     return flask.Response(status=204)
 
@@ -155,8 +160,7 @@ def simulationData():
         try:
             while True:
                 result = q.get()
-                # todo: trenger vi str??
-                ev = str("data: " + result + "\n\n")
+                ev = "data: " + result + "\n\n"
                 yield ev
         except GeneratorExit:
             subscriptions.remove(q)
