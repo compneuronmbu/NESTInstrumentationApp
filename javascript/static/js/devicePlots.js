@@ -13,8 +13,8 @@ var x;
 var y;
 var potY;
 
-var lastTime = 0;
-var firstTime = 0;
+var lastTime = 1;
+var firstTime = 1;
 
 var VmTime = [];
 var Vm = [];
@@ -87,8 +87,8 @@ function makeDevicePlot()
     }
     else
     {
-        lastTime = 0;
-        firstTime = 0;
+        lastTime = 1;
+        firstTime = 1;
 
         spikeTrain.selectAll("circle").remove();
         membrain.select("#pathId").remove();
@@ -102,7 +102,7 @@ function makeXAxis(timestamp)
 {
     lastTime = timestamp;
 
-    firstTime = lastTime - 50 < 0 ? 0:lastTime - 50;
+    firstTime = lastTime - 50 < 1 ? 1:lastTime - 50;
 
     x.domain([firstTime, lastTime]);
     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(10);
@@ -117,6 +117,19 @@ function makeSpikeTrain(spikeEvents, timestamp)
 
     makeXAxis(timestamp);
 
+    var toRemove = 0;
+    for ( t in time )
+    {
+        if( time[t] >= firstTime )
+        {
+            toRemove = t;
+            break
+        }
+    }
+
+    time = time.slice(toRemove );
+    senders = senders.slice(toRemove);
+
     y.domain([Math.min.apply(Math, senders)-10, Math.max.apply(Math, senders)]);
     var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
     spikeTrain.select(".y.axis").transition().duration(0).call(yAxis);
@@ -128,41 +141,24 @@ function makeSpikeTrain(spikeEvents, timestamp)
     circle.transition()
         .duration(0)
         .attr("cx",function(d,i){
-            console.log(time[i])
-            if( time[i] < firstTime )
-            {
-                return;
-            }
             return x(time[i]);
         })
         .attr("cy",function(d,i){
-            if( time[i] < firstTime )
-            {
-                return;
-            }
             return y(senders[i]);
         })
         .attr("r", 3);
 
     circle.enter().append("circle")
         .attr("cx", function (d, i) {
-            if( time[i] < firstTime )
-            {
-                return;
-            }
             return x(time[i]);
         } )
         .attr("cy", function (d, i) {
-            if( time[i] < firstTime )
-            {
-                return;
-            }
             return y(senders[i]);
             } )
         .attr("r", 3); //create any new circles needed
     circle.exit().remove();//remove unneeded circles
 
-
+    // TODO: Make into lines:
     /*spikeTrain.selectAll("line")
         .data(time)
         .enter().append("svg:line")
@@ -189,27 +185,35 @@ function makeSpikeTrain(spikeEvents, timestamp)
 
 function makeVoltmeterPlot(events, timestamp)
 {
-    //var time = events.times;
-    //var Vm = events.V_m;
+    makeXAxis(timestamp);
 
-    // TODO: must remove values that are outside domain
+    // TODO: this can probably be done without loop
+    var toRemove = 0;
+    for ( t in VmTime )
+    {
+        if( VmTime[t] >= firstTime )
+        {
+            toRemove = t;
+            break
+        }
+    }
+
+    VmTime = VmTime.slice(toRemove );
+    Vm = Vm.slice(toRemove);
+
     VmTime.push.apply(VmTime, events.times);
     Vm.push.apply(Vm, events.V_m);
 
     var no_neurons = events.V_m[0].length;
 
-    //console.log(no_neurons, timestamp)
-
-    //console.log("times", VmTime)
-    //console.log("Vm", Vm)
+    console.log("times", VmTime)
+    console.log("Vm", Vm)
 
     var maxVms = events.V_m.map(function(d) { return d3.max(d)});
     var minVms = events.V_m.map(function(d) { return d3.min(d)});
 
     var yMin = potY.domain()[0];
     var yMax = potY.domain()[1];
-
-    makeXAxis(timestamp);
 
     potY.domain([d3.min([yMin, d3.min(minVms)]), d3.max([yMax, d3.max(maxVms)])]);
     var yAxis = d3.svg.axis().scale(potY).orient("left").ticks(5);
@@ -245,11 +249,11 @@ function getPlotEvents(e)
 {
     var deviceData = JSON.parse(e.data);
 
-    if ( deviceData['spike_det']['senders'].length > 1 )
+    if ( deviceData['spike_det']['senders'].length >= 1 )
     {
         makeSpikeTrain(deviceData['spike_det'], deviceData['time']);
     }
-    if ( deviceData['rec_dev']['times'].length > 1 )
+    if ( deviceData['rec_dev']['times'].length >= 1 )
     {
         return makeVoltmeterPlot(deviceData['rec_dev'], deviceData['time']);
     }
