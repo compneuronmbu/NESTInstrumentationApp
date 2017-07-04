@@ -44,7 +44,8 @@ var newDeviceIndex = 0;
 var circle_objects = [];
 
 var serverUpdateEvent;
-var serverUpdatePlotEvent;
+
+var devicePlots;
 
 init();
 
@@ -85,12 +86,11 @@ function init()
 
     controls = new Controls( circle_objects, camera, renderer.domElement );
 
+    devicePlots = new DevicePlots();
+
     // Server-Sent Events
     serverUpdateEvent = new EventSource( "/simulationData" );
     serverUpdateEvent.onmessage = handleMessage;
-
-    serverUpdatePlotEvent = new EventSource( "/simulationPlotData" );
-    serverUpdatePlotEvent.onmessage = getPlotEvents;
 
     //render();
 }
@@ -100,8 +100,9 @@ function init()
  */
 function handleMessage( e )
 {
-    var recordedData = JSON.parse( e.data );
-    // console.log(recordedData);
+    var data = JSON.parse( e.data );
+    var recordedData = data[ 'stream_results' ];
+    //console.log( data );
     var t;
     for ( var device in recordedData )
     {
@@ -117,6 +118,17 @@ function handleMessage( e )
     for ( var layer in layer_points )
     {
         layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
+    }
+
+    var deviceData = data['plot_results'];
+
+    if ( deviceData['spike_det']['senders'].length >= 1 )
+    {
+        devicePlots.makeSpikeTrain(deviceData['spike_det'], deviceData['time']);
+    }
+    if ( deviceData['rec_dev']['times'].length >= 1 )
+    {
+        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], deviceData['time']);
     }
 }
 
@@ -426,8 +438,6 @@ function runSimulation()
 {
     var projections = makeProjections();
 
-    makeDevicePlot();
-
     $( "#infoconnected" ).html( "Simulating ..." );
 
     $.ajax(
@@ -441,7 +451,7 @@ function runSimulation()
             synapses: synModels,
             internalProjections: modelParameters.projections,
             projections: projections,
-            time: "100"
+            time: "1000"
         } ),
         dataType: "json"
     } ).done( function( data )
@@ -458,6 +468,8 @@ function runSimulation()
  */
 function streamSimulate()
 {
+    devicePlots.makeDevicePlot();
+
     $.ajax(
     {
         type: "POST",

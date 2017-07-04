@@ -10,7 +10,6 @@ import nest_utils as nu
 
 app = flask.Flask(__name__)
 subscriptions = []
-plot_devices = []
 abort_sub = []
 
 
@@ -70,11 +69,6 @@ def get_connections_ajax():
 
 @app.route('/simulate', methods=['POST'])
 def simulate_ajax():
-    #t = flask.request.args.get('time')
-    #print("Simulating for ", t, "ms")
-    #events = nu.run(t)
-
-    #return flask.jsonify(spikeEvents=events)
 
     data = flask.request.json
     network = data['network']
@@ -83,49 +77,17 @@ def simulate_ajax():
     projections = data['projections']
     t = data['time']
 
-    #nu.make_nodes(network)
-    #nu.make_synapse_models(synapses)
-    #nu.connect_all(projections)
-
-    #nu.prepare_simulation()
-    #print("Simulating for ", t, "ms ...")
-    #nu.run(t, return_events=True)
-    #nu.cleanup_simulation()
-    #return flask.Response(status=204)
-    #return flask.jsonify(spikeEvents=events)
-
-    # Spawning a simulation, then sending response
-    # (not waiting for simulation to complete).
-    gevent.spawn(g_simulate2, network, synapses, internal_projections,
-                 projections, t)
-    return flask.Response(status=204)
-
-def g_simulate2(network, synapses, internal_projections, projections, t):
     nu.make_nodes(network)
     nu.make_synapse_models(synapses)
     nu.connect_internal_projections(internal_projections)
     nu.connect_to_devices(projections)
 
-    steps = 10
-    dt = float(t) / steps
-    #dt = 10
-    print("dt=%f" % dt)
     nu.prepare_simulation()
-    for i in range(steps):
-        print("Step", i)
-        nu.run(dt)
-        #if i % 100 == 0:
-        #    continue
-        results = nu.get_plot_device_results()
-        if results:
-            #TODO timestamp ikke dt
-            results['dt'] = dt;
-            jsonResult = flask.json.dumps(results)
-            for sub in plot_devices:
-                sub.put(jsonResult)
-            gevent.sleep(0.3)  # yield this context to send data to client
+    print("Simulating for ", t, "ms ...")
+    nu.run(t, return_events=True)
     nu.cleanup_simulation()
 
+    return flask.Response(status=204)
 
 def g_simulate(network, synapses, internal_projections, projections, t):
     nu.make_nodes(network)
@@ -136,8 +98,8 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     q = gevent.queue.Queue()
     abort_sub.append(q)
 
-    steps = 10000
-    sleep_t = 0.00001  # sleep time
+    steps = 1000
+    sleep_t = 0.1  # sleep time
     dt = float(t) / steps
     print("dt=%f" % dt)
     nu.prepare_simulation()
@@ -147,9 +109,9 @@ def g_simulate(network, synapses, internal_projections, projections, t):
             if abort:
                 print("Simulation aborted")
                 break
-        if i % 10 == 0 and i > 0:
-            sys.stdout.write("\rStep %i" % i)
-            sys.stdout.flush()
+        #if i % 10 == 0 and i > 0:
+        #    sys.stdout.write("\rStep %i" % i)
+        #    sys.stdout.flush()
         nu.run(dt)
         # if i % 10 == 0:
         #    continue
@@ -202,22 +164,6 @@ def simulationData():
                 yield ev
         except GeneratorExit:
             subscriptions.remove(q)
-    return flask.Response(gen(), mimetype="text/event-stream")
-
-
-@app.route('/simulationPlotData')
-def simulationPlotData():
-
-    def gen():
-        q = gevent.queue.Queue()
-        plot_devices.append(q)
-        try:
-            while True:
-                result = q.get()
-                ev = "data: " + result + "\n\n"
-                yield ev
-        except GeneratorExit:
-            plot_devices.remove(q)
     return flask.Response(gen(), mimetype="text/event-stream")
 
 
