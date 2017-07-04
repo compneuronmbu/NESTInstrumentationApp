@@ -100,35 +100,31 @@ function init()
  */
 function handleMessage( e )
 {
-    var data = JSON.parse( e.data );
-    var recordedData = data[ 'stream_results' ];
-    //console.log( data );
-    var t;
-    for ( var device in recordedData )
-    {
-        for ( var gid in recordedData[ device ] )
-        {
-            t = recordedData[ device ][ gid ][ 0 ];
-        }
-    }
-    $( "#infoconnected" ).html( "Simulating | " + t.toString() + " ms" );
-    var spiked = colorFromSpike( recordedData );
-    colorFromVm( recordedData, spiked );
+    var data = JSON.parse(e.data);
+    var recordedData = data['stream_results'];
+    var deviceData = data['plot_results'];
+    //console.log(data);
+
+    var t = deviceData['time'];
+    $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+
+    // Color results:
+    var spiked = colorFromSpike(recordedData);
+    colorFromVm(recordedData, spiked);
 
     for ( var layer in layer_points )
     {
         layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
     }
 
-    var deviceData = data['plot_results'];
-
+    // Plot results:
     if ( deviceData['spike_det']['senders'].length >= 1 )
     {
-        devicePlots.makeSpikeTrain(deviceData['spike_det'], deviceData['time']);
+        devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
     }
     if ( deviceData['rec_dev']['times'].length >= 1 )
     {
-        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], deviceData['time']);
+        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
     }
 }
 
