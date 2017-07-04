@@ -18,6 +18,8 @@ class DevicePlots {
         this.lastTime = 1;
         this.firstTime = 1;
 
+        this.spikeTime = [];
+        this.senders = [];
         this.VmTime = [];
         this.Vm = [];
     }
@@ -95,6 +97,8 @@ class DevicePlots {
             this.spikeTrain.selectAll("circle").remove();
             this.membrain.selectAll("path.line").remove();
 
+            this.spikeTime = [];
+            this.senders = [];
             this.VmTime  = [];
             this.Vm = [];
         }
@@ -102,10 +106,9 @@ class DevicePlots {
 
     makeXAxis(timestamp)
     {
-        console.log(this)
         this.lastTime = timestamp;
 
-        this.firstTime = this.lastTime - 50 < 1 ? 1:this.lastTime - 50;
+        this.firstTime = this.lastTime - 70 < 1 ? 1:this.lastTime - 50;
 
         this.x.domain([this.firstTime, this.lastTime]);
         var xAxis = d3.svg.axis().scale(this.x).orient("bottom").ticks(10);
@@ -114,49 +117,52 @@ class DevicePlots {
 
     makeSpikeTrain(spikeEvents, timestamp)
     {
-        var time = spikeEvents.times;
-        var senders = spikeEvents.senders;
+        //var time = spikeEvents.times;
+        //var senders = spikeEvents.senders;
 
         this.makeXAxis(timestamp);
 
         var toRemove = 0;
         var t;
-        for ( t in time )
+        for ( t in this.spikeTime )
         {
-            if( time[t] >= this.firstTime )
+            if( this.spikeTime[t] >= this.firstTime )
             {
                 toRemove = t;
                 break
             }
         }
 
-        time = time.slice(toRemove );
-        senders = senders.slice(toRemove);
+        this.spikeTime = this.spikeTime.slice(toRemove );
+        this.senders = this.senders.slice(toRemove);
 
-        this.y.domain([Math.min.apply(Math, senders)-10, Math.max.apply(Math, senders)]);
+        this.spikeTime.push.apply(this.spikeTime, spikeEvents.times);
+        this.senders.push.apply(this.senders, spikeEvents.senders);
+
+        this.y.domain([Math.min.apply(Math, this.senders)-10, Math.max.apply(Math, this.senders)]);
         var yAxis = d3.svg.axis().scale(this.y).orient("left").ticks(5);
         this.spikeTrain.select(".y.axis").transition().duration(0).call(yAxis);
 
         var circle = this.spikeTrain.selectAll("circle")
-            .data(time);
+            .data(this.spikeTime);
 
         //update all circles to new positions
         circle.transition()
             .duration(0)
             .attr("cx",(d, i) => {
-                return this.x(time[i]);
+                return this.x(this.spikeTime[i]);
             })
             .attr("cy",(d, i) => {
-                return this.y(senders[i]);
+                return this.y(this.senders[i]);
             })
             .attr("r", 3);
 
         circle.enter().append("circle")
             .attr("cx", (d, i) => {
-                return this.x(time[i]);
+                return this.x(this.spikeTime[i]);
             } )
             .attr("cy", (d, i) => {
-                return this.y(senders[i]);
+                return this.y(this.senders[i]);
                 } )
             .attr("r", 3); //create any new circles needed
         circle.exit().remove();//remove unneeded circles
@@ -210,16 +216,11 @@ class DevicePlots {
 
         var no_neurons = events.V_m[0].length;
 
-        console.log("times", this.VmTime)
-        console.log("Vm", this.Vm)
-
         var maxVms = events.V_m.map(function(d) { return d3.max(d)});
         var minVms = events.V_m.map(function(d) { return d3.min(d)});
 
         var yMin = this.potY.domain()[0];
         var yMax = this.potY.domain()[1];
-
-        console.log("min", d3.min([yMin, d3.min(minVms)]))
 
         this.potY.domain([d3.min([yMin, d3.min(minVms)]), d3.max([yMax, d3.max(maxVms)])]);
         var yAxis = d3.svg.axis().scale(this.potY).orient("left").ticks(5);
@@ -231,8 +232,7 @@ class DevicePlots {
             .y((d, i) => { 
                 if (no_neurons > 1 && d[0] !== undefined)
                 {
-                    //console.log(d)
-                    // return Vm of first neuron
+                    // NB! This returns only Vm of first neuron
                     return this.potY(d[0]);
                 }
                 else
@@ -243,26 +243,10 @@ class DevicePlots {
         var path = this.membrain.selectAll('path').data(this.Vm);
       
         path.attr('d', line(this.Vm));
-            //.attr('d', (d) => { return line(this.Vm); });
         path.enter().append('path').attr('d', line(this.Vm))
             .classed('line', true)
-            //.attr('d', (d) => { return line(this.Vm); })
             .style('stroke-width', 2)
             .style('stroke', 'steelblue');
         path.exit().remove();
-    }
-}
-
-function getPlotEvents(e)
-{
-    var deviceData = JSON.parse(e.data);
-
-    if ( deviceData['spike_det']['senders'].length >= 1 )
-    {
-        devicePlots.makeSpikeTrain(deviceData['spike_det'], deviceData['time']);
-    }
-    if ( deviceData['rec_dev']['times'].length >= 1 )
-    {
-        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], deviceData['time']);
     }
 }

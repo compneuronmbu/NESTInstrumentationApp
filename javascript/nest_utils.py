@@ -201,24 +201,19 @@ def cleanup_simulation():
 
 
 def get_device_results():
-    #  print(rec_devices)
-    #  import pprint
-    got_results = False
+
     results = {}
-    # TODO for device_name, device_gid
-    for device in rec_devices:
-        device_name = device[0]
-        device_gid = device[1]
+    #TODO: Set up on the fly
+    recording_events = {'spike_det': {'senders': [], 'times': []}, 'rec_dev': {'times': [], 'V_m': []}}
+
+    time_array = []
+    vm_array = []
+
+    for device_name, device_gid in rec_devices:
         status = nest.GetStatus(device_gid)[0]
-        #  pprint.pprint(status)
         if status['n_events'] > 0:
-            got_results = True
-            #  print("Status:")
-            #  pprint.pprint(status)
             events = {}
             device_events = status['events']
-            # for node in device_events['senders']:
-            #    events[node] = []
             for e in range(status['n_events']):
                 #TODO: if voltmeter... utenfor løkken
                 #TODO numpy i json?
@@ -230,57 +225,28 @@ def get_device_results():
                     events[str(device_events['senders'][e])] = [
                         device_events['times'][e]]
             results[device_name] = events
-            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
-    # TODO trenger ikke, kan sjekke results
-    if got_results:
-        return results
-    else:
-        return None
 
-
-def get_plot_device_results():
-    got_results = False
-
-    recording_events = {'spike_det': {'senders': [], 'times': []}, 'rec_dev': {'times': [], 'V_m': []}}
-
-    time_array = []
-    vm_array = []
-
-    for dev in rec_devices:
-        n_spikes = nest.GetStatus(dev[1])[0]['n_events']
-        if n_spikes > 0:
-            got_results = True
-            events = nest.GetStatus(dev[1])[0]['events']
-            print("Number of spikes: %i" % n_spikes)
-            if 'spike_detector' in dev[0]:
-                recording_events['spike_det']['senders'] += [ float(y) for y in events['senders']]
-                recording_events['spike_det']['times'] += [float(x) for x in events['times']]
+            # For plotting: (All should just be one dictionary eventually...)
+            if 'spike_detector' in device_name:
+                recording_events['spike_det']['senders'] += [ float(y) for y in device_events['senders']]
+                recording_events['spike_det']['times'] += [float(x) for x in device_events['times']]
             else:
-                print(events)
                 vm_count = -1
-                for count, t in enumerate(events['times']):
+                for count, t in enumerate(device_events['times']):
                     if t not in time_array:
                         time_array.append(t)
                         vm_array.append([])
                         vm_count += 1
-                    vm_array[vm_count].append(events['V_m'][count])
-                #recording_events['rec_dev']['senders'] += [ float(y) for y in events['senders']]
-                #recording_events['rec_dev']['times'][events['times']] = 
-                #recording_events['rec_dev']['times'] += [float(x) for x in events['times']]
-                #recording_events['rec_dev']['V_m'] += [float(x) for x in events['V_m']]
-                #recording_events['rec_dev']['V_m'].append([float(x) for x in events['V_m']])
-                #TODO: move out.
-                #recording_events['rec_dev']['num_senders'] = n_spikes
+                    vm_array[vm_count].append(device_events['V_m'][count])
                 recording_events['rec_dev']['times'] += time_array
                 recording_events['rec_dev']['V_m'] += vm_array
-                nest.SetStatus(dev[1], 'n_events', 0)
-                #print(recording_events)
-                #print(time_array)
-                #print(vm_array)
 
-    if got_results:
-        print(recording_events)
+
+            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+
+    if results:
         recording_events['time'] = nest.GetKernelStatus('time')
-        return recording_events
+
+        return {"stream_results": results, "plot_results": recording_events}
     else:
         return None

@@ -38,7 +38,6 @@ var newDeviceIndex = 0;
 var circle_objects = [];
 
 var serverUpdateEvent;
-var serverUpdatePlotEvent;
 
 var devicePlots;
 
@@ -79,16 +78,14 @@ function init()
     serverUpdateEvent = new EventSource("/simulationData");
     serverUpdateEvent.onmessage = handleMessage;
 
-    serverUpdatePlotEvent = new EventSource("/simulationPlotData");
-    serverUpdatePlotEvent.onmessage = getPlotEvents;
-
     //render();
 }
 
 function handleMessage(e)
 {
-    var recordedData = JSON.parse(e.data);
-    // console.log(recordedData);
+    var data = JSON.parse(e.data);
+    var recordedData = data['stream_results'];
+    //console.log(data);
     var t;
     for (var device in recordedData)
     {
@@ -104,6 +101,17 @@ function handleMessage(e)
     for (var layer in layer_points)
     {
         layer_points[layer].points.geometry.attributes.customColor.needsUpdate = true;
+    }
+
+    var deviceData = data['plot_results'];
+
+    if ( deviceData['spike_det']['senders'].length >= 1 )
+    {
+        devicePlots.makeSpikeTrain(deviceData['spike_det'], deviceData['time']);
+    }
+    if ( deviceData['rec_dev']['times'].length >= 1 )
+    {
+        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], deviceData['time']);
     }
 }
 
@@ -357,8 +365,6 @@ function runSimulation()
 {
     var projections = makeProjections();
 
-    devicePlots.makeDevicePlot();
-
     $("#infoconnected").html( "Simulating ..." );
 
     $.ajax({
@@ -368,7 +374,7 @@ function runSimulation()
         data: JSON.stringify({network: modelParameters,
                       synapses: synModels,
                       projections: projections,
-                      time: "100"}),
+                      time: "1000"}),
         dataType: "json"
         }).done(function(data){
               console.log("Simulation finished");
@@ -379,6 +385,8 @@ function runSimulation()
 
 function streamSimulate()
 {
+    devicePlots.makeDevicePlot();
+
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
