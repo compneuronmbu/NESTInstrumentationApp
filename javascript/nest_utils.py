@@ -113,8 +113,6 @@ def connect_internal_projections(internal_projections):
         pre = proj[0]
         post = proj[1]
         conndict = proj[2]
-        print("Connecting %s and %s" % (layers[pre], layers[post]))
-        print("Using ", conndict)
         tp.ConnectLayers(layers[pre], layers[post], conndict)
         print("Success")
 

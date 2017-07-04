@@ -219,7 +219,7 @@ body {
 }
 
 #rectangleButton {
-  background-color: #FF6633;
+  background-color: var(--shape_selected_background);
   border: 0px;
   font-size: 17px;
   font-weight: bold;
@@ -234,7 +234,7 @@ body {
 }
 
 #ellipticalButton {
-  background-color: #F1EEEC;
+  background-color: var(--shape_not_selected_background);
   border: 0px;
   font-size: 17px;
   font-weight: bold;
