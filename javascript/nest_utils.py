@@ -280,6 +280,7 @@ def get_plot_device_results():
 
     if got_results:
         print(recording_events)
+        recording_events['time'] = nest.GetKernelStatus('time')
         return recording_events
     else:
         return None

@@ -113,8 +113,6 @@ def g_simulate2(network, synapses, projections, t):
         #    continue
         results = nu.get_plot_device_results()
         if results:
-            #TODO timestamp ikke dt
-            results['dt'] = dt;
             jsonResult = flask.json.dumps(results)
             for sub in plot_devices:
                 sub.put(jsonResult)
