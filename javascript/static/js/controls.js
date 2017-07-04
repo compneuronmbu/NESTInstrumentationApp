@@ -120,7 +120,7 @@ class Controls
     /*
      * Finds objects intersecting with the mouse, given a list of objects.
      */
-    getMouseIntersecting( mouseX, mouseY, objects)
+    getMouseIntersecting( mouseX, mouseY, objects )
     {
         this.raycaster = new THREE.Raycaster();
         var rect = this.domElement.getBoundingClientRect();
@@ -139,8 +139,8 @@ class Controls
     selectResizePoints()
     {
         var pointIntersects = this.getMouseIntersecting( mouseDownCoords.x,
-                                                         mouseDownCoords.y,
-                                                         this.boxInFocus.resizePoints);
+            mouseDownCoords.y,
+            this.boxInFocus.resizePoints );
 
         if ( pointIntersects.length > 0 )
         {
@@ -166,8 +166,8 @@ class Controls
         this.plane = new THREE.Plane();
 
         var intersects = this.getMouseIntersecting( mouseDownCoords.x,
-                                                    mouseDownCoords.y,
-                                                    this.drag_objects)
+            mouseDownCoords.y,
+            this.drag_objects )
 
         if ( intersects.length > 0 )
         {
@@ -230,11 +230,11 @@ class Controls
         }
         this.marquee.css(
         {
-            left: Math.min(event.clientX, mouseDownCoords.x) + 'px',
-            width: Math.abs(mRelPos.x) + 'px',
-            top: Math.min(event.clientY, mouseDownCoords.y) + 'px',
-            height: Math.abs(mRelPos.y) + 'px'
-        });
+            left: Math.min( event.clientX, mouseDownCoords.x ) + 'px',
+            width: Math.abs( mRelPos.x ) + 'px',
+            top: Math.min( event.clientY, mouseDownCoords.y ) + 'px',
+            height: Math.abs( mRelPos.y ) + 'px'
+        } );
     }
 
     /*
@@ -404,8 +404,8 @@ class Controls
         console.log( "make connection" );
 
         var intersects = this.getMouseIntersecting( event.clientX,
-                                                    event.clientY,
-                                                    this.drag_objects)
+            event.clientY,
+            this.drag_objects )
         if ( intersects.length > 0 )
         {
             var intersect_target = intersects[ 0 ].object;
@@ -490,23 +490,23 @@ class Controls
 
             if ( this.boxInFocus !== undefined )
             {
-                console.log("Select resize points")
+                console.log( "Select resize points" )
                 // If a box is selected, check if we click on a resize point.
                 this.selectResizePoints( event.clientX, event.clientY );
-                if (this.resizeSideInFocus !== undefined)
+                if ( this.resizeSideInFocus !== undefined )
                 {
                     return;
                 }
             }
             if ( event.shiftKey )
             {
-                console.log("Select device")
+                console.log( "Select device" )
                 // If the shift key is down, check if we click on a device.
                 this.selectDevice( event.clientX, event.clientY );
             }
             else
             {
-                console.log("Select box")
+                console.log( "Select box" )
                 // If neither of the above, check if we click on a box.
                 this.selectBox()
             }
@@ -524,7 +524,7 @@ class Controls
         if ( this.make_selection_box )
         {
             // If we are making a box, update the marquee
-            this.updateMarquee(event.clientX, event.clientY);
+            this.updateMarquee( event.clientX, event.clientY );
         }
         else if ( this.resizeSideInFocus !== undefined )
         {
