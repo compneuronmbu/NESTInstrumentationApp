@@ -9,6 +9,7 @@ import flask
 import nest_utils as nu
 
 app = flask.Flask(__name__)
+interface = None
 subscriptions = []
 abort_sub = []
 
@@ -26,13 +27,14 @@ def index():
 @app.route('/selector', methods=['POST', 'GET'])
 def add_blog_ajax():
     if flask.request.method == 'POST':
+        global interface
         pp = pprint.PrettyPrinter(indent=4)
         # print(name)
         # print(selection)
         data = flask.request.json
         # pp.pprint(data)
-        nu.make_nodes(data['network'])
-        gids, positions = nu.printGIDs(data['info'])
+        interface = nu.NESTInterface(data['network'])
+        gids, positions = interface.printGIDs(data['info'])
         print(gids)
         pp.pprint(positions)
         name = data['info']['name']
@@ -44,24 +46,26 @@ def add_blog_ajax():
 def connect_ajax():
     print("Connect called")
     if flask.request.method == 'POST':
+        global interface
         data = flask.request.json
         network = data['network']
         synapses = data['synapses']
         internal_projections = data['internalProjections']
         projections = data['projections']
 
-        nu.make_nodes(network)
-        nu.make_synapse_models(synapses)
-        nu.connect_internal_projections(internal_projections)
-        nu.connect_to_devices(projections)
-
+        interface = nu.NESTInterface(network,
+                                     synapses,
+                                     internal_projections,
+                                     projections)
+        interface.connect_all()
         return flask.Response(status=204)
 
 
 @app.route('/connections', methods=['GET'])
 def get_connections_ajax():
+    global interface
     print("Received ", flask.request.args.get('input'))
-    n_connections = nu.get_num_connections()
+    n_connections = interface.get_num_connections()
     return flask.jsonify(connections=n_connections)
     #    connections=[{'pre': c[0], 'post': c[1]}
     #                 for c in connections])
@@ -69,7 +73,7 @@ def get_connections_ajax():
 
 @app.route('/simulate', methods=['POST'])
 def simulate_ajax():
-
+    global interface
     data = flask.request.json
     network = data['network']
     synapses = data['synapses']
@@ -77,23 +81,28 @@ def simulate_ajax():
     projections = data['projections']
     t = data['time']
 
-    nu.make_nodes(network)
-    nu.make_synapse_models(synapses)
-    nu.connect_internal_projections(internal_projections)
-    nu.connect_to_devices(projections)
+    interface = nu.NESTInterface(network,
+                                 synapses,
+                                 internal_projections,
+                                 projections)
+    interface.connect_all()
 
-    nu.prepare_simulation()
+    interface.prepare_simulation()
     print("Simulating for ", t, "ms ...")
-    nu.run(t, return_events=True)
-    nu.cleanup_simulation()
+    interface.run(t, return_events=True)
+    interface.cleanup_simulation()
 
     return flask.Response(status=204)
 
+
 def g_simulate(network, synapses, internal_projections, projections, t):
-    nu.make_nodes(network)
-    nu.make_synapse_models(synapses)
-    nu.connect_internal_projections(internal_projections)
-    nu.connect_to_devices(projections)
+    global interface
+
+    interface = nu.NESTInterface(network,
+                                 synapses,
+                                 internal_projections,
+                                 projections)
+    interface.connect_all()
 
     q = gevent.queue.Queue()
     abort_sub.append(q)
@@ -102,7 +111,7 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     sleep_t = 0.1  # sleep time
     dt = float(t) / steps
     print("dt=%f" % dt)
-    nu.prepare_simulation()
+    interface.prepare_simulation()
     for i in range(steps):
         if not q.empty():
             abort = q.get()
@@ -112,10 +121,10 @@ def g_simulate(network, synapses, internal_projections, projections, t):
         #if i % 10 == 0 and i > 0:
         #    sys.stdout.write("\rStep %i" % i)
         #    sys.stdout.flush()
-        nu.run(dt)
+        interface.run(dt)
         # if i % 10 == 0:
         #    continue
-        results = nu.get_device_results()
+        results = interface.get_device_results()
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
@@ -123,7 +132,7 @@ def g_simulate(network, synapses, internal_projections, projections, t):
         # yield this context to check abort and send data
         gevent.sleep(sleep_t)
     print("")
-    nu.cleanup_simulation()
+    interface.cleanup_simulation()
 
 
 @app.route('/streamSimulate', methods=['POST'])
