@@ -17,6 +17,9 @@ class NESTInterface(object):
         self.internal_projections = internal_projections
         self.device_projections = device_projections
 
+        self.layers = {}
+        self.rec_devices = []
+
         self.reset_kernel()
         self.make_nodes()
         if synapses:
@@ -27,10 +30,7 @@ class NESTInterface(object):
 
     def make_nodes(self):
         if nest.GetKernelStatus()['network_size'] == 1:
-            global layers, syn_models, rec_devices
-            layers = {}
-            syn_models = {}
-            rec_devices = []
+
             for layer in self.networkSpecs['layers']:
                 neurons = layer['neurons']
                 pos = [[float(neuron['x']), float(neuron['y'])]
@@ -39,8 +39,8 @@ class NESTInterface(object):
                 nest_layer = tp.CreateLayer({'positions': pos,
                                              'elements': self.networkSpecs[
                                                  'models'][model]})
-                layers[layer['name']] = nest_layer
-            return layers
+                self.layers[layer['name']] = nest_layer
+            return self.layers
 
     def make_mask(self, lower_left, upper_right, mask_type, cntr):
         """
@@ -111,8 +111,8 @@ class NESTInterface(object):
         cntr = [0.0, 0.0]
         mask = self.make_mask(ll, ur, mask_type, cntr)
         print("Layers:")
-        print(layers)
-        gids = tp.SelectNodesByMask(layers[name],
+        print(self.layers)
+        gids = tp.SelectNodesByMask(self.layers[name],
                                     cntr, mask)
         return gids
 
@@ -135,7 +135,7 @@ class NESTInterface(object):
             pre = proj[0]
             post = proj[1]
             conndict = proj[2]
-            tp.ConnectLayers(layers[pre], layers[post], conndict)
+            tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
             print("Success")
 
     def connect_to_devices(self):
@@ -145,7 +145,6 @@ class NESTInterface(object):
         if self.device_projections is None:
             return
 
-        global rec_devices
         params_to_floatify = ['rate', 'amplitude', 'frequency']
         reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator']
 
@@ -160,7 +159,7 @@ class NESTInterface(object):
 
             # If it is a recording device, add it to the list
             if 'record_to' in nest.GetStatus(nest_device)[0]:
-                rec_devices.append([device_name, nest_device])
+                self.rec_devices.append([device_name, nest_device])
 
             connectees = self.device_projections[device_name]['connectees']
             for selection in connectees:
@@ -208,7 +207,7 @@ class NESTInterface(object):
         time_array = []
         vm_array = []
 
-        for device_name, device_gid in rec_devices:
+        for device_name, device_gid in self.rec_devices:
             status = nest.GetStatus(device_gid)[0]
             if status['n_events'] > 0:
                 events = {}
