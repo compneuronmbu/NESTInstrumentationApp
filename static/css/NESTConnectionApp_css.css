@@ -2,7 +2,7 @@
   --gui_width: 180px;
   --selection_button_font_size: 14px;
   --selection_button_heigt: 25px;
-  --selection_button_width: 150px;
+  --selection_button_width: 120px;
   --shape_selected_background: #FF6633;
   --shape_not_selected_background: #F1EEEC;
 }
@@ -61,6 +61,7 @@ body {
 
 #poissonButton
 {
+  width: var(--selection_button_width);
   text-shadow: 0.5px 0.5px 0 #333;
   color: #fff;
   background-color: #B28080;
@@ -72,6 +73,7 @@ body {
 }
 
 #poissonButton:hover{
+    width: var(--selection_button_width);
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -86,6 +88,7 @@ body {
 
 #poissonButton:active,
 #poissonButton.active {
+    width: var(--selection_button_width);
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #B28080;
@@ -116,6 +119,7 @@ body {
 
 #voltmeterButton
 {
+  width: var(--selection_button_width);
   margin-top: 3px;
   margin-bottom: 3px;
   text-shadow: 0.5px 0.5px 0 #333;
@@ -129,6 +133,7 @@ body {
 }
 
 #voltmeterButton:hover{
+    width: var(--selection_button_width);
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -143,6 +148,7 @@ body {
 
 #voltmeterButton:active,
 #VoltmeterButton.active {
+    width: var(--selection_button_width);
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #BDB280;
@@ -155,6 +161,7 @@ body {
 
 #spikeDetectorButton
 {
+  width: var(--selection_button_width);
   margin-top: 3px;
   margin-bottom: 3px;
   text-shadow: 0.5px 0.5px 0 #333;
@@ -168,6 +175,7 @@ body {
 }
 
 #spikeDetectorButton:hover{
+    width: var(--selection_button_width);
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -182,6 +190,7 @@ body {
 
 #spikeDetectorButton:active,
 #spikeDetectorButton.active {
+    width: var(--selection_button_width);
     border-color: #999999;
     border-bottom-color: #ADADAD;
     background-color: #809980;
