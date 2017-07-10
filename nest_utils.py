@@ -146,7 +146,7 @@ class NESTInterface(object):
             return
 
         params_to_floatify = ['rate', 'amplitude', 'frequency']
-        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator']
+        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator', 'ac_generator']
 
         for device_name in self.device_projections:
             model = self.device_projections[device_name]['specs']['model']
@@ -225,28 +225,27 @@ class NESTInterface(object):
                             device_events['times'][e]]
                 results[device_name] = events
 
-            # For plotting: (All should just be one dictionary eventually...)
-            if 'spike_detector' in device_name:
-                recording_events['spike_det']['senders'] += (
-                    [float(y) for y in device_events['senders']])
-                recording_events['spike_det']['times'] += (
-                    [float(x) for x in device_events['times']])
-            else:
-                vm_count = -1
-                for count, t in enumerate(device_events['times']):
-                    if t not in time_array:
-                        time_array.append(t)
-                        vm_array.append([])
-                        vm_count += 1
-                    vm_array[vm_count].append(device_events['V_m'][count])
-                recording_events['rec_dev']['times'] += time_array
-                recording_events['rec_dev']['V_m'] += vm_array
+                # For plotting: (All should just be one dictionary eventually...)
+                if 'spike_detector' in device_name:
+                    recording_events['spike_det']['senders'] += (
+                        [float(y) for y in device_events['senders']])
+                    recording_events['spike_det']['times'] += (
+                        [float(x) for x in device_events['times']])
+                else:
+                    vm_count = -1
+                    for count, t in enumerate(device_events['times']):
+                        if t not in time_array:
+                            time_array.append(t)
+                            vm_array.append([])
+                            vm_count += 1
+                        vm_array[vm_count].append(device_events['V_m'][count])
+                    recording_events['rec_dev']['times'] += time_array
+                    recording_events['rec_dev']['V_m'] += vm_array
 
-            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+                nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
         if results:
             recording_events['time'] = nest.GetKernelStatus('time')
-
             return {"stream_results": results,
                     "plot_results": recording_events}
         else:

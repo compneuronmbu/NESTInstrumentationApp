@@ -681,12 +681,24 @@ function makeDevice( device, col, map, params = {} )
 function makeStimulationDevice( device )
 {
     console.log( "making stimulation device of type", device )
-    var col = 0xB28080
-        //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-    var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
-    var params = {
-        rate: 70000.0
+
+    if ( device === "poisson_generator" )
+    {
+        var col = 0xB28080
+            //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+        var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+        var params = {
+            rate: 70000.0
+        }
     }
+    else if ( device === "ac_generator" )
+    {
+        var col = 0xc9725e
+            //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+        var map = new THREE.TextureLoader().load( "static/js/textures/sinus.png" );
+        var params = {'amplitude': 50., 'frequency': 35.}
+    }
+
     makeDevice( device, col, map, params );
 }
 
