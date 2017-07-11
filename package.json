@@ -1,0 +1,25 @@
+{
+  "name": "NESTConnectionApp",
+  "version": "0.1.0",
+  "main": "static/js/layerSelect.js",
+  "repository": "https://github.com/compneuronmbu/NESTConnectionApp.git",
+  "contributors": [
+    "Stine Brekke Vennemo <stine.brekke.vennemo@nmbu.no>",
+    "Håkon Mørk <hakon.mork@nmbu.no>"
+  ],
+  "license": "GPL-2.0",
+  "scripts": {
+    "start": "python NESTConnectionApp_server.py"
+  },
+  "dependencies": {
+    "babel-standalone": "^6.25.0",
+    "d3": "^4.9.1",
+    "jquery": "^3.2.1",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "three": "^0.86.0"
+  },
+  "devDependencies": {
+    "jest": "^20.0.4"
+  }
+}

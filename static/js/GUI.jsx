@@ -1,3 +1,4 @@
+
 class GuiButtons extends React.Component{
     constructor() {
       super();
@@ -16,7 +17,7 @@ class GuiButtons extends React.Component{
                 Neuron type
               </div>
               <DropDown items={
-                neuronModels.map(function(model){return ({value: model, text: model});})}
+                window.neuronModels.map(function(model){return ({value: model, text: model});})}
                         id='neuronType' />
             </div>
 
