@@ -219,7 +219,7 @@ class Controls
         mRelPos.x = mouseX - mouseDownCoords.x;
         mRelPos.y = mouseY - mouseDownCoords.y;
         this.marquee.fadeIn();
-        var selectedShape = getSelectedShape();
+        var selectedShape = app.getSelectedShape();
 
         if ( selectedShape == "elliptical" )
         {
@@ -292,7 +292,7 @@ class Controls
      */
     updateLine( mouseX, mouseY )
     {
-        var relScreenPos = toObjectCoordinates(
+        var relScreenPos = app.toObjectCoordinates(
         {
             x: mouseX,
             y: mouseY
@@ -312,7 +312,7 @@ class Controls
     {
         if ( this.raycaster.ray.intersectPlane( this.plane, this.intersection ) )
         {
-            var relScreenPos = toObjectCoordinates(
+            var relScreenPos = app.toObjectCoordinates(
             {
                 x: mouseX,
                 y: mouseY
@@ -348,9 +348,9 @@ class Controls
             y: -mRelPos.y + mouseDownCorrected.y
         };
 
-        var bounds = findBounds( mouseUpCoords, mouseDownCorrected );
+        var bounds = app.findBounds( mouseUpCoords, mouseDownCorrected );
 
-        this.boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
+        this.boxInFocus = new SelectionBox( bounds.ll, bounds.ur, app.getSelectedShape() );
         this.boxInFocus.uniqueID = uniqueID++;
         layerSelected = this.boxInFocus.layerName;
 
@@ -366,8 +366,8 @@ class Controls
         this.boxInFocus.makeBox();
         this.boxInFocus.makeSelectionPoints();
 
-        this.boxInFocus.selectedNeuronType = getSelectedDropDown( "neuronType" );
-        this.boxInFocus.selectedSynModel = getSelectedDropDown( "synapseModel" );
+        this.boxInFocus.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        this.boxInFocus.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
 
         this.serverPrintGids();
     }

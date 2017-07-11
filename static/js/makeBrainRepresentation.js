@@ -94,7 +94,7 @@ var Brain = function( camera, scene )
 
         makeModelNameLists();
 
-        requestAnimationFrame( render );
+        requestAnimationFrame( app.render.bind(app) );
     }
 
     /*
@@ -197,7 +197,7 @@ var Brain = function( camera, scene )
                     z: center.z
                 };
 
-                screenCenter = toScreenXY( name_pos );
+                screenCenter = app.toScreenXY( name_pos );
                 screenCenter.y = container.clientHeight - screenCenter.y;
 
                 var text = document.createElement( 'div' );

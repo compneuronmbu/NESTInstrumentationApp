@@ -55,7 +55,7 @@ class SelectionBox
             p.x = positions[ i ];
             p.y = positions[ i + 1 ];
             p.z = positions[ i + 2 ];
-            xypos = toScreenXY( p );
+            xypos = app.toScreenXY( p );
 
             if ( this.withinBounds( xypos ) )
             {
@@ -88,13 +88,13 @@ class SelectionBox
             x: mouseDownCoords.x,
             y: renderer.getSize().height - mouseDownCoords.y
         };
-        var roomMouseDown = toObjectCoordinates( mouseDownCorrected );
+        var roomMouseDown = app.toObjectCoordinates( mouseDownCorrected );
 
         var mouseUpCoords = {
             x: mRelPos.x + mouseDownCorrected.x,
             y: -mRelPos.y + mouseDownCorrected.y
         };
-        var roomMouseUp = toObjectCoordinates( mouseUpCoords );
+        var roomMouseUp = app.toObjectCoordinates( mouseUpCoords );
 
         for ( var name in layer_points )
         {
@@ -152,7 +152,7 @@ class SelectionBox
                 y: positions[ i + 1 ],
                 z: positions[ i + 2 ]
             };
-            xypos = toScreenXY( p );
+            xypos = app.toScreenXY( p );
 
             if ( this.withinBounds( xypos ) )
             {
@@ -180,8 +180,8 @@ class SelectionBox
      */
     makeBox()
     {
-        var objectBoundsLL = toObjectCoordinates( this.ll );
-        var objectBoundsUR = toObjectCoordinates( this.ur );
+        var objectBoundsLL = app.toObjectCoordinates( this.ll );
+        var objectBoundsUR = app.toObjectCoordinates( this.ur );
         var xLength = objectBoundsUR.x - objectBoundsLL.x;
         var yLength = objectBoundsUR.y - objectBoundsLL.y;
 
@@ -220,8 +220,8 @@ class SelectionBox
      */
     updateBox()
     {
-        var objectBoundsLL = toObjectCoordinates( this.ll );
-        var objectBoundsUR = toObjectCoordinates( this.ur );
+        var objectBoundsLL = app.toObjectCoordinates( this.ll );
+        var objectBoundsUR = app.toObjectCoordinates( this.ur );
         var xLength = objectBoundsUR.x - objectBoundsLL.x;
         var yLength = objectBoundsUR.y - objectBoundsLL.y;
 
@@ -452,8 +452,8 @@ class SelectionBox
      */
     getSelectionBounds()
     {
-        var roomLL = toObjectCoordinates( this.ll );
-        var roomUR = toObjectCoordinates( this.ur );
+        var roomLL = app.toObjectCoordinates( this.ll );
+        var roomUR = app.toObjectCoordinates( this.ur );
         return {
             ll:
             {
@@ -475,8 +475,8 @@ class SelectionBox
     getSelectionInfo()
     {
         var selectedBBoxXYZ = {
-            "ll": toObjectCoordinates( this.ll ),
-            "ur": toObjectCoordinates( this.ur )
+            "ll": app.toObjectCoordinates( this.ll ),
+            "ur": app.toObjectCoordinates( this.ur )
         };
         var selectionBox = {
             "ll":
@@ -493,8 +493,8 @@ class SelectionBox
             }
         };
 
-        var selectedNeuronType = getSelectedDropDown( "neuronType" );
-        var selectedSynModel = getSelectedDropDown( "synapseModel" );
+        var selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
 

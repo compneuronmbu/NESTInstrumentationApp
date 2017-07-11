@@ -35,9 +35,9 @@ class GuiButtons extends React.Component{
                     Mask shape
                 </div>
                 <SelectionsButton button_class ='selectionsButton'
-                button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
+                button_id='rectangleButton' text="&#x25FC;" function={function () {app.makeRectangularShape();}} />
                 <SelectionsButton button_class ='selectionsButton'
-                button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
+                button_id='ellipticalButton' text="&#x2b2c;" function={function () {app.makeEllipticalShape();}} />
             </div>
 
             <div id="gui-box">
@@ -45,7 +45,7 @@ class GuiButtons extends React.Component{
                     Stimulation device
                 </div>
                 <SelectionsButton text='poissonGenerator'
-                    function={function () {makeStimulationDevice("poisson_generator");}}
+                    function={function () {app.makeStimulationDevice("poisson_generator");}}
                     button_class ='button pill big'
                     button_id='poissonButton' />
             </div>
@@ -55,12 +55,12 @@ class GuiButtons extends React.Component{
                     Recording device
                 </div>
                 <SelectionsButton text='voltmeter' 
-                    function={function () {makeRecordingDevice("voltmeter");}}
+                    function={function () {app.makeRecordingDevice("voltmeter");}}
                     button_class ='button pill big'
                     button_id='voltmeterButton' />
                 <br/>
                 <SelectionsButton text='spikeDetector'
-                    function={function () {makeRecordingDevice("spike_detector");}}
+                    function={function () {app.makeRecordingDevice("spike_detector");}}
                     button_class ='button pill big'
                     button_id='spikeDetectorButton' />
             </div>
@@ -71,10 +71,10 @@ class GuiButtons extends React.Component{
                 </div>
                 <div className="button-group">
                     <SelectionsButton text='Connect'
-                                      function={makeConnections} button_class ='button'
+                                      function={app.makeConnections.bind(app)} button_class ='button'
                                       button_id='getSelectionsButton'/>
                     <SelectionsButton text='Simulate'
-                                      function={runSimulation} button_class ='button'
+                                      function={app.runSimulation.bind(app)} button_class ='button'
                                       button_id='runSimulationButton'/>
                 </div>
                 <br/><a>------------</a><br/>
@@ -82,19 +82,19 @@ class GuiButtons extends React.Component{
                     <a id="downloadAnchorElem" style={{display: "none"}}/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Save'
-                                      function={saveSelection} button_class ='button'
+                                      function={app.saveSelection.bind(app)} button_class ='button'
                                       button_id='saveSelectionButton'/>
                     <SelectionsButton text='Load'
-                                      function={loadSelection} button_class ='button'
+                                      function={app.loadSelection.bind(app)} button_class ='button'
                                       button_id='loadSelectionButton'/>
                 </div>
                 <br/><a>------------</a><br/>
                 <div className="button-group">
                     <SelectionsButton text='Stream'
-                                      function={streamSimulate} button_class ='button'
+                                      function={app.streamSimulate.bind(app)} button_class ='button'
                                       button_id='streamButton'/>
                     <SelectionsButton text='Abort'
-                                      function={abortSimulation} button_class ='button danger'
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger'
                                       button_id='streamButton'/>
                 </div>
             </div>
@@ -182,4 +182,4 @@ var gui = ReactDOM.render(
     document.getElementById('gui_body')
 );
 
-document.getElementById('uploadAnchorElem').addEventListener('change', handleFileUpload, false);
+document.getElementById('uploadAnchorElem').addEventListener('change', app.handleFileUpload.bind(app), false);
