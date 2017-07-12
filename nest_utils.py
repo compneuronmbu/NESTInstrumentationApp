@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import nest
 import nest.topology as tp
+import numbers
 
 
 class NESTInterface(object):
@@ -21,6 +22,7 @@ class NESTInterface(object):
         self.rec_devices = []
 
         self.reset_kernel()
+        self.make_models()
         self.make_nodes()
         if synapses:
             self.make_synapse_models()
@@ -48,11 +50,18 @@ class NESTInterface(object):
                 else:
                     elem = self.networkSpecs['models'][model]
                 # TODO: Center!
+                # TODO: Use models from make_models!
                 nest_layer = tp.CreateLayer({'positions': pos,
                                              'extent': [float(ext) for ext in layer['extent']],  # JSON converts the double to int
                                              'elements': elem})
                 self.layers[layer['name']] = nest_layer
             return self.layers
+
+    def make_models(self):
+        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
+        models = self.networkSpecs['models']
+        for new_mod, old_mod in models.items():
+            nest.CopyModel(old_mod, new_mod)
 
     def make_mask(self, lower_left, upper_right, mask_type, cntr):
         """
@@ -97,6 +106,7 @@ class NESTInterface(object):
         return mask
 
     def make_synapse_models(self):
+        print("make_synapse_models")
         for syn_name, model_name, syn_specs in self.synapses:
             nest.CopyModel(syn_name, model_name, syn_specs)
 
@@ -134,7 +144,7 @@ class NESTInterface(object):
         for proj in self.internal_projections:
             pre = proj[0]
             post = proj[1]
-            conndict = proj[2]
+            conndict = self.floatify_dictionary(proj[2])
             tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
             print("Success")
 
@@ -164,15 +174,30 @@ class NESTInterface(object):
             connectees = self.device_projections[device_name]['connectees']
             for selection in connectees:
                 nest_neurons = self.get_gids(selection)
-                synapse_model = selection['synModel']
+                #synapse_model = selection['synModel']
+
+                synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
+                if model == 'ac_generator':
+                    synapse_model = 'static_synapse'
 
                 if model in reverse_connection:
                     print("Connecting {} to {}".format(model, "neurons"))
-                    nest.Connect(nest_device, nest_neurons)
+                    nest.Connect(nest_device, nest_neurons, syn_spec=synapse_model)
                 else:
                     print("Connecting {} to {}".format("neurons", model))
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
+
+    def floatify_dictionary(self, dict_to_floatify):
+        """
+        Helper function to go through dictionary with dictionaries and floatify integers.
+        """
+        for d in dict_to_floatify:
+            if isinstance(dict_to_floatify[d], dict):
+                self.floatify_dictionary(dict_to_floatify[d])
+            elif isinstance(dict_to_floatify[d], numbers.Number):
+                    dict_to_floatify[d] = float(dict_to_floatify[d])
+        return dict_to_floatify
 
     def get_connections(self):
         return nest.GetConnections()
