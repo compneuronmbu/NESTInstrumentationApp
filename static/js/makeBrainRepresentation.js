@@ -210,7 +210,6 @@ var Brain = function( camera, scene )
                 text.style.fontSize = 18 + 'px'
                 text.innerHTML = layer_name;
                 text.style.top = screenCenter.y + 'px';
-                text.style.left = screenCenter.x + 'px';
                 document.body.appendChild( text );
                 // adjust the position to align the center with the center of the layer
                 text.style.left = screenCenter.x - parseFloat( $( '#' + text.id ).width() ) / 2.0 + 'px';
