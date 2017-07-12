@@ -17,7 +17,7 @@ class GuiButtons extends React.Component{
                 Neuron type
               </div>
               <DropDown items={
-                window.neuronModels.map(function(model){return ({value: model, text: model});})}
+                app.neuronModels.map(function(model){return ({value: model, text: model});})}
                         id='neuronType' />
             </div>
 
@@ -26,7 +26,7 @@ class GuiButtons extends React.Component{
                 Synapse model
               </div>
               <DropDown items={
-                synModels.map(function(model){return ({value: model[1], text: model[1]});})}
+                app.synModels.map(function(model){return ({value: model[1], text: model[1]});})}
                         id='synapseModel' />
             </div>
 

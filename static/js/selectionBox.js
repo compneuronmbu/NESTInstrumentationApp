@@ -45,7 +45,7 @@ class SelectionBox
             return;
         }
 
-        var points = layer_points[ this.layerName ].points;
+        var points = app.layer_points[ this.layerName ].points;
         var colors = points.geometry.getAttribute( "customColor" ).array;
         var positions = points.geometry.getAttribute( "position" ).array;
 
@@ -74,8 +74,8 @@ class SelectionBox
         }
         else
         {
-            nSelected += count;
-            $( "#infoselected" ).html( nSelected.toString() + " selected" );
+            this.nSelected += count;
+            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
     }
 
@@ -85,22 +85,22 @@ class SelectionBox
     getLayerName()
     {
         var mouseDownCorrected = {
-            x: mouseDownCoords.x,
-            y: renderer.getSize().height - mouseDownCoords.y
+            x: app.mouseDownCoords.x,
+            y: app.renderer.getSize().height - app.mouseDownCoords.y
         };
         var roomMouseDown = app.toObjectCoordinates( mouseDownCorrected );
 
         var mouseUpCoords = {
-            x: mRelPos.x + mouseDownCorrected.x,
-            y: -mRelPos.y + mouseDownCorrected.y
+            x: app.mRelPos.x + mouseDownCorrected.x,
+            y: -app.mRelPos.y + mouseDownCorrected.y
         };
         var roomMouseUp = app.toObjectCoordinates( mouseUpCoords );
 
-        for ( var name in layer_points )
+        for ( var name in app.layer_points )
         {
-            if ( layer_points.hasOwnProperty( name ) )
+            if ( app.layer_points.hasOwnProperty( name ) )
             {
-                var bbox = layer_points[ name ].points.geometry.boundingBox;
+                var bbox = app.layer_points[ name ].points.geometry.boundingBox;
                 var shiftX = Math.abs( 0.1 * ( bbox.max.x - bbox.min.x ) );
                 var shiftY = Math.abs( 0.1 * ( bbox.max.y - bbox.min.y ) );
                 if ( ( roomMouseDown.x >= bbox.min.x - shiftX ) && ( roomMouseDown.y >= bbox.min.y - shiftY ) && ( roomMouseDown.x <= bbox.max.x + shiftX ) && ( roomMouseDown.y <= bbox.max.y + shiftY ) )
@@ -121,11 +121,11 @@ class SelectionBox
      */
     updateColors()
     {
-        var points = layer_points[ this.layerName ].points;
+        var points = app.layer_points[ this.layerName ].points;
         var colors = points.geometry.getAttribute( "customColor" ).array;
         var positions = points.geometry.getAttribute( "position" ).array;
 
-        var nSelectedOld = nSelected;
+        var nSelectedOld = this.nSelected;
 
         var oldPointIDs = this.selectedPointIDs;
         var newPoints = [];
@@ -138,11 +138,11 @@ class SelectionBox
         {
             colorID = oldPointIDs[ i ];
 
-            colors[ colorID ] = color.r;
-            colors[ colorID + 1 ] = color.g;
-            colors[ colorID + 2 ] = color.b;
+            colors[ colorID ] = app.color.r;
+            colors[ colorID + 1 ] = app.color.g;
+            colors[ colorID + 2 ] = app.color.b;
 
-            nSelected -= 1
+            this.nSelected -= 1
         }
 
         for ( var i = 0; i < positions.length; i += 3 )
@@ -161,15 +161,15 @@ class SelectionBox
                 colors[ i + 1 ] = 0.0;
                 colors[ i + 2 ] = 1.0;
 
-                nSelected += 1;
+                this.nSelected += 1;
             }
 
         }
         points.geometry.attributes.customColor.needsUpdate = true;
 
-        if ( nSelected != nSelectedOld )
+        if ( this.nSelected != nSelectedOld )
         {
-            $( "#infoselected" ).html( nSelected.toString() + " selected" );
+            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
 
         this.selectedPointIDs = newPoints;
@@ -187,23 +187,23 @@ class SelectionBox
 
         if ( this.selectedShape == "rectangular" )
         {
-            var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+            var geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
         }
         else if ( this.selectedShape == "elliptical" )
         {
-            var ellipseShape = new THREE.Shape();
+            var ellipseShape = new app.THREE.Shape();
             ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0 );
-            var geometry = new THREE.ShapeBufferGeometry( ellipseShape, 200 );
+            var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
 
-        var material = new THREE.MeshBasicMaterial(
+        var material = new app.THREE.MeshBasicMaterial(
         {
             color: 0xFF00FF,
             transparent: true,
             opacity: 0.2
         } );
 
-        this.box = new THREE.Mesh( geometry, material );
+        this.box = new app.THREE.Mesh( geometry, material );
 
         var boxPosition = {
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
@@ -212,7 +212,7 @@ class SelectionBox
         }
 
         this.box.position.copy( boxPosition );
-        scene.add( this.box );
+        app.scene.add( this.box );
     }
 
     /*
@@ -227,13 +227,13 @@ class SelectionBox
 
         if ( this.selectedShape == "rectangular" )
         {
-            var geometry = new THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+            var geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
         }
         else if ( this.selectedShape == "elliptical" )
         {
-            var ellipseShape = new THREE.Shape();
+            var ellipseShape = new app.THREE.Shape();
             ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0 );
-            var geometry = new THREE.ShapeBufferGeometry( ellipseShape, 200 );
+            var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
         this.box.geometry = geometry;
 
@@ -251,12 +251,12 @@ class SelectionBox
      */
     removeBox()
     {
-        scene.remove( this.box );
+        app.scene.remove( this.box );
 
-        var points = layer_points[ this.layerName ].points;
+        var points = app.layer_points[ this.layerName ].points;
         var colors = points.geometry.getAttribute( "customColor" ).array;
 
-        var nSelectedOld = nSelected;
+        var nSelectedOld = this.nSelected;
 
         var oldPointIDs = this.selectedPointIDs;
 
@@ -266,17 +266,17 @@ class SelectionBox
         {
             colorID = oldPointIDs[ i ];
 
-            colors[ colorID ] = color.r;
-            colors[ colorID + 1 ] = color.g;
-            colors[ colorID + 2 ] = color.b;
+            colors[ colorID ] = app.color.r;
+            colors[ colorID + 1 ] = app.color.g;
+            colors[ colorID + 2 ] = app.color.b;
 
-            nSelected -= 1
+            this.nSelected -= 1
         }
         points.geometry.attributes.customColor.needsUpdate = true;
 
-        if ( nSelected != nSelectedOld )
+        if ( this.nSelected != nSelectedOld )
         {
-            $( "#infoselected" ).html( nSelected.toString() + " selected" );
+            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
     }
 
@@ -288,22 +288,22 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        this.currentCurve = new THREE.CatmullRomCurve3( [
-            new THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 )
+        this.currentCurve = new app.THREE.CatmullRomCurve3( [
+            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
+            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
+            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
+            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 )
         ] );
         this.currentCurve.type = 'chordal';
-        var curveGeometry = new THREE.Geometry();
+        var curveGeometry = new app.THREE.Geometry();
         curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
-        var curveMaterial = new THREE.LineBasicMaterial(
+        var curveMaterial = new app.THREE.LineBasicMaterial(
         {
             color: 0x809980 * 1.1,
             linewidth: 2
         } );
-        this.currentCurveObject = new THREE.Line( curveGeometry, curveMaterial );
-        scene.add( this.currentCurveObject );
+        this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
+        app.scene.add( this.currentCurveObject );
 
         this.curves.push(
         {
@@ -418,7 +418,7 @@ class SelectionBox
      */
     removeLine()
     {
-        scene.remove( this.currentCurveObject );
+        app.scene.remove( this.currentCurveObject );
         this.curves.pop();
     }
 
@@ -432,11 +432,11 @@ class SelectionBox
         {
             if ( target === "" )
             {
-                scene.remove( this.curves[ i ].curveObject );
+                app.scene.remove( this.curves[ i ].curveObject );
             }
             else if ( target === this.curves[ i ].target )
             {
-                scene.remove( this.curves[ i ].curveObject );
+                app.scene.remove( this.curves[ i ].curveObject );
                 this.curves.splice( i, 1 );
                 break;
             }
@@ -481,14 +481,14 @@ class SelectionBox
         var selectionBox = {
             "ll":
             {
-                x: selectedBBoxXYZ.ll.x - layer_points[ this.layerName ].offsets.x,
-                y: -( selectedBBoxXYZ.ll.y - layer_points[ this.layerName ].offsets.y ),
+                x: selectedBBoxXYZ.ll.x - app.layer_points[ this.layerName ].offsets.x,
+                y: -( selectedBBoxXYZ.ll.y - app.layer_points[ this.layerName ].offsets.y ),
                 z: 0
             },
             "ur":
             {
-                x: selectedBBoxXYZ.ur.x - layer_points[ this.layerName ].offsets.x,
-                y: -( selectedBBoxXYZ.ur.y - layer_points[ this.layerName ].offsets.y ),
+                x: selectedBBoxXYZ.ur.x - app.layer_points[ this.layerName ].offsets.x,
+                y: -( selectedBBoxXYZ.ur.y - app.layer_points[ this.layerName ].offsets.y ),
                 z: 0
             }
         };
@@ -534,7 +534,7 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        var resizeGeometry = new THREE.BufferGeometry();
+        var resizeGeometry = new app.THREE.BufferGeometry();
         var resizePos = new Float32Array( 24 );
 
         // We have to move the points a tiny bit towards the camera to make it 
@@ -603,16 +603,16 @@ class SelectionBox
      */
     makePoint( pos, name )
     {
-        var geometry = new THREE.CircleBufferGeometry( 0.009, 32 );
-        var material = new THREE.MeshBasicMaterial(
+        var geometry = new app.THREE.CircleBufferGeometry( 0.009, 32 );
+        var material = new app.THREE.MeshBasicMaterial(
         {
             color: 0xcccccc
         } );
-        var point = new THREE.Mesh( geometry, material );
+        var point = new app.THREE.Mesh( geometry, material );
         point.name = name;
         point.position.copy( pos );
 
-        scene.add( point );
+        app.scene.add( point );
 
         return point;
     }
@@ -624,7 +624,7 @@ class SelectionBox
     {
         for ( var i = 0; i < this.resizePoints.length; ++i )
         {
-            scene.remove( this.resizePoints[ i ] );
+            app.scene.remove( this.resizePoints[ i ] );
         }
         this.resizePoints = [];
     }
@@ -666,4 +666,13 @@ class SelectionBox
 
         return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
     }
+}
+
+// Try exporting SelectionBox for testing
+try
+{
+    module.exports = SelectionBox;
+}
+catch(err)
+{
 }

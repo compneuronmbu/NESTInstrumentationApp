@@ -31,7 +31,7 @@ class DevicePlots {
 
     makeDevicePlot()
     {
-        var width = container.clientWidth / 2;
+        var width = app.container.clientWidth / 2;
 
         this.x = d3.scaleLinear().range([this.margin.left, width - this.margin.right]);
         this.y = d3.scaleLinear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);

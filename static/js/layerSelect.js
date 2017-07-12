@@ -4,98 +4,122 @@
  *
  */
 
-if ( !Detector.webgl ) Detector.addGetWebGLMessage();
-
-var container
-var camera, scene, renderer, material;
-
-var outlineScene;
-var outlineMaterial;
-var outlineMesh;
-
-var controls;
-
-var layer_points = {};
-
-var mouseDownCoords = {
-    x: 0,
-    y: 0
-};
-var mRelPos = {
-    x: 0,
-    y: 0
-};
-
-var color;
-var modelParameters;
-var layerSelected = "";
-var neuronModels = [ 'All' ];
-var synModels = [];
-var selectedShape = "rectangular";
-var layerNamesMade = false;
-var selectionBoxArray = [];
-var deviceBoxMap = {};
-
-var nSelected = 0;
-var deviceCounter = 1;
-var uniqueID = 1;
-var newDevicePos = [ 0.0, 0.15, -0.15, 0.3, -0.3 ];
-var newDeviceIndex = 0;
-
-var circle_objects = [];
-
-var serverUpdateEvent;
-
-var devicePlots;
-
-// TODO: this class should be in a separate file.
+// TODO: rename App -> ???
 class App
 {
     constructor()
-    {}
-/*
- * Initializes the app.
- */
+    {
+        this.controls;
+     
+        this.outlineScene;
+        this.outlineMaterial;
+
+        this.layerSelected = "";
+        this.layerNamesMade = false;
+
+        this.selectionBoxArray = [];
+
+        this.serverUpdateEvent;
+        this.devicePlots;
+
+        // this.material;
+
+        this.mouseDownCoords = {
+            x: 0,
+            y: 0
+        };
+        this.mRelPos = {
+            x: 0,
+            y: 0
+        };
+        
+        this.selectedShape = "rectangular";
+
+        this.layer_points = {};
+        this.modelParameters;
+        this.neuronModels = [ 'All' ];
+        this.synModels = [];
+
+        this.deviceCounter = 1;
+
+        this.uniqueID = 1;
+        this.newDevicePos = [ 0.0, 0.15, -0.15, 0.3, -0.3 ];
+        this.newDeviceIndex = 0;
+
+        this.circle_objects = [];
+
+        this.deviceBoxMap = {};
+
+        this.nSelected = 0;
+
+
+
+    }
+
+    /*
+     * Initializes the app.
+     */
     init()
     {
-        container = document.getElementById( 'main_body' );
-        document.body.appendChild( container );
+        // Binding libraries to this so that they can be set by test scripts,
+        // because Node.js is being difficult.
+        this.$ = $;
+        this.THREE = THREE;
+        this.SelectionBox = SelectionBox;
 
+        this.container = document.getElementById( 'main_body' );
+
+        this.initTHREEScene();
+        this.initTHREERenderer();
+        this.initContainer();
+        this.initParameters();
+
+        this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
+
+        this.devicePlots = new DevicePlots();
+
+        // Server-Sent Events
+        this.serverUpdateEvent = new EventSource( "/simulationData" );
+        this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
+    }
+
+    initTHREEScene()
+    {
         // CAMERA
-        camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
-        scene = new THREE.Scene();
-        outlineScene = new THREE.Scene();
+        this.camera = new this.THREE.PerspectiveCamera( 45, this.container.clientWidth / this.container.clientHeight, 0.5, 10 );
+        this.scene = new this.THREE.Scene();
+        this.outlineScene = new this.THREE.Scene();
 
         // POINTS
-        color = new THREE.Color();
-        color.setRGB( 0.5, 0.5, 0.5 );
+        this.color = new this.THREE.Color();
+        this.color.setRGB( 0.5, 0.5, 0.5 );
+    }
 
-        $.getJSON( "/static/examples/brunel_converted.json", function( data )
-        {
-            modelParameters = data;
-            Brain( camera, scene );
-        } );
-
+    initTHREERenderer()
+    {
         // RENDERER
-        renderer = new THREE.WebGLRenderer(
+        this.renderer = new this.THREE.WebGLRenderer(
         {
             antialias: true
         } );
-        renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( container.clientWidth, container.clientHeight );
-        renderer.autoClear = false;
+        this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+        this.renderer.autoClear = false;
+    }
 
-        container.appendChild( renderer.domElement );
+    initContainer()
+    {
+        document.body.appendChild( this.container );
+        this.container.appendChild( this.renderer.domElement );
+    }
 
-        controls = new Controls( circle_objects, camera, renderer.domElement );
-
-        devicePlots = new DevicePlots();
-
-        // Server-Sent Events
-        serverUpdateEvent = new EventSource( "/simulationData" );
-        serverUpdateEvent.onmessage = this.handleMessage.bind(this);
-
-        //render();
+    initParameters()
+    {
+        this.$.getJSON( "/static/examples/brunel_converted.json", function( data )
+        {
+            this.modelParameters = data;
+            Brain( this.camera, this.scene );
+        }.bind(this) );
     }
 
     /*
@@ -109,25 +133,25 @@ class App
         console.log(data);
 
         var t = deviceData['time'];
-        $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+        this.$("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
 
         // Color results:
         var spiked = this.colorFromSpike(recordedData);
         this.colorFromVm(recordedData, spiked);
 
-        for ( var layer in layer_points )
+        for ( var layer in this.layer_points )
         {
-            layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
+            this.layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
         }
 
         // Plot results:
         if ( deviceData['spike_det']['senders'].length >= 1 )
         {
-            devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
+            this.devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
         }
         if ( deviceData['rec_dev']['times'].length >= 1 )
         {
-            devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
+            this.devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
         }
     }
 
@@ -137,14 +161,14 @@ class App
     toScreenXY( point_pos )
     {
 
-        var point_vector = new THREE.Vector3( point_pos.x, point_pos.y, point_pos.z );
-        var projScreenMat = new THREE.Matrix4();
-        projScreenMat.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+        var point_vector = new this.THREE.Vector3( point_pos.x, point_pos.y, point_pos.z );
+        var projScreenMat = new this.THREE.Matrix4();
+        projScreenMat.multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse );
         point_vector.applyMatrix4( projScreenMat );
 
         return {
-            x: ( point_vector.x + 1 ) * renderer.getSize().width / 2,
-            y: renderer.getSize().height - ( -point_vector.y + 1 ) * renderer.getSize().height / 2
+            x: ( point_vector.x + 1 ) * this.renderer.getSize().width / 2,
+            y: this.renderer.getSize().height - ( -point_vector.y + 1 ) * this.renderer.getSize().height / 2
         };
     }
 
@@ -153,19 +177,19 @@ class App
      */
     toObjectCoordinates( screenPos )
     {
-        var vector = new THREE.Vector3();
+        var vector = new this.THREE.Vector3();
 
         vector.set(
-            ( screenPos.x / container.clientWidth ) * 2 - 1, -( screenPos.y / container.clientHeight ) * 2 + 1,
+            ( screenPos.x / this.container.clientWidth ) * 2 - 1, -( screenPos.y / this.container.clientHeight ) * 2 + 1,
             0.5 );
 
-        vector.unproject( camera );
+        vector.unproject( this.camera );
 
-        var dir = vector.sub( camera.position ).normalize();
+        var dir = vector.sub( this.camera.position ).normalize();
 
-        var distance = -camera.position.z / dir.z;
+        var distance = -this.camera.position.z / dir.z;
 
-        var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+        var pos = this.camera.position.clone().add( dir.multiplyScalar( distance ) );
 
         return pos
     }
@@ -195,18 +219,18 @@ class App
     {
         var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
         var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
-        var rectangleButtoncss = $( "#rectangleButton" );
+        var rectangleButtoncss = this.$( "#rectangleButton" );
         rectangleButtoncss.css(
         {
             backgroundColor: selectedColor
         } );
-        var ellipticalButtoncss = $( "#ellipticalButton" );
+        var ellipticalButtoncss = this.$( "#ellipticalButton" );
         ellipticalButtoncss.css(
         {
             backgroundColor: unselectedColor
         } );
 
-        selectedShape = 'rectangular';
+        this.selectedShape = 'rectangular';
     }
 
     /*
@@ -216,18 +240,18 @@ class App
     {
         var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
         var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
-        var rectangleButtoncss = $( "#rectangleButton" );
+        var rectangleButtoncss = this.$( "#rectangleButton" );
         rectangleButtoncss.css(
         {
             backgroundColor: unselectedColor
         } );
-        var ellipticalButtoncss = $( "#ellipticalButton" );
+        var ellipticalButtoncss = this.$( "#ellipticalButton" );
         ellipticalButtoncss.css(
         {
             backgroundColor: selectedColor
         } );
 
-        selectedShape = 'elliptical';
+        this.selectedShape = 'elliptical';
     }
 
     /*
@@ -244,7 +268,7 @@ class App
      */
     getSelectedShape()
     {
-        return selectedShape;
+        return this.selectedShape;
     }
 
     /*
@@ -253,10 +277,10 @@ class App
     getGIDPoint( gid )
     {
         var minGID = 0;
-        for ( var l in layer_points )
+        for ( var l in this.layer_points )
         {
             minGID += 1; // from the GID of the layer
-            var pos = layer_points[ l ].points.geometry.attributes.position;
+            var pos = this.layer_points[ l ].points.geometry.attributes.position;
             if ( gid <= minGID + pos.count )
             {
                 // point is in this layer
@@ -293,7 +317,7 @@ class App
                         // TODO: Vm range should be variable
                         var colorVm = this.mapVmToColor( V_m, -70., -50. );
 
-                        var points = layer_points[ point.layer ].points;
+                        var points = this.layer_points[ point.layer ].points;
                         var colors = points.geometry.getAttribute( "customColor" ).array;
 
                         colors[ point.pointIndex ] = colorVm[ 0 ];
@@ -325,7 +349,7 @@ class App
                     point = this.getGIDPoint( gid );
                     var colorSpike = [ 0.9, 0.0, 0.0 ];
 
-                    var points = layer_points[ point.layer ].points;
+                    var points = this.layer_points[ point.layer ].points;
                     var colors = points.geometry.getAttribute( "customColor" ).array;
 
                     colors[ point.pointIndex ] = colorSpike[ 0 ];
@@ -356,11 +380,11 @@ class App
      */
     resetBoxColors()
     {
-        for ( var device in deviceBoxMap )
+        for ( var device in this.deviceBoxMap )
         {
-            for ( var i in deviceBoxMap[ device ].connectees )
+            for ( var i in this.deviceBoxMap[ device ].connectees )
             {
-                deviceBoxMap[ device ].connectees[ i ].updateColors();
+                this.deviceBoxMap[ device ].connectees[ i ].updateColors();
             }
         }
 
@@ -372,17 +396,17 @@ class App
     makeProjections()
     {
         var projections = {};
-        // projections['internal'] = modelParameters.projections;
-        $( "#infoconnected" ).html( "Gathering selections to be connected ..." );
-        for ( var device in deviceBoxMap )
+        // projections['internal'] = this.modelParameters.projections;
+        this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        for ( var device in this.deviceBoxMap )
         {
             projections[ device ] = {
-                specs: deviceBoxMap[ device ].specs,
+                specs: this.deviceBoxMap[ device ].specs,
                 connectees: []
             };
-            for ( var i in deviceBoxMap[ device ].connectees )
+            for ( var i in this.deviceBoxMap[ device ].connectees )
             {
-                projections[ device ].connectees.push( deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
+                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
             }
         }
         return projections;
@@ -397,18 +421,18 @@ class App
         var projections = this.makeProjections();
         console.log( projections );
 
-        $( "#infoconnected" ).html( "Connecting ..." );
+        this.$( "#infoconnected" ).html( "Connecting ..." );
         // send selected connections
-        $.ajax(
+        this.$.ajax(
         {
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/connect",
             data: JSON.stringify(
             {
-                network: modelParameters,
-                synapses: synModels,
-                internalProjections: modelParameters.projections,
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
                 projections: projections
             } ),
             dataType: "json"
@@ -421,13 +445,13 @@ class App
      */
     getConnections()
     {
-        $.getJSON( "/connections",
+        this.$.getJSON( "/connections",
         {
             input: "dummyData"
         } ).done( function( data )
         {
-            $( "#infoconnected" ).html( data.connections.toString() + " connection(s)" );
-        } );
+            this.$( "#infoconnected" ).html( data.connections.toString() + " connection(s)" );
+        }.bind(this) );
     }
 
     /*
@@ -437,18 +461,18 @@ class App
     {
         var projections = this.makeProjections();
 
-        $( "#infoconnected" ).html( "Simulating ..." );
+        this.$( "#infoconnected" ).html( "Simulating ..." );
 
-        $.ajax(
+        this.$.ajax(
         {
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/simulate",
             data: JSON.stringify(
             {
-                network: modelParameters,
-                synapses: synModels,
-                internalProjections: modelParameters.projections,
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
                 projections: projections,
                 time: "1000"
             } ),
@@ -457,8 +481,8 @@ class App
         {
             console.log( "Simulation finished" );
             console.log( data );
-            $( "#infoconnected" ).html( "Simulation finished" );
-        } );
+            this.$( "#infoconnected" ).html( "Simulation finished" );
+        }.bind(this) );
 
     }
 
@@ -467,18 +491,18 @@ class App
      */
     streamSimulate()
     {
-        devicePlots.makeDevicePlot();
+        this.devicePlots.makeDevicePlot();
 
-        $.ajax(
+        this.$.ajax(
         {
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/streamSimulate",
             data: JSON.stringify(
             {
-                network: modelParameters,
-                synapses: synModels,
-                internalProjections: modelParameters.projections,
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
                 projections: this.makeProjections(),
                 time: "10000"
             } ),
@@ -494,14 +518,14 @@ class App
      */
     abortSimulation()
     {
-        $.ajax(
+        this.$.ajax(
         {
             url: "/abortSimulation",
         } ).done( function( data )
         {
             console.log( data );
             this.resetBoxColors();
-        } );
+        }.bind(this) );
     }
 
     /*
@@ -512,29 +536,29 @@ class App
         console.log( "##################" );
         console.log( "    Selections" );
         console.log( "##################" );
-        console.log( "deviceBoxMap", deviceBoxMap );
-        console.log( "circle_objects", circle_objects );
-        console.log( "selectionBoxArray", selectionBoxArray );
+        console.log( "deviceBoxMap", this.deviceBoxMap );
+        console.log( "circle_objects", this.circle_objects );
+        console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
         var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
         if ( filename === null || filename === "" )
         {
-            // User canceled saving
+            // User cancelled saving
             return;
         }
         // create object to be saved
         var projections = {};
-        for ( var device in deviceBoxMap )
+        for ( var device in this.deviceBoxMap )
         {
-            var deviceModel = deviceBoxMap[ device ].specs.model;
+            var deviceModel = this.deviceBoxMap[ device ].specs.model;
             projections[ device ] = {
-                specs: deviceBoxMap[ device ].specs,
+                specs: this.deviceBoxMap[ device ].specs,
                 connectees: []
             };
-            for ( var i in deviceBoxMap[ device ].connectees )
+            for ( var i in this.deviceBoxMap[ device ].connectees )
             {
-                projections[ device ].connectees.push( deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
+                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
             }
         }
         console.log( "projections", projections );
@@ -564,7 +588,6 @@ class App
     loadFromJSON( textJSON )
     {
         var inputObj = JSON.parse( textJSON );
-        console.log( inputObj )
         var IDsCreated = [];
         for ( var device in inputObj.projections )
         {
@@ -578,7 +601,7 @@ class App
                 this.makeRecordingDevice( deviceModel );
             }
 
-            var target = circle_objects[ circle_objects.length - 1 ];
+            var target = this.circle_objects[ this.circle_objects.length - 1 ];
 
             for ( var i in inputObj.projections[ device ].connectees )
             {
@@ -588,28 +611,27 @@ class App
                 if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
                 {
                     IDsCreated.push( boxSpecs.uniqueID );
-                    var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                    var box = new this.SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
                     box.uniqueID = boxSpecs.uniqueID;
 
                     // update our uniqueID count only if box.uniqueID is greater
-                    uniqueID = ( boxSpecs.uniqueID > uniqueID ) ? boxSpecs.uniqueID : uniqueID;
+                    this.uniqueID = ( boxSpecs.uniqueID > this.uniqueID ) ? boxSpecs.uniqueID : this.uniqueID;
 
                     box.layerName = boxSpecs.name;
                     box.selectedNeuronType = boxSpecs.neuronType;
                     box.selectedSynModel = boxSpecs.synModel;
-                    box.selectedShape = boxSpecs.maskShape;
 
-                    selectionBoxArray.push( box );
+                    this.selectionBoxArray.push( box );
                     box.makeBox();
                 }
                 // if the box is already created, it must be found
                 else
                 {
-                    for ( var i in selectionBoxArray )
+                    for ( var i in this.selectionBoxArray )
                     {
-                        if ( selectionBoxArray[ i ].uniqueID === boxSpecs.uniqueID )
+                        if ( this.selectionBoxArray[ i ].uniqueID === boxSpecs.uniqueID )
                         {
-                            var box = selectionBoxArray[ i ];
+                            var box = this.selectionBoxArray[ i ];
                             break;
                         }
                     }
@@ -621,8 +643,7 @@ class App
                 box.lineToDevice( target.position, radius, target.name );
 
                 box.updateColors();
-                console.log( deviceBoxMap )
-                deviceBoxMap[ device ].connectees.push( box );
+                this.deviceBoxMap[ device ].connectees.push( box );
             }
         }
     }
@@ -648,27 +669,27 @@ class App
      */
     makeDevice( device, col, map, params = {} )
     {
-        var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
+        var geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
         geometry.computeBoundingSphere(); // needed for loading
-        var material = new THREE.MeshBasicMaterial(
+        var material = new this.THREE.MeshBasicMaterial(
         {
             color: col,
             map: map
         } );
-        var circle = new THREE.Mesh( geometry, material );
-        var deviceName = device + "_" + String( deviceCounter++ );
+        var circle = new this.THREE.Mesh( geometry, material );
+        var deviceName = device + "_" + String( this.deviceCounter++ );
         circle.name = deviceName;
 
-        circle.position.y = newDevicePos[ newDeviceIndex ];
-        newDeviceIndex = ( newDeviceIndex + 1 === newDevicePos.length ) ? 0 : ++newDeviceIndex;
+        circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
+        this.newDeviceIndex = ( this.newDeviceIndex + 1 === this.newDevicePos.length ) ? 0 : ++this.newDeviceIndex;
 
-        scene.add( circle );
-        circle_objects.push( circle );
+        this.scene.add( circle );
+        this.circle_objects.push( circle );
 
-        controls.deviceInFocus = circle;
-        controls.makeOutline( controls.deviceInFocus );
+        this.controls.deviceInFocus = circle;
+        this.controls.makeOutline( this.controls.deviceInFocus );
 
-        deviceBoxMap[ deviceName ] = {
+        this.deviceBoxMap[ deviceName ] = {
             specs:
             {
                 model: device,
@@ -685,8 +706,8 @@ class App
     {
         console.log( "making stimulation device of type", device )
         var col = 0xB28080
-            //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-        var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+            //var map = new this.THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+        var map = new this.THREE.TextureLoader().load( "static/js/textures/poisson.png" );
         var params = {
             rate: 70000.0
         }
@@ -702,17 +723,17 @@ class App
         if ( device === "voltmeter" )
         {
             var col = 0xBDB280;
-            var map = new THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
         }
         else if ( device === "spike_detector" )
         {
             var col = 0x809980;
-            var map = new THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
         }
         else
         {
             var col = 0xBDB280;
-            var map = new THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
         }
 
         this.makeDevice( device, col, map );
@@ -722,17 +743,23 @@ class App
     {
         requestAnimationFrame( this.render.bind(this) );
 
-        renderer.clear();
-        renderer.render( outlineScene, camera );
-        renderer.render( scene, camera );
+        this.renderer.clear();
+        this.renderer.render( this.outlineScene, this.camera );
+        this.renderer.render( this.scene, this.camera );
 
-        if ( !layerNamesMade )
+        if ( !this.layerNamesMade )
         {
             make_layer_names();
-            layerNamesMade = true;
+            this.layerNamesMade = true;
         }
     }
 }
 
-app = new App();
-app.init();
+//  Try exporting App for testing
+try
+{
+    module.exports = App;
+}
+catch(err)
+{
+}

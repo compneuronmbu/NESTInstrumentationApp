@@ -11,7 +11,7 @@ var Brain = function( camera, scene )
      */
     function initLayers()
     {
-        var layers = modelParameters.layers;
+        var layers = app.modelParameters.layers;
         var number_of_layers = 0;
 
         for ( var layer in layers )
@@ -50,7 +50,7 @@ var Brain = function( camera, scene )
                     // Not sure if this is the best way. Could also do
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
-                    layer_points[ layers[ layer ].name ] = {
+                    app.layer_points[ layers[ layer ].name ] = {
                         points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y ),
                         offsets:
                         {
@@ -73,7 +73,7 @@ var Brain = function( camera, scene )
             }
         }
 
-        outlineMaterial = new THREE.ShaderMaterial(
+        app.outlineMaterial = new app.THREE.ShaderMaterial(
         {
             uniforms:
             {},
@@ -94,6 +94,16 @@ var Brain = function( camera, scene )
 
         makeModelNameLists();
 
+        // if undefined, make a requestAnimationFrame function (mostly for testsuite)
+        if (window.requestAnimationFrame === undefined) {
+          let targetTime = 0
+          requestAnimationFrame = function (callbackFun) {
+            const currentTime = +new Date()
+            const timeoutCb = function () { callbackFun(+new Date()) }
+            return window.setTimeout(timeoutCb, Math.max(targetTime + 16, currentTime) - currentTime)
+          }
+        }
+
         requestAnimationFrame( app.render.bind(app) );
     }
 
@@ -102,7 +112,7 @@ var Brain = function( camera, scene )
      */
     function initPoints( neurons, offsett_x, offsett_y )
     {
-        var geometry = new THREE.BufferGeometry();
+        var geometry = new app.THREE.BufferGeometry();
 
         var positions = new Float32Array( neurons.length * 3 );
         var colors = new Float32Array( neurons.length * 3 );
@@ -115,28 +125,28 @@ var Brain = function( camera, scene )
             positions[ i + 1 ] = neurons[ neuron ].y + offsett_y;
             positions[ i + 2 ] = 0;
 
-            colors[ i ] = color.r;
-            colors[ i + 1 ] = color.g;
-            colors[ i + 2 ] = color.b;
+            colors[ i ] = app.color.r;
+            colors[ i + 1 ] = app.color.g;
+            colors[ i + 2 ] = app.color.b;
 
             i += 3;
         }
 
-        geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-        geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
-        geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+        geometry.addAttribute( 'position', new app.THREE.BufferAttribute( positions, 3 ) );
+        geometry.addAttribute( 'customColor', new app.THREE.BufferAttribute( colors, 3 ) );
+        geometry.addAttribute( 'size', new app.THREE.BufferAttribute( sizes, 1 ) );
 
         geometry.computeBoundingBox();
         geometry.computeBoundingSphere();
 
-        var texture = new THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
-        var material = new THREE.ShaderMaterial(
+        var texture = new app.THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
+        var material = new app.THREE.ShaderMaterial(
         {
             uniforms:
             {
                 color:
                 {
-                    value: new THREE.Color( 0xffffff )
+                    value: new app.THREE.Color( 0xffffff )
                 },
                 texture:
                 {
@@ -165,7 +175,7 @@ var Brain = function( camera, scene )
             ].join( "\n" )
         } );
 
-        points = new THREE.Points( geometry, material );
+        points = new app.THREE.Points( geometry, material );
 
         scene.add( points );
 
@@ -184,12 +194,12 @@ var Brain = function( camera, scene )
         var name_pos;
         var screenCenter;
 
-        for ( var layer_name in layer_points )
+        for ( var layer_name in app.layer_points )
         {
-            if ( layer_points.hasOwnProperty( layer_name ) )
+            if ( app.layer_points.hasOwnProperty( layer_name ) )
             {
-                center = layer_points[ layer_name ].points.geometry.boundingSphere.center;
-                bounding_radius = layer_points[ layer_name ].points.geometry.boundingSphere.radius;
+                center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
+                bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
 
                 name_pos = {
                     x: center.x,
@@ -198,7 +208,7 @@ var Brain = function( camera, scene )
                 };
 
                 screenCenter = app.toScreenXY( name_pos );
-                screenCenter.y = container.clientHeight - screenCenter.y;
+                screenCenter.y = app.container.clientHeight - screenCenter.y;
 
                 var text = document.createElement( 'div' );
                 text.id = layer_name + '_label';
@@ -222,18 +232,27 @@ var Brain = function( camera, scene )
      */
     function makeModelNameLists()
     {
-        var nModels = modelParameters.models;
-        synModels = modelParameters.syn_models;
+        var nModels = app.modelParameters.models;
+        app.synModels = app.modelParameters.syn_models;
         for ( var model in nModels )
         {
             if ( nModels[ model ].toLowerCase().indexOf( "generator" ) === -1 &&
                 nModels[ model ].toLowerCase().indexOf( "detector" ) === -1 &&
                 nModels[ model ].toLowerCase().indexOf( "meter" ) === -1 )
             {
-                neuronModels.push( model );
+                app.neuronModels.push( model );
             }
         }
     }
 
     initLayers();
 };
+
+// Try exporting Brain for testing
+try
+{
+    module.exports = Brain;
+}
+catch(err)
+{
+}
