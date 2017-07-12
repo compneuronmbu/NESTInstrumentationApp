@@ -29,6 +29,7 @@ class NESTInterface(object):
         nest.ResetKernel()
 
     def make_nodes(self):
+        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
         if nest.GetKernelStatus()['network_size'] == 1:
 
             for layer in self.networkSpecs['layers']:
@@ -36,9 +37,20 @@ class NESTInterface(object):
                 pos = [[float(neuron['x']), float(neuron['y'])]
                        for neuron in neurons]
                 model = layer['elements']
+                if isinstance(model, list):
+                    elem = []
+                    for mod in model:
+                        if isinstance(mod, str):
+                            elem.append(self.networkSpecs['models'][mod])
+                        else:
+                            elem.append(mod)
+                    #elem = [ self.networkSpecs['models'][mod] for mod in model]
+                else:
+                    elem = self.networkSpecs['models'][model]
+                # TODO: Center!
                 nest_layer = tp.CreateLayer({'positions': pos,
-                                             'elements': self.networkSpecs[
-                                                 'models'][model]})
+                                             'extent': [float(ext) for ext in layer['extent']],  # JSON converts the double to int
+                                             'elements': elem})
                 self.layers[layer['name']] = nest_layer
             return self.layers
 
@@ -92,22 +104,10 @@ class NESTInterface(object):
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
-        x_limit_start = -0.5
-        y_limit_start = -0.5
-        x_limit_end = 0.5
-        y_limit_end = 0.5
 
         ll = [selection['ll']['x'], selection['ll']['y']]
         ur = [selection['ur']['x'], selection['ur']['y']]
-        if ll[0] < x_limit_start:
-            ll[0] = x_limit_start
-        if ll[1] < y_limit_start:
-            ll[1] = y_limit_start
 
-        if ur[0] > x_limit_end:
-            ur[0] = x_limit_end
-        if ur[1] > y_limit_end:
-            ur[1] = y_limit_end
         cntr = [0.0, 0.0]
         mask = self.make_mask(ll, ur, mask_type, cntr)
         print("Layers:")

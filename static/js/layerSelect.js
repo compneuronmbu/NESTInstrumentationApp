@@ -6,6 +6,8 @@
 
 if ( !Detector.webgl ) Detector.addGetWebGLMessage();
 
+//TODO: Have to do something about all the global variables.
+
 var container
 var camera, scene, renderer, material;
 
@@ -67,7 +69,8 @@ function init()
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
 
-    $.getJSON( "/static/examples/brunel_converted.json", function( data )
+    $.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
+    //$.getJSON( "/static/examples/brunel_converted.json", function( data )
     {
         modelParameters = data;
         Brain( camera, scene );
@@ -133,7 +136,6 @@ function handleMessage( e )
  */
 function toScreenXY( point_pos )
 {
-
     var point_vector = new THREE.Vector3( point_pos.x, point_pos.y, point_pos.z );
     var projScreenMat = new THREE.Matrix4();
     projScreenMat.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );

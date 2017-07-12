@@ -36,7 +36,7 @@ var Brain = function( camera, scene )
         var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
         var offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
-        var offsett_y = 0.0;
+        var offsett_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0; //0.0;
         var i = 1;
 
         for ( var layer in layers )
@@ -51,12 +51,13 @@ var Brain = function( camera, scene )
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
                     layer_points[ layers[ layer ].name ] = {
-                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y ),
+                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent ),
                         offsets:
-                        {
-                            x: offsett_x,
-                            y: offsett_y
-                        }
+                            {
+                                x: offsett_x,
+                                y: offsett_y
+                            },
+                        extent: layers[layer].extent
                     };
 
                     if ( i % no_cols == 0 )
@@ -90,7 +91,7 @@ var Brain = function( camera, scene )
             ].join( "\n" )
         } );
 
-        camera.position.set( 0, -0.6 * no_rows + 0.6, no_rows + 1.5 );
+        camera.position.set(  0, 0, no_rows + 1.5  );
 
         makeModelNameLists();
 
@@ -100,7 +101,7 @@ var Brain = function( camera, scene )
     /*
      * Creates the points representing nodes.
      */
-    function initPoints( neurons, offsett_x, offsett_y )
+    function initPoints( neurons, offsett_x, offsett_y, extent )
     {
         var geometry = new THREE.BufferGeometry();
 
@@ -111,8 +112,8 @@ var Brain = function( camera, scene )
         var i = 0;
         for ( var neuron in neurons )
         {
-            positions[ i ] = neurons[ neuron ].x + offsett_x;
-            positions[ i + 1 ] = neurons[ neuron ].y + offsett_y;
+            positions[ i ] = (neurons[ neuron ].x) / extent[0] + offsett_x;
+            positions[ i + 1 ] = neurons[ neuron ].y / extent[1] + offsett_y;
             positions[ i + 2 ] = 0;
 
             colors[ i ] = color.r;

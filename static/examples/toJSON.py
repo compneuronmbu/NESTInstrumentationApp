@@ -3,7 +3,7 @@ import numpy as np
 import pprint
 
 
-def convert(specs, conn_specs):
+def convert(specs, conn_specs, file_name):
     json_dict = {"layers": []}
     json_dict['syn_models'] = specs[2]
     json_dict['models'] = {s[1]: s[0] for s in specs[1]}
@@ -11,22 +11,23 @@ def convert(specs, conn_specs):
 
     for layer in layers:
         name = layer[0]
-        if "meter" in name or "Detector" in name or "Generator" in name:
+        if "meter" in name.lower() or "detector" in name.lower() or "generator" in name.lower():
             continue
         layer_dict = {"neurons": []}
-        print layer
+        print(layer)
         layer_dict['elements'] = layer[1]['elements']
         layer_dict['name'] = name
-        try:
+        if 'extent' in layer[1]:
             ext = layer[1]['extent']
-        except KeyError:
+        else:
             ext = [1., 1.]  # extent is one unless otherwise specified
-        try:
+        layer_dict['extent'] = ext
+        if 'center' in layer[1]:
             cntr = layer[1]['center']
-        except KeyError:
+        else:
             cntr = [0., 0.]  # Center in origo unless otherwise specified
 
-        try:
+        if 'columns' in layer[1]:
             # We can either get positions through rows and columns, or
             # through positions vector
             cols = layer[1]['columns']
@@ -34,10 +35,10 @@ def convert(specs, conn_specs):
 
             dx = ext[0] / float(cols)
             dy = ext[1] / float(rows)
-            x_start = - (ext[0] / (2.0) - dx / (2.0)) + cntr[0]
-            x_end = ext[0] / (2.0) - dx / (2.0) + cntr[0]
-            y_start = - (ext[1] / (2.0) - dy / (2.0)) + cntr[1]
-            y_end = ext[1] / (2.0) - dy / (2.0) + cntr[1]
+            x_start = - (ext[0] / 2.0 - dx / 2.0) + cntr[0]
+            x_end = ext[0] / 2.0 - dx / 2.0 + cntr[0]
+            y_start = - (ext[1] / 2.0 - dy / 2.0) + cntr[1]
+            y_end = ext[1] / 2.0 - dy / 2.0 + cntr[1]
 
             xpos_single = np.linspace(x_start, x_end, cols, endpoint=True)
             # x-positions for all nodes, to be used in scatterplot
@@ -47,7 +48,7 @@ def convert(specs, conn_specs):
             # positive axis upwards, and its negative downwards
             ypos_single = np.linspace(y_end, y_start, rows, endpoint=True)
             ypos = [x for i in range(rows) for x in ypos_single]
-        except KeyError:
+        else:
             # Positions through positions vector
             xpos = [x[0] for x in layer[1]['positions']]
             ypos = [y[1] for y in layer[1]['positions']]
@@ -61,5 +62,5 @@ def convert(specs, conn_specs):
     print("##############################")
     pprint.pprint(json_dict)
     print("##############################")
-    with open('brunel_converted.json', 'w') as fp:
+    with open(file_name + '.json', 'w') as fp:
         json.dump(json_dict, fp)

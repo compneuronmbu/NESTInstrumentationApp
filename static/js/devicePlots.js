@@ -98,7 +98,7 @@ class DevicePlots {
         }
         else
         {
-            // Have to reset these values incase we press stream button again. We don't want to remake the framework,
+            // Have to reset these values in case we press stream button again. We don't want to remake the framework,
             // just remove the old data.
             this.lastTime = 1;
             this.firstTime = 1;
