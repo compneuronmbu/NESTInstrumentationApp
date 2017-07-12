@@ -43,6 +43,23 @@ class DevicePlots {
 
         if( !this.madePlot )
         {
+            // TODO: Have commented this out, as it messes with selection after everything is moved. Should eventually be fixed.
+            // Need to move the camera and layer names in order to have room for the plots at the bottom.
+            // TODO: -0.2 is hard coded. Should probably find this value in some way, or have it as a variable.
+            /*camera.position.y = -0.2;
+
+            for ( var layer_name in layer_points )
+            {
+                if ( layer_points.hasOwnProperty( layer_name ) )
+                {
+                    var cent = layer_points[ layer_name ].points.geometry.boundingSphere.center.y;
+                    var rad = layer_points[ layer_name ].points.geometry.boundingSphere.radius
+                    var yPos = toScreenXY({x:0, y: cent + rad + 0.1, z: 0});
+                    var text = document.getElementById(layer_name + '_label');
+                    text.style.top = container.clientHeight - yPos.y + 'px';
+                }
+            }*/
+
             // Make the framework for the spikeTrain and membrane plots.
             var svg = d3.select("#spikeTrain")
                 .append("svg")
