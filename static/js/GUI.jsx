@@ -1,3 +1,10 @@
+try  // try to import React and ReactDOM for testing
+{
+  var React = require('react');
+  var ReactDOM = require('react-dom');
+}
+catch(err)
+{}
 
 class GuiButtons extends React.Component{
     constructor() {
@@ -108,6 +115,7 @@ class DropDown extends React.Component {
     constructor(props) {
       super(props);
       //this.items = props.items;
+      this.state = {};
       if (props.items.length != 0)
       {
         this.state = { 
@@ -134,7 +142,7 @@ class DropDown extends React.Component {
       if (this.state.items.length === 1)
       {
         this.setState({
-          selectedOption: this.state.items[this.state.items.last].value
+          selectedOption: this.props.items[0].value
         });
       } else
       {
@@ -177,9 +185,26 @@ class SelectionsButton extends React.Component {
   }
 }
 
-var gui = ReactDOM.render(
-    <GuiButtons/>,
-    document.getElementById('gui_body')
-);
+var makeGUI = function()
+{
+  var gui = ReactDOM.render(
+      <GuiButtons/>,
+      document.getElementById('gui_body')
+  );
 
-document.getElementById('uploadAnchorElem').addEventListener('change', app.handleFileUpload.bind(app), false);
+  document.getElementById('uploadAnchorElem').addEventListener('change', app.handleFileUpload.bind(app), false);
+}
+
+// Try exporting GUI for testing
+try
+{
+    module.exports = {
+      GuiButtons: GuiButtons,
+      DropDown: DropDown,
+      SelectionsButton: SelectionsButton,
+      makeGUI: makeGUI
+      };
+}
+catch(err)
+{
+}

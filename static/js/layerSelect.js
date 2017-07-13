@@ -51,9 +51,6 @@ class App
         this.deviceBoxMap = {};
 
         this.nSelected = 0;
-
-
-
     }
 
     /*
@@ -77,6 +74,8 @@ class App
         this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
 
         this.devicePlots = new DevicePlots();
+
+        this.initGUI();
 
         // Server-Sent Events
         this.serverUpdateEvent = new EventSource( "/simulationData" );
@@ -121,6 +120,22 @@ class App
             Brain( this.camera, this.scene );
         }.bind(this) );
     }
+
+    initGUI()
+    {
+        // make GUI when finished compiling the jsx file (this should be changed when precompiling)
+        var makeGuiInterval = setInterval(
+            function(){
+                try
+                {
+                    makeGUI();
+                    clearInterval(makeGuiInterval);
+                }
+                catch(err)
+                {}
+            }, 100);
+    }
+
 
     /*
      * Handles response from Server-Sent Events.

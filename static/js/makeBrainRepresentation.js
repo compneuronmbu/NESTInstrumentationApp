@@ -222,7 +222,7 @@ var Brain = function( camera, scene )
                 text.style.left = screenCenter.x + 'px';
                 document.body.appendChild( text );
                 // adjust the position to align the center with the center of the layer
-                text.style.left = screenCenter.x - parseFloat( $( '#' + text.id ).width() ) / 2.0 + 'px';
+                text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
             }
         }
     }

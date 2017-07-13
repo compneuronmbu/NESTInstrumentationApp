@@ -13,6 +13,10 @@
     "test": "jest --verbose",
     "test_coverage": "jest --verbose --coverage"
   },
+  "jest": {},
+  "babel": {
+    "presets": ["react"]
+  },
   "dependencies": {
     "babel-standalone": "^6.25.0",
     "d3": "^4.9.1",
@@ -22,6 +26,9 @@
     "three": "^0.86.0"
   },
   "devDependencies": {
-    "jest": "^20.0.4"
+    "babel-jest": "^20.0.3",
+    "babel-preset-react": "^6.24.1",
+    "jest": "^20.0.4",
+    "react-test-renderer": "^15.6.1"
   }
 }
