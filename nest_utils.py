@@ -49,10 +49,10 @@ class NESTInterface(object):
                     #elem = [ self.networkSpecs['models'][mod] for mod in model]
                 else:
                     elem = self.networkSpecs['models'][model]
-                # TODO: Center!
                 # TODO: Use models from make_models!
                 nest_layer = tp.CreateLayer({'positions': pos,
                                              'extent': [float(ext) for ext in layer['extent']],  # JSON converts the double to int
+                                             'center': [float(cntr) for cntr in layer['center']],
                                              'elements': elem})
                 self.layers[layer['name']] = nest_layer
             return self.layers

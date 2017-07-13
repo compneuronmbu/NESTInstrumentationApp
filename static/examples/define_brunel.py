@@ -112,6 +112,7 @@ def make_layers():
                                     'elements': 'stimulator'}),
               ('Excitatory', {'rows': P.lengthE, 'columns': P.lengthE,
                               'edge_wrap': True,
+                              # 'center': [-1., 2.],  # For testing purposes
                               'elements': 'excitatory'}),
               ('Inhibitory', {'rows': P.lengthI, 'columns': P.lengthI,
                               'edge_wrap': True,

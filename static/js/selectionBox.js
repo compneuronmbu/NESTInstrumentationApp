@@ -480,14 +480,14 @@ class SelectionBox
         var selectionBox = {
             "ll":
             {
-                x: ( selectedBBoxXYZ.ll.x - layer_points[ this.layerName ].offsets.x ) * layer_points[ this.layerName ].extent[0] ,
-                y: ( -( selectedBBoxXYZ.ll.y + layer_points[ this.layerName ].offsets.y ) ) * layer_points[ this.layerName ].extent[1],
+                x: ( selectedBBoxXYZ.ll.x - layer_points[ this.layerName ].offsets.x ) * layer_points[ this.layerName ].extent[0] + layer_points[ this.layerName ].center[0] ,
+                y: ( -( selectedBBoxXYZ.ll.y + layer_points[ this.layerName ].offsets.y ) ) * layer_points[ this.layerName ].extent[1] + layer_points[ this.layerName ].center[1],
                 z: 0
             },
             "ur":
             {
-                x: ( selectedBBoxXYZ.ur.x - layer_points[ this.layerName ].offsets.x ) * layer_points[ this.layerName ].extent[0],
-                y: ( -( selectedBBoxXYZ.ur.y + layer_points[ this.layerName ].offsets.y ) ) * layer_points[ this.layerName ].extent[1],
+                x: ( selectedBBoxXYZ.ur.x - layer_points[ this.layerName ].offsets.x ) * layer_points[ this.layerName ].extent[0] + layer_points[ this.layerName ].center[0],
+                y: ( -( selectedBBoxXYZ.ur.y + layer_points[ this.layerName ].offsets.y ) ) * layer_points[ this.layerName ].extent[1] + layer_points[ this.layerName ].center[1],
                 z: 0
             }
         };

@@ -51,13 +51,14 @@ var Brain = function( camera, scene )
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
                     layer_points[ layers[ layer ].name ] = {
-                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent ),
+                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center ),
                         offsets:
                             {
                                 x: offsett_x,
                                 y: offsett_y
                             },
-                        extent: layers[layer].extent
+                        extent: layers[layer].extent, 
+                        center: layers[layer].center
                     };
 
                     if ( i % no_cols == 0 )
@@ -101,7 +102,7 @@ var Brain = function( camera, scene )
     /*
      * Creates the points representing nodes.
      */
-    function initPoints( neurons, offsett_x, offsett_y, extent )
+    function initPoints( neurons, offsett_x, offsett_y, extent, center )
     {
         var geometry = new THREE.BufferGeometry();
 
@@ -112,8 +113,8 @@ var Brain = function( camera, scene )
         var i = 0;
         for ( var neuron in neurons )
         {
-            positions[ i ] = (neurons[ neuron ].x) / extent[0] + offsett_x;
-            positions[ i + 1 ] = neurons[ neuron ].y / extent[1] + offsett_y;
+            positions[ i ] = ( neurons[ neuron ].x - center[0] ) / extent[0] + offsett_x;
+            positions[ i + 1 ] = ( neurons[ neuron ].y - center[1] ) / extent[1] + offsett_y;
             positions[ i + 2 ] = 0;
 
             colors[ i ] = color.r;

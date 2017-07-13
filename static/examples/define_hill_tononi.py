@@ -132,6 +132,7 @@ def make_layers():
     layerPropsP = {'rows': params['Np'],
                    'columns': params['Np'],
                    'extent': [params['visSize'], params['visSize']],
+                   # 'center': [3, -1], # For testing purposes
                    'edge_wrap': True}
 
     layers = [('SinPoissonGenerator_A', modified_copy(layerPropsP,

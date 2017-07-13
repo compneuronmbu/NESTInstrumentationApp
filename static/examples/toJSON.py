@@ -26,6 +26,7 @@ def convert(specs, conn_specs, file_name):
             cntr = layer[1]['center']
         else:
             cntr = [0., 0.]  # Center in origo unless otherwise specified
+        layer_dict['center'] = cntr
 
         if 'columns' in layer[1]:
             # We can either get positions through rows and columns, or
