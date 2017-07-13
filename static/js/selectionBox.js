@@ -26,6 +26,7 @@ class SelectionBox
         this.curves = [];
 
         this.selectedPointIDs = [];
+        this.nSelected = 0;
 
         this.selectPoints();
         this.CURVE_SEGMENTS = 100;
@@ -75,7 +76,7 @@ class SelectionBox
         else
         {
             this.nSelected += count;
-            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
     }
 
@@ -169,7 +170,7 @@ class SelectionBox
 
         if ( this.nSelected != nSelectedOld )
         {
-            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
 
         this.selectedPointIDs = newPoints;
@@ -276,7 +277,7 @@ class SelectionBox
 
         if ( this.nSelected != nSelectedOld )
         {
-            $( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
         }
     }
 

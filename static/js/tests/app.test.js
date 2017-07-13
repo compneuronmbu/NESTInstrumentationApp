@@ -1,4 +1,5 @@
 const App = require('../layerSelect.js');
+console.log = jest.fn();  // suppress output
 
 beforeEach(() => {
     // Set up document body
@@ -184,8 +185,7 @@ test('Test loadFromJSON', () => {
     app = new App();
     app.THREE = require('three');  // import THREE into the app
     app.controls = require('../selectionBox.js');
-    console.log = jest.fn();  // suppress output
-    app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant work here
+    app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant here
     app.SelectionBox = require('../selectionBox.js');
     brain = require('../makeBrainRepresentation.js');
     
@@ -229,9 +229,8 @@ test('Test loadFromJSON', () => {
 test('Test makeStimulationDevice and makeRecordingDevice', () => {
     app = new App();
     app.THREE = require('three');  // import THREE into the app
-    app.controls = require('../selectionBox.js');
-    console.log = jest.fn();  // suppress output
-    app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant work here
+    app.controls = require('../controls.js');
+    app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant here
 
     app.container = {
         clientWidth: 800,
@@ -270,5 +269,4 @@ test('Test makeStimulationDevice and makeRecordingDevice', () => {
             specs: {model: "spike_detector", params: expect.anything()}
         }
     });
-
 });

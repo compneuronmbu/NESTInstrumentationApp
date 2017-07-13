@@ -95,3 +95,6 @@ ENV/
 
 # yarn packages
 node_modules/
+
+# test coverage files
+coverage/

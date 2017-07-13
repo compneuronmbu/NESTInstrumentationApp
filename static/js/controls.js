@@ -8,10 +8,10 @@ class Controls
     constructor( drag_objects, camera, domElement )
     {
         this.drag_objects = drag_objects;
-        this.camera = camera;
+        this.camera = camera;  // TODO: unused
         this.domElement = domElement;
 
-        this.marquee = $( "#select-square" );
+        this.marquee = app.$( "#select-square" );
 
         this.mouseDown = false;
         this.shiftDown = false;
@@ -20,7 +20,7 @@ class Controls
 
         this.plane;
         this.raycaster;
-        this.intersection = new THREE.Vector3();
+        this.intersection = new app.THREE.Vector3();
 
         this.boxInFocus;
         this.resizeSideInFocus;
@@ -73,11 +73,11 @@ class Controls
     makeOutline( focusObject )
     {
         this.removeOutline();
-        this.outlineMesh = new THREE.Mesh( focusObject.geometry, app.outlineMaterial );
+        this.outlineMesh = new app.THREE.Mesh( focusObject.geometry, app.outlineMaterial );
         this.outlineMesh.material.depthWrite = false;
         //this.outlineMesh.quaternion = focusObject.quaternion;
         this.outlineMesh.position.copy( focusObject.position );
-        var scale = new THREE.Vector3( 1.08, 1.08, 1.08 );
+        var scale = new app.THREE.Vector3( 1.08, 1.08, 1.08 );
         this.outlineMesh.scale.copy( scale );
         app.outlineScene.add( this.outlineMesh );
     }
@@ -98,7 +98,7 @@ class Controls
     {
         // ############ Send points to server for GID feedback ############
         // Send network specs to the server which makes the network
-        $.ajax(
+        app.$.ajax(
         {
             type: "POST",
             contentType: "application/json; charset=utf-8",
@@ -122,13 +122,13 @@ class Controls
      */
     getMouseIntersecting( mouseX, mouseY, objects )
     {
-        this.raycaster = new THREE.Raycaster();
+        this.raycaster = new app.THREE.Raycaster();
         var rect = this.domElement.getBoundingClientRect();
-        var mouse = new THREE.Vector2();
+        var mouse = new app.THREE.Vector2();
         mouse.x = ( ( mouseX - rect.left ) / rect.width ) * 2 - 1;
         mouse.y = -( ( mouseY - rect.top ) / rect.height ) * 2 + 1;
 
-        this.raycaster.setFromCamera( mouse, this.camera );
+        this.raycaster.setFromCamera( mouse, app.camera );
         return this.raycaster.intersectObjects( objects );
     }
 
@@ -163,7 +163,7 @@ class Controls
     {
         this.shiftDown = true;
 
-        this.plane = new THREE.Plane();
+        this.plane = new app.THREE.Plane();
 
         var intersects = this.getMouseIntersecting( app.mouseDownCoords.x,
             app.mouseDownCoords.y,
@@ -191,6 +191,7 @@ class Controls
 
         for ( var i in app.selectionBoxArray )
         {
+            console.log(app.selectionBoxArray[ i ]);
             if ( app.selectionBoxArray[ i ].withinBounds( mouseDownCorrected, app.selectionBoxArray[ i ] ) )
             {
                 this.boxInFocus = app.selectionBoxArray[ i ];
@@ -230,9 +231,9 @@ class Controls
         }
         this.marquee.css(
         {
-            left: Math.min( event.clientX, app.mouseDownCoords.x ) + 'px',
+            left: Math.min( mouseX, app.mouseDownCoords.x ) + 'px',
             width: Math.abs( app.mRelPos.x ) + 'px',
-            top: Math.min( event.clientY, app.mouseDownCoords.y ) + 'px',
+            top: Math.min( mouseY, app.mouseDownCoords.y ) + 'px',
             height: Math.abs( app.mRelPos.y ) + 'px'
         } );
     }
@@ -310,6 +311,7 @@ class Controls
      */
     updateDevicePosition( mouseX, mouseY )
     {
+        this.raycaster = new app.THREE.Raycaster();
         if ( this.raycaster.ray.intersectPlane( this.plane, this.intersection ) )
         {
             var relScreenPos = app.toObjectCoordinates(
@@ -350,7 +352,7 @@ class Controls
 
         var bounds = app.findBounds( mouseUpCoords, mouseDownCorrected );
 
-        this.boxInFocus = new SelectionBox( bounds.ll, bounds.ur, app.getSelectedShape() );
+        this.boxInFocus = new app.SelectionBox( bounds.ll, bounds.ur, app.getSelectedShape() );
         this.boxInFocus.uniqueID = app.uniqueID++;
         app.layerSelected = this.boxInFocus.layerName;
 
@@ -403,8 +405,8 @@ class Controls
     {
         console.log( "make connection" );
 
-        var intersects = this.getMouseIntersecting( event.clientX,
-            event.clientY,
+        var intersects = this.getMouseIntersecting( mouseX,
+            mouseY,
             this.drag_objects )
         if ( intersects.length > 0 )
         {
@@ -600,8 +602,8 @@ class Controls
      */
     onWindowResize()
     {
-        this.camera.aspect = app.container.clientWidth / app.container.clientHeight;
-        this.camera.updateProjectionMatrix();
+        app.camera.aspect = app.container.clientWidth / app.container.clientHeight;
+        app.camera.updateProjectionMatrix();
         app.renderer.setSize( app.container.clientWidth, app.container.clientHeight );
     }
 };

@@ -10,7 +10,8 @@
   "license": "GPL-2.0",
   "scripts": {
     "start": "python NESTConnectionApp_server.py",
-    "test": "jest"
+    "test": "jest --verbose",
+    "test_coverage": "jest --verbose --coverage"
   },
   "dependencies": {
     "babel-standalone": "^6.25.0",
