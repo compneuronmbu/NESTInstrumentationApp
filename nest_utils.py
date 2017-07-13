@@ -111,6 +111,8 @@ class NESTInterface(object):
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
+        # TODO: We do not take neuron type into account yet! We can choose it in app, but it does not do anything!
+
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']

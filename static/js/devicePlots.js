@@ -171,9 +171,6 @@ class DevicePlots {
         this.spikeTime.push.apply(this.spikeTime, spikeEvents.times);
         this.senders.push.apply(this.senders, spikeEvents.senders);
 
-        console.log("time", this.spikeTime)
-        console.log("senders", this.senders )
-
         // Update y-axis in case new senders have started spiking
         this.y.domain([Math.min.apply(Math, this.senders)-10, Math.max.apply(Math, this.senders)]);
         var yAxis = d3.axisLeft(this.y).ticks(5);

@@ -69,8 +69,8 @@ function init()
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
 
-    $.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
-    //$.getJSON( "/static/examples/brunel_converted.json", function( data )
+    //$.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
+    $.getJSON( "/static/examples/brunel_converted.json", function( data )
     {
         modelParameters = data;
         Brain( camera, scene );
@@ -256,17 +256,18 @@ function getGIDPoint( gid )
     {
         minGID += 1; // from the GID of the layer
         var pos = layer_points[ l ].points.geometry.attributes.position;
-        if ( gid <= minGID + pos.count )
+        // Check to see if the GID is less than or equal to the maximum GID in the layer.
+        // If so, the GID is in the layer, and we need the position and layer.
+        if ( gid <= minGID + ( pos.count * layer_points[ l ].noElements ) )
         {
             // point is in this layer
             var pointIndex = 3 * ( gid - minGID - 1 );
-            console.log(pointIndex)
             return {
                 layer: l,
                 pointIndex: pointIndex
             };
         }
-        minGID += pos.count;
+        minGID += pos.count * layer_points[ l ].noElements;
     }
 }
 

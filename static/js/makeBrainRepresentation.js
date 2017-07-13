@@ -58,7 +58,8 @@ var Brain = function( camera, scene )
                                 y: offsett_y
                             },
                         extent: layers[layer].extent, 
-                        center: layers[layer].center
+                        center: layers[layer].center,
+                        noElements: getNumberOfElements(layers[layer].elements)
                     };
 
                     if ( i % no_cols == 0 )
@@ -216,6 +217,40 @@ var Brain = function( camera, scene )
                 text.style.left = screenCenter.x - parseFloat( $( '#' + text.id ).width() ) / 2.0 + 'px';
             }
         }
+    }
+
+    /*
+    * Finds the number of elements in a layer.
+    * 
+    * elements is an array or string. If it is a string, number of elements equals 1. If we have
+    * an array, it can consist of strings and numbers.
+    */
+    function getNumberOfElements(elements)
+    {
+        if ( typeof elements === "string" )
+        {
+            return 1;
+        }
+
+        var noElem = 0;
+
+        for ( var elem in elements )
+        {
+            if ( typeof elements[elem] === "string" )
+            {
+                // If we have a string, we have the type of element, and we add it to noElem
+                noElem += 1
+            }
+            else if ( typeof elements[elem] === "number" )
+            {
+                // If we have a number, it tells us that we have more than one of the
+                // previous element in the element array. We therefore have to add the number, and 
+                // subtract 1, as the previous value in the elements array is the
+                // type of element, which we have added to number of elements above.
+                noElem += elements[elem] - 1
+            }
+        }
+        return noElem;
     }
 
     /*
