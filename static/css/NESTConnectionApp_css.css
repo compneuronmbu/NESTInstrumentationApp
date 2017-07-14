@@ -1,8 +1,6 @@
 :root {
   --gui_width: 180px;
-  --selection_button_font_size: 14px;
-  --selection_button_heigt: 25px;
-  --selection_button_width: 150px;
+  --selection_button_width: 120px;
   --shape_selected_background: #FF6633;
   --shape_not_selected_background: #F1EEEC;
 }
@@ -51,19 +49,12 @@ body {
   background-color: #FFFFFF;
 }
 
-#poissonButton_old
-{
-  background-color: #B28080;
-  font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
-  width: var(--selection_button_width);
-}
-
 #poissonButton
 {
+  width: var(--selection_button_width);
   text-shadow: 0.5px 0.5px 0 #333;
+  margin-bottom: 3px;
   color: #fff;
-  background-color: #B28080;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#BA8888), to(#B28080));
   background-image: -moz-linear-gradient(#BA8888, #B28080);
   background-image: -ms-linear-gradient(#BA8888, #B28080);
@@ -72,6 +63,7 @@ body {
 }
 
 #poissonButton:hover{
+    width: var(--selection_button_width);
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -88,7 +80,6 @@ body {
 #poissonButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
-    background-color: #B28080;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#916969), to(#B28080));
     background-image: -moz-linear-gradient(#916969, #B28080);
     background-image: -ms-linear-gradient(#916969, #B28080);
@@ -96,31 +87,47 @@ body {
     background-image: linear-gradient(#916969, #B28080);
 }
 
-
-#voltmeterButton_old
+#acButton
 {
-  background-color: #BDB280;
-  font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
   width: var(--selection_button_width);
+  margin-top: 3px;
+  text-shadow: 0.5px 0.5px 0 #333;
+  color: #fff;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#c97761), to(#c9725e));
+  background-image: -moz-linear-gradient(#c97761, #c9725e);
+  background-image: -ms-linear-gradient(#c97761, #c9725e);
+  background-image: -o-linear-gradient(#c97761, #c9725e);
+  background-image: linear-gradient(#c97761, #c9725e);
 }
 
-#spikeDetectorButton_old
-{
-  background-color: #809980;
-  font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
-  width: var(--selection_button_width);
-  margin-top: 7px;
+#acButton:hover{
+    border-color: #ADADAD;
+    border-bottom-color: #999999;
+    text-decoration: none;
+    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#c9725e), to(#c55d42));
+    background-image: -moz-linear-gradient(#c9725e, #c55d42);
+    background-image: -o-linear-gradient(#c9725e, #c55d42);
+    background-image: linear-gradient(#c9725e, #c55d42);
+}
+
+#acButton:active,
+#acButton.active {
+    border-color: #999999;
+    border-bottom-color: #ADADAD;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#c55d42), to(#c9725e));
+    background-image: -moz-linear-gradient(#c55d42, #c9725e);
+    background-image: -ms-linear-gradient(#c55d42, #c9725e);
+    background-image: -o-linear-gradient(#c55d42, #c9725e);
+    background-image: linear-gradient(#c55d42, #c9725e);
 }
 
 #voltmeterButton
 {
-  margin-top: 3px;
+  width: var(--selection_button_width);
   margin-bottom: 3px;
   text-shadow: 0.5px 0.5px 0 #333;
   color: #fff;
-  background-color: #BDB280;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#C9BE88), to(#BDB280));
   background-image: -moz-linear-gradient(#C9BE88, #BDB280);
   background-image: -ms-linear-gradient(#C9BE88, #BDB280);
@@ -133,8 +140,6 @@ body {
     border-bottom-color: #999999;
     text-decoration: none;
     text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
-    color: #fff;
-    background-color: #ADA375;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#BDB280), to(#ADA375));
     background-image: -moz-linear-gradient(#BDB280, #ADA375);
     background-image: -o-linear-gradient(#BDB280, #ADA375);
@@ -145,7 +150,6 @@ body {
 #VoltmeterButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
-    background-color: #BDB280;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ADA375), to(#BDB280));
     background-image: -moz-linear-gradient(#ADA375, #BDB280);
     background-image: -ms-linear-gradient(#ADA375, #BDB280);
@@ -155,11 +159,10 @@ body {
 
 #spikeDetectorButton
 {
+  width: var(--selection_button_width);
   margin-top: 3px;
-  margin-bottom: 3px;
   text-shadow: 0.5px 0.5px 0 #333;
   color: #fff;
-  background-color: #809980;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#8BA68B), to(#809980));
   background-image: -moz-linear-gradient(#8BA68B, #809980);
   background-image: -ms-linear-gradient(#8BA68B, #809980);
@@ -172,8 +175,6 @@ body {
     border-bottom-color: #999999;
     text-decoration: none;
     text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
-    color: #fff;
-    background-color: #6F856F;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#809980), to(#6F856F));
     background-image: -moz-linear-gradient(#809980, #6F856F);
     background-image: -o-linear-gradient(#809980, #6F856F);
@@ -184,7 +185,6 @@ body {
 #spikeDetectorButton.active {
     border-color: #999999;
     border-bottom-color: #ADADAD;
-    background-color: #809980;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6F856F), to(#809980));
     background-image: -moz-linear-gradient(#6F856F, #809980);
     background-image: -ms-linear-gradient(#6F856F, #809980);

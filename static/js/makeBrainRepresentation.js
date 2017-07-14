@@ -36,7 +36,7 @@ var Brain = function( camera, scene )
         var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
         var offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
-        var offsett_y = 0.0;
+        var offsett_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0; //0.0;
         var i = 1;
 
         for ( var layer in layers )
@@ -51,12 +51,15 @@ var Brain = function( camera, scene )
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
                     app.layer_points[ layers[ layer ].name ] = {
-                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y ),
+                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center ),
                         offsets:
-                        {
-                            x: offsett_x,
-                            y: offsett_y
-                        }
+                            {
+                                x: offsett_x,
+                                y: offsett_y
+                            },
+                        extent: layers[layer].extent, 
+                        center: layers[layer].center,
+                        noElements: getNumberOfElements(layers[layer].elements)
                     };
 
                     if ( i % no_cols == 0 )
@@ -90,7 +93,7 @@ var Brain = function( camera, scene )
             ].join( "\n" )
         } );
 
-        camera.position.set( 0, -0.6 * no_rows + 0.6, no_rows + 1.5 );
+        camera.position.set(  0, 0, no_rows + 1.5  );
 
         makeModelNameLists();
 
@@ -110,7 +113,7 @@ var Brain = function( camera, scene )
     /*
      * Creates the points representing nodes.
      */
-    function initPoints( neurons, offsett_x, offsett_y )
+    function initPoints( neurons, offsett_x, offsett_y, extent, center )
     {
         var geometry = new app.THREE.BufferGeometry();
 
@@ -121,8 +124,8 @@ var Brain = function( camera, scene )
         var i = 0;
         for ( var neuron in neurons )
         {
-            positions[ i ] = neurons[ neuron ].x + offsett_x;
-            positions[ i + 1 ] = neurons[ neuron ].y + offsett_y;
+            positions[ i ] = ( neurons[ neuron ].x - center[0] ) / extent[0] + offsett_x;
+            positions[ i + 1 ] = ( neurons[ neuron ].y - center[1] ) / extent[1] + offsett_y;
             positions[ i + 2 ] = 0;
 
             colors[ i ] = app.color.r;
@@ -219,12 +222,45 @@ var Brain = function( camera, scene )
                 text.style.fontSize = 18 + 'px'
                 text.innerHTML = layer_name;
                 text.style.top = screenCenter.y + 'px';
-                text.style.left = screenCenter.x + 'px';
                 document.body.appendChild( text );
                 // adjust the position to align the center with the center of the layer
                 text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
             }
         }
+    }
+
+    /*
+    * Finds the number of elements in a layer.
+    * 
+    * elements is an array or string. If it is a string, number of elements equals 1. If we have
+    * an array, it can consist of strings and numbers.
+    */
+    function getNumberOfElements(elements)
+    {
+        if ( typeof elements === "string" )
+        {
+            return 1;
+        }
+
+        var noElem = 0;
+
+        for ( var elem in elements )
+        {
+            if ( typeof elements[elem] === "string" )
+            {
+                // If we have a string, we have the type of element, and we add it to noElem
+                noElem += 1
+            }
+            else if ( typeof elements[elem] === "number" )
+            {
+                // If we have a number, it tells us that we have more than one of the
+                // previous element in the element array. We therefore have to add the number, and 
+                // subtract 1, as the previous value in the elements array is the
+                // type of element, which we have added to number of elements above.
+                noElem += elements[elem] - 1
+            }
+        }
+        return noElem;
     }
 
     /*

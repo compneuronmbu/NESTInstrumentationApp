@@ -85,15 +85,10 @@ class SelectionBox
      */
     getLayerName()
     {
-        var mouseDownCorrected = {
-            x: app.mouseDownCoords.x,
-            y: app.renderer.getSize().height - app.mouseDownCoords.y
-        };
-        var roomMouseDown = app.toObjectCoordinates( mouseDownCorrected );
-
+        var roomMouseDown = app.toObjectCoordinates( app.mouseDownCoords );
         var mouseUpCoords = {
-            x: app.mRelPos.x + mouseDownCorrected.x,
-            y: -app.mRelPos.y + mouseDownCorrected.y
+            x: app.mRelPos.x + app.mouseDownCoords.x,
+            y: app.mRelPos.y + app.mouseDownCoords.y
         };
         var roomMouseUp = app.toObjectCoordinates( mouseUpCoords );
 
@@ -102,6 +97,7 @@ class SelectionBox
             if ( app.layer_points.hasOwnProperty( name ) )
             {
                 var bbox = app.layer_points[ name ].points.geometry.boundingBox;
+
                 var shiftX = Math.abs( 0.1 * ( bbox.max.x - bbox.min.x ) );
                 var shiftY = Math.abs( 0.1 * ( bbox.max.y - bbox.min.y ) );
                 if ( ( roomMouseDown.x >= bbox.min.x - shiftX ) && ( roomMouseDown.y >= bbox.min.y - shiftY ) && ( roomMouseDown.x <= bbox.max.x + shiftX ) && ( roomMouseDown.y <= bbox.max.y + shiftY ) )
@@ -115,6 +111,7 @@ class SelectionBox
                 }
             }
         }
+        console.log(this.layerName)
     }
 
     /*
@@ -206,6 +203,7 @@ class SelectionBox
 
         this.box = new app.THREE.Mesh( geometry, material );
 
+        // Center of box
         var boxPosition = {
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
@@ -482,17 +480,19 @@ class SelectionBox
         var selectionBox = {
             "ll":
             {
-                x: selectedBBoxXYZ.ll.x - app.layer_points[ this.layerName ].offsets.x,
-                y: -( selectedBBoxXYZ.ll.y - app.layer_points[ this.layerName ].offsets.y ),
+                x: ( selectedBBoxXYZ.ll.x - app.layer_points[ this.layerName ].offsets.x ) * app.layer_points[ this.layerName ].extent[0] + app.layer_points[ this.layerName ].center[0] ,
+                y: ( -( selectedBBoxXYZ.ll.y + app.layer_points[ this.layerName ].offsets.y ) ) * app.layer_points[ this.layerName ].extent[1] + app.layer_points[ this.layerName ].center[1],
                 z: 0
             },
             "ur":
             {
-                x: selectedBBoxXYZ.ur.x - app.layer_points[ this.layerName ].offsets.x,
-                y: -( selectedBBoxXYZ.ur.y - app.layer_points[ this.layerName ].offsets.y ),
+                x: ( selectedBBoxXYZ.ur.x - app.layer_points[ this.layerName ].offsets.x ) * app.layer_points[ this.layerName ].extent[0] + app.layer_points[ this.layerName ].center[0],
+                y: ( -( selectedBBoxXYZ.ur.y + app.layer_points[ this.layerName ].offsets.y ) ) * app.layer_points[ this.layerName ].extent[1] + app.layer_points[ this.layerName ].center[1],
                 z: 0
             }
         };
+
+        console.log("SelectionBox", selectionBox)
 
         var selectedNeuronType = app.getSelectedDropDown( "neuronType" );
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );

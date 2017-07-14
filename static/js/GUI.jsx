@@ -55,6 +55,11 @@ class GuiButtons extends React.Component{
                     function={function () {app.makeStimulationDevice("poisson_generator");}}
                     button_class ='button pill big'
                     button_id='poissonButton' />
+                <br/>
+                <SelectionsButton text=' ac Generator'
+                    function={function () {app.makeStimulationDevice("ac_generator");}}
+                    button_class ='button pill big'
+                    button_id='acButton' />
             </div>
 
             <div id="gui-box">

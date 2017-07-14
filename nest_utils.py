@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import nest
 import nest.topology as tp
+import numbers
 
 
 class NESTInterface(object):
@@ -21,6 +22,7 @@ class NESTInterface(object):
         self.rec_devices = []
 
         self.reset_kernel()
+        self.make_models()
         self.make_nodes()
         if synapses:
             self.make_synapse_models()
@@ -32,6 +34,7 @@ class NESTInterface(object):
         nest.ResetKernel()
 
     def make_nodes(self):
+        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
         if nest.GetKernelStatus()['network_size'] == 1:
 
             for layer in self.networkSpecs['layers']:
@@ -39,11 +42,29 @@ class NESTInterface(object):
                 pos = [[float(neuron['x']), float(neuron['y'])]
                        for neuron in neurons]
                 model = layer['elements']
+                if isinstance(model, list):
+                    elem = []
+                    for mod in model:
+                        if isinstance(mod, str):
+                            elem.append(self.networkSpecs['models'][mod])
+                        else:
+                            elem.append(mod)
+                    #elem = [ self.networkSpecs['models'][mod] for mod in model]
+                else:
+                    elem = self.networkSpecs['models'][model]
+                # TODO: Use models from make_models!
                 nest_layer = tp.CreateLayer({'positions': pos,
-                                             'elements': self.networkSpecs[
-                                                 'models'][model]})
+                                             'extent': [float(ext) for ext in layer['extent']],  # JSON converts the double to int
+                                             'center': [float(cntr) for cntr in layer['center']],
+                                             'elements': elem})
                 self.layers[layer['name']] = nest_layer
             return self.layers
+
+    def make_models(self):
+        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
+        models = self.networkSpecs['models']
+        for new_mod, old_mod in models.items():
+            nest.CopyModel(old_mod, new_mod)
 
     def make_mask(self, lower_left, upper_right, mask_type, cntr):
         """
@@ -88,29 +109,20 @@ class NESTInterface(object):
         return mask
 
     def make_synapse_models(self):
+        print("make_synapse_models")
         for syn_name, model_name, syn_specs in self.synapses:
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
+        # TODO: We do not take neuron type into account yet! We can choose it in app, but it does not do anything!
+
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
-        x_limit_start = -0.5
-        y_limit_start = -0.5
-        x_limit_end = 0.5
-        y_limit_end = 0.5
 
         ll = [selection['ll']['x'], selection['ll']['y']]
         ur = [selection['ur']['x'], selection['ur']['y']]
-        if ll[0] < x_limit_start:
-            ll[0] = x_limit_start
-        if ll[1] < y_limit_start:
-            ll[1] = y_limit_start
 
-        if ur[0] > x_limit_end:
-            ur[0] = x_limit_end
-        if ur[1] > y_limit_end:
-            ur[1] = y_limit_end
         cntr = [0.0, 0.0]
         mask = self.make_mask(ll, ur, mask_type, cntr)
         print("Layers:")
@@ -137,7 +149,7 @@ class NESTInterface(object):
         for proj in self.internal_projections:
             pre = proj[0]
             post = proj[1]
-            conndict = proj[2]
+            conndict = self.floatify_dictionary(proj[2])
             tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
             print("Success")
 
@@ -149,7 +161,7 @@ class NESTInterface(object):
             return
 
         params_to_floatify = ['rate', 'amplitude', 'frequency']
-        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator']
+        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator', 'ac_generator']
 
         for device_name in self.device_projections:
             model = self.device_projections[device_name]['specs']['model']
@@ -167,15 +179,30 @@ class NESTInterface(object):
             connectees = self.device_projections[device_name]['connectees']
             for selection in connectees:
                 nest_neurons = self.get_gids(selection)
-                synapse_model = selection['synModel']
+                #synapse_model = selection['synModel']
+
+                synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
+                if model == 'ac_generator':
+                    synapse_model = 'static_synapse'
 
                 if model in reverse_connection:
                     print("Connecting {} to {}".format(model, "neurons"))
-                    nest.Connect(nest_device, nest_neurons)
+                    nest.Connect(nest_device, nest_neurons, syn_spec=synapse_model)
                 else:
                     print("Connecting {} to {}".format("neurons", model))
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
+
+    def floatify_dictionary(self, dict_to_floatify):
+        """
+        Helper function to go through dictionary with dictionaries and floatify integers.
+        """
+        for d in dict_to_floatify:
+            if isinstance(dict_to_floatify[d], dict):
+                self.floatify_dictionary(dict_to_floatify[d])
+            elif isinstance(dict_to_floatify[d], numbers.Number):
+                    dict_to_floatify[d] = float(dict_to_floatify[d])
+        return dict_to_floatify
 
     def get_connections(self):
         return nest.GetConnections()
@@ -224,28 +251,27 @@ class NESTInterface(object):
                             device_events['times'][e]]
                 results[device_name] = events
 
-            # For plotting: (All should just be one dictionary eventually...)
-            if 'spike_detector' in device_name:
-                recording_events['spike_det']['senders'] += (
-                    [float(y) for y in device_events['senders']])
-                recording_events['spike_det']['times'] += (
-                    [float(x) for x in device_events['times']])
-            else:
-                vm_count = -1
-                for count, t in enumerate(device_events['times']):
-                    if t not in time_array:
-                        time_array.append(t)
-                        vm_array.append([])
-                        vm_count += 1
-                    vm_array[vm_count].append(device_events['V_m'][count])
-                recording_events['rec_dev']['times'] += time_array
-                recording_events['rec_dev']['V_m'] += vm_array
+                # For plotting: (All should just be one dictionary eventually...)
+                if 'spike_detector' in device_name:
+                    recording_events['spike_det']['senders'] += (
+                        [float(y) for y in device_events['senders']])
+                    recording_events['spike_det']['times'] += (
+                        [float(x) for x in device_events['times']])
+                else:
+                    vm_count = -1
+                    for count, t in enumerate(device_events['times']):
+                        if t not in time_array:
+                            time_array.append(t)
+                            vm_array.append([])
+                            vm_count += 1
+                        vm_array[vm_count].append(device_events['V_m'][count])
+                    recording_events['rec_dev']['times'] += time_array
+                    recording_events['rec_dev']['V_m'] += vm_array
 
-            nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+                nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
         if results:
             recording_events['time'] = nest.GetKernelStatus('time')
-
             return {"stream_results": results,
                     "plot_results": recording_events}
         else:

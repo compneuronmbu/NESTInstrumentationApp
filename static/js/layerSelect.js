@@ -114,6 +114,7 @@ class App
 
     initParameters()
     {
+        //this.$.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
         this.$.getJSON( "/static/examples/brunel_converted.json", function( data )
         {
             this.modelParameters = data;
@@ -296,7 +297,9 @@ class App
         {
             minGID += 1; // from the GID of the layer
             var pos = this.layer_points[ l ].points.geometry.attributes.position;
-            if ( gid <= minGID + pos.count )
+            // Check to see if the GID is less than or equal to the maximum GID in the layer.
+            // If so, the GID is in the layer, and we need the position and layer.
+            if ( gid <= minGID + ( pos.count * this.layer_points[ l ].noElements ) )
             {
                 // point is in this layer
                 var pointIndex = 3 * ( gid - minGID - 1 );
@@ -305,7 +308,7 @@ class App
                     pointIndex: pointIndex
                 };
             }
-            minGID += pos.count;
+            minGID += pos.count * this.layer_points[ l ].noElements;
         }
     }
 
@@ -727,11 +730,22 @@ class App
     makeStimulationDevice( device )
     {
         console.log( "making stimulation device of type", device )
-        var col = 0xB28080
-            //var map = new this.THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-        var map = new this.THREE.TextureLoader().load( "static/js/textures/poisson.png" );
-        var params = {
-            rate: 70000.0
+
+        if ( device === "poisson_generator" )
+        {
+            var col = 0xB28080
+                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+            var params = {
+                rate: 70000.0
+            }
+        }
+        else if ( device === "ac_generator" )
+        {
+            var col = 0xc9725e
+                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/sinus.png" );
+            var params = {'amplitude': 50., 'frequency': 35.}
         }
         this.makeDevice( device, col, map, params );
     }
