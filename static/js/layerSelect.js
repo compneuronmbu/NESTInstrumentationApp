@@ -8,6 +8,8 @@ if ( !Detector.webgl ) Detector.addGetWebGLMessage();
 
 //TODO: Have to do something about all the global variables.
 
+var globalVar = {callback: function() {}};
+
 var container
 var camera, scene, renderer, material;
 
@@ -51,7 +53,6 @@ var devicePlots;
 
 init();
 
-
 /*
  * Initializes the app.
  */
@@ -69,12 +70,10 @@ function init()
     color = new THREE.Color();
     color.setRGB( 0.5, 0.5, 0.5 );
 
-    //$.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
-    $.getJSON( "/static/examples/brunel_converted.json", function( data )
-    {
-        modelParameters = data;
-        Brain( camera, scene );
-    } );
+    // Button that decides which model we will use
+    document.getElementById('startButtons').addEventListener('click', onLayerModelClicked, false);
+    // If we load model
+    document.getElementById('loadLayer').addEventListener('change', handleModelFileUpload, false);
 
     // RENDERER
     renderer = new THREE.WebGLRenderer(
@@ -97,6 +96,71 @@ function init()
 
     //render();
 }
+
+
+
+//TODO Move to another suitable place, controls or makeBrain? I think makeBrain.
+function onLayerModelClicked(evt) {
+    var target = evt.target;
+    var JSONstring
+
+    if ( target.id === 'brunel' )
+    {
+        console.log("Brunel!");
+        JSONstring = "/static/examples/brunel_converted.json";
+        $("#startButtons").css( { display: "none" } );
+    }
+    else if ( target.id === 'hillTononi' )
+    {
+        console.log("Hill-Tononi!")
+        JSONstring = "/static/examples/hill_tononi_converted.json";
+        $("#startButtons").css( { display: "none" } );
+    }
+    else if ( target.id === 'loadOwn' )
+    {
+        console.log("Custom made model!")
+        document.getElementById( 'loadLayer' ).click();
+
+    }
+    else if( target.id === 'loadLayer' )
+    {
+        return;
+    }
+
+    $.getJSON( JSONstring, function( data )
+    {
+        modelParameters = data;
+        Brain( camera, scene );
+    } );
+
+}
+
+function handleModelFileUpload (event) {
+    file = document.getElementById("loadLayer").files;
+
+    if (file.length <= 0) {
+        return false;
+    }
+
+    var fr = new FileReader();
+
+    fr.onload = function(e) {
+        try{ 
+            var result = JSON.parse(e.target.result);
+            modelParameters = result;
+            Brain( camera, scene );
+            $("#startButtons").css( { display: "none" } );
+        } catch(e) {
+            window.alert("Please upload a correct JSON file");
+        }
+    }
+
+    fr.readAsText(file.item(0));
+}
+
+
+
+
 
 /*
  * Handles response from Server-Sent Events.
