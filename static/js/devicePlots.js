@@ -277,3 +277,13 @@ class DevicePlots {
         path.exit().remove();
     }
 }
+
+
+// Try exporting DevicePlots for testing
+try
+{
+    module.exports = DevicePlots;
+}
+catch(err)
+{
+}
