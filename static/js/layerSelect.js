@@ -383,9 +383,16 @@ class App
      */
     mapVmToColor( Vm, minVm, maxVm )
     {
-        var clampedVm;
-        clampedVm = ( Vm < minVm ) ? minVm : Vm;
-        clampedVm = ( Vm > maxVm ) ? maxVm : Vm;
+        var clampedVm = Vm;
+        if ( Vm < minVm )
+        {
+            clampedVm = minVm;
+        }
+        else if ( Vm > maxVm )
+        {
+            clampedVm = maxVm;
+        }
+        console.log(clampedVm)
         var colorRG = ( clampedVm - minVm ) / ( maxVm - minVm );
         return [ colorRG, colorRG, 1.0 ];
     }
