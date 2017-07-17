@@ -109,13 +109,11 @@ class NESTInterface(object):
         return mask
 
     def make_synapse_models(self):
-        print("make_synapse_models")
         for syn_name, model_name, syn_specs in self.synapses:
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
         # TODO: We do not take neuron type into account yet! We can choose it in app, but it does not do anything!
-
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
@@ -125,8 +123,6 @@ class NESTInterface(object):
 
         cntr = [0.0, 0.0]
         mask = self.make_mask(ll, ur, mask_type, cntr)
-        print("Layers:")
-        print(self.layers)
         gids = tp.SelectNodesByMask(self.layers[name],
                                     cntr, mask)
         return gids
