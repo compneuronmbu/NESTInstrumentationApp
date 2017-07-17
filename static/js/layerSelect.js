@@ -4,814 +4,877 @@
  *
  */
 
-if ( !Detector.webgl ) Detector.addGetWebGLMessage();
-
-//TODO: Have to do something about all the global variables.
-
-var container
-var camera, scene, renderer, material;
-
-var outlineScene;
-var outlineMaterial;
-var outlineMesh;
-
-var controls;
-
-var layer_points = {};
-
-var mouseDownCoords = {
-    x: 0,
-    y: 0
-};
-var mRelPos = {
-    x: 0,
-    y: 0
-};
-
-var modelParameters;
-var layerSelected = "";
-var neuronModels = [ 'All' ];
-var synModels = [];
-var selectedShape = "rectangular";
-var layerNamesMade = false;
-var selectionBoxArray = [];
-var deviceBoxMap = {};
-
-var synapseNeuronModelCallback = {callback: function() {}};
-
-var nSelected = 0;
-var deviceCounter = 1;
-var uniqueID = 1;
-var newDevicePos = [ 0.0, 0.15, -0.15, 0.3, -0.3 ];
-var newDeviceIndex = 0;
-
-var circle_objects = [];
-
-var serverUpdateEvent;
-
-var devicePlots;
-
-init();
-
-/*
- * Initializes the app.
- */
-function init()
+// TODO: rename App -> ???
+class App
 {
-    container = document.getElementById( 'main_body' );
-    document.body.appendChild( container );
-
-    // CAMERA
-    camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.5, 10 );
-    scene = new THREE.Scene();
-    outlineScene = new THREE.Scene();
-
-    // POINTS
-    color = new THREE.Color();
-    color.setRGB( 0.5, 0.5, 0.5 );
-
-    // Button that decides which model we will use
-    document.getElementById('startButtons').addEventListener('click', onLayerModelClicked, false);
-    // If we load model
-    document.getElementById('loadLayer').addEventListener('change', handleModelFileUpload, false);
-
-    // RENDERER
-    renderer = new THREE.WebGLRenderer(
+    constructor()
     {
-        antialias: true
-    } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( container.clientWidth, container.clientHeight );
-    renderer.autoClear = false;
+        this.controls;
+     
+        this.outlineScene;
+        this.outlineMaterial;
 
-    container.appendChild( renderer.domElement );
+        this.layerSelected = "";
+        this.layerNamesMade = false;
 
-    controls = new Controls( circle_objects, camera, renderer.domElement );
+        this.selectionBoxArray = [];
 
-    devicePlots = new DevicePlots();
+        this.serverUpdateEvent;
+        this.devicePlots;
 
-    // Server-Sent Events
-    serverUpdateEvent = new EventSource( "/simulationData" );
-    serverUpdateEvent.onmessage = handleMessage;
+        // this.material;
 
-    //render();
-}
+        this.mouseDownCoords = {
+            x: 0,
+            y: 0
+        };
+        this.mRelPos = {
+            x: 0,
+            y: 0
+        };
+        
+        this.selectedShape = "rectangular";
 
-/*
-* Finds out which of the model buttons we chose, and sends infomation to Brain, which
-* then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
-*/
-function onLayerModelClicked(evt) {
-    var target = evt.target;
-    var JSONstring;
+        this.layer_points = {};
+        this.modelParameters;
+        this.neuronModels = [ 'All' ];
+        this.synModels = [];
+        this.synapseNeuronModelCallback = {callback: function() {}};
 
-    if ( target.id === 'brunel' )
-    {
-        console.log("Brunel!");
-        JSONstring = "/static/examples/brunel_converted.json";
-        // Hide buttons after clicking on one.
-        $("#modelButtons").css( { display: "none" } );
-    }
-    else if ( target.id === 'hillTononi' )
-    {
-        console.log("Hill-Tononi!");
-        JSONstring = "/static/examples/hill_tononi_converted.json";
-        // Hide buttons after clicking on one.
-        $("#modelButtons").css( { display: "none" } );
-    }
-    else if ( target.id === 'loadOwn' )
-    {
-        console.log("Custom made model!");
-        // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
-        // handles the file upload and subsequent allocation to Brain, which displays the model.
-        document.getElementById( 'loadLayer' ).click();
+        this.deviceCounter = 1;
 
-    }
-    else if( target.id === 'loadLayer' )
-    {
-        return;
+        this.uniqueID = 1;
+        this.newDevicePos = [ 0.0, 0.15, -0.15, 0.3, -0.3 ];
+        this.newDeviceIndex = 0;
+
+        this.circle_objects = [];
+
+        this.deviceBoxMap = {};
+
+        this.nSelected = 0;
     }
 
-    $.getJSON( JSONstring, function( data )
+    /*
+     * Initializes the app.
+     */
+    init()
     {
-        modelParameters = data;
-        Brain( camera, scene );
-    } );
-    $("#startButtons").html( "Reload page to display model buttons again." );
-}
+        // Binding libraries to this so that they can be set by test scripts,
+        // because Node.js is being difficult.
+        this.$ = $;
+        this.THREE = THREE;
+        this.SelectionBox = SelectionBox;
 
-/*
-* Function to handle file upload if user has chosen its own model.
-*/
-function handleModelFileUpload (event) {
-    file = document.getElementById("loadLayer").files;
+        this.container = document.getElementById( 'main_body' );
 
-    if (file.length <= 0) {
-        return false;
+        this.initTHREEScene();
+        this.initTHREERenderer();
+        this.initContainer();
+
+        // Button that decides which model we will use
+        document.getElementById('startButtons').addEventListener('click', this.onLayerModelClicked.bind( this ), false);
+        // If we load model
+        document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind(this), false);
+        //this.initParameters();
+
+        this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
+
+        this.devicePlots = new DevicePlots();
+
+        this.initGUI();
+
+        // Server-Sent Events
+        this.serverUpdateEvent = new EventSource( "/simulationData" );
+        this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
     }
 
-    var fr = new FileReader();
+    initTHREEScene()
+    {
+        // CAMERA
+        this.camera = new this.THREE.PerspectiveCamera( 45, this.container.clientWidth / this.container.clientHeight, 0.5, 10 );
+        this.scene = new this.THREE.Scene();
+        this.outlineScene = new this.THREE.Scene();
 
-    fr.onload = function(e) {
-        try{ 
-            var result = JSON.parse(e.target.result);
-            modelParameters = result;
-            Brain( camera, scene );
-            // Hide buttons after clicking on it.
+        // POINTS
+        this.color = new this.THREE.Color();
+        this.color.setRGB( 0.5, 0.5, 0.5 );
+    }
+
+    initTHREERenderer()
+    {
+        // RENDERER
+        this.renderer = new this.THREE.WebGLRenderer(
+        {
+            antialias: true
+        } );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+        this.renderer.autoClear = false;
+    }
+
+    initContainer()
+    {
+        document.body.appendChild( this.container );
+        this.container.appendChild( this.renderer.domElement );
+    }
+
+    /*
+    * Finds out which of the model buttons we chose, and sends infomation to Brain, which
+    * then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
+    */
+    onLayerModelClicked(evt) {
+        var target = evt.target;
+        var JSONstring;
+
+        if ( target.id === 'brunel' )
+        {
+            console.log("Brunel!");
+            JSONstring = "/static/examples/brunel_converted.json";
+            // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
-            $("#startButtons").html( "Reload page to display model buttons again." );
-        } catch(e) {
-            window.alert("Please upload a correct JSON file");
         }
-    }
-
-    fr.readAsText(file.item(0));
-}
-
-/*
- * Handles response from Server-Sent Events.
- */
-function handleMessage( e )
-{
-    var data = JSON.parse(e.data);
-    var recordedData = data['stream_results'];
-    var deviceData = data['plot_results'];
-    console.log(data);
-
-    var t = deviceData['time'];
-    $("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
-
-    // Color results:
-    var spiked = colorFromSpike(recordedData);
-    colorFromVm(recordedData, spiked);
-
-    for ( var layer in layer_points )
-    {
-        layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
-    }
-
-    // Plot results:
-    if ( deviceData['spike_det']['senders'].length >= 1 )
-    {
-        devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
-    }
-    if ( deviceData['rec_dev']['times'].length >= 1 )
-    {
-        devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
-    }
-}
-
-/*
- * Converts coordinates of a point in space to coordinates on screen.
- */
-function toScreenXY( point_pos )
-{
-    var point_vector = new THREE.Vector3( point_pos.x, point_pos.y, point_pos.z );
-    var projScreenMat = new THREE.Matrix4();
-    projScreenMat.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
-    point_vector.applyMatrix4( projScreenMat );
-
-    return {
-        x: ( point_vector.x + 1 ) * renderer.getSize().width / 2,
-        y: renderer.getSize().height - ( -point_vector.y + 1 ) * renderer.getSize().height / 2
-    };
-}
-
-/*
- * Converts coordinates on the screen to coordinates in space.
- */
-function toObjectCoordinates( screenPos )
-{
-    var vector = new THREE.Vector3();
-
-    vector.set(
-        ( screenPos.x / container.clientWidth ) * 2 - 1, -( screenPos.y / container.clientHeight ) * 2 + 1,
-        0.5 );
-
-    vector.unproject( camera );
-
-    var dir = vector.sub( camera.position ).normalize();
-
-    var distance = -camera.position.z / dir.z;
-
-    var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
-
-    return pos
-}
-
-/*
- * Finds the ll and ur coordinates of the selected square
- */
-function findBounds( pos1, pos2 )
-{
-    var ll = {};
-    var ur = {};
-    ll.x = Math.min( pos1.x, pos2.x );
-    ll.y = Math.min( pos1.y, pos2.y );
-    ur.x = Math.max( pos1.x, pos2.x );
-    ur.y = Math.max( pos1.y, pos2.y );
-    return (
-    {
-        ll: ll,
-        ur: ur
-    } );
-}
-
-/*
- * Callback for the rectangular shape button.
- */
-function makeRectangularShape()
-{
-    var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
-    var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
-    var rectangleButtoncss = $( "#rectangleButton" );
-    rectangleButtoncss.css(
-    {
-        backgroundColor: selectedColor
-    } );
-    var ellipticalButtoncss = $( "#ellipticalButton" );
-    ellipticalButtoncss.css(
-    {
-        backgroundColor: unselectedColor
-    } );
-
-    selectedShape = 'rectangular';
-}
-
-/*
- * Callback for the elliptical shape button.
- */
-function makeEllipticalShape()
-{
-    var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
-    var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
-    var rectangleButtoncss = $( "#rectangleButton" );
-    rectangleButtoncss.css(
-    {
-        backgroundColor: unselectedColor
-    } );
-    var ellipticalButtoncss = $( "#ellipticalButton" );
-    ellipticalButtoncss.css(
-    {
-        backgroundColor: selectedColor
-    } );
-
-    selectedShape = 'elliptical';
-}
-
-/*
- * Gets the selected value of a drop-down menu.
- */
-function getSelectedDropDown( id )
-{
-    var dd = document.getElementById( id );
-    return dd.options[ dd.selectedIndex ].value;
-}
-
-/*
- * Returns the currently selected selection shape.
- */
-function getSelectedShape()
-{
-    return selectedShape;
-}
-
-/*
- * Gets layer and point index for a specified GID.
- */
-function getGIDPoint( gid )
-{
-    var minGID = 0;
-    for ( var l in layer_points )
-    {
-        minGID += 1; // from the GID of the layer
-        var pos = layer_points[ l ].points.geometry.attributes.position;
-        // Check to see if the GID is less than or equal to the maximum GID in the layer.
-        // If so, the GID is in the layer, and we need the position and layer.
-        if ( gid <= minGID + ( pos.count * layer_points[ l ].noElements ) )
+        else if ( target.id === 'hillTononi' )
         {
-            // point is in this layer
-            var pointIndex = 3 * ( gid - minGID - 1 );
-            return {
-                layer: l,
-                pointIndex: pointIndex
-            };
+            console.log("Hill-Tononi!");
+            JSONstring = "/static/examples/hill_tononi_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
         }
-        minGID += pos.count * layer_points[ l ].noElements;
-    }
-}
-
-/*
- * Colours node points given their membrane potential, skipping nodes that
- * just spiked.
- */
-function colorFromVm( response, spiked )
-{
-    var time = 0;
-    var V_m = 0;
-    var point;
-    for ( var device in response )
-    {
-        var deviceModel = device.slice( 0, device.lastIndexOf( "_" ) );
-        if ( deviceModel === "voltmeter" )
+        else if ( target.id === 'loadOwn' )
         {
-            for ( gid in response[ device ] )
-            {
-                if ( spiked.indexOf( gid ) === -1 ) // if GID did not spike
+            console.log("Custom made model!");
+            // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
+            // handles the file upload and subsequent allocation to Brain, which displays the model.
+            document.getElementById( 'loadLayer' ).click();
+
+        }
+        else if( target.id === 'loadLayer' )
+        {
+            return;
+        }
+
+        this.$.getJSON( JSONstring, function( data )
+        {
+            this.modelParameters = data;
+            Brain( this.camera, this.scene );
+        }.bind(this) );
+        $("#startButtons").html( "Reload page to display model buttons again." );
+    }
+
+    /*
+    * Function to handle file upload if user has chosen its own model.
+    */
+    handleModelFileUpload (event) {
+        console.log(event.target.files)
+        //var file = document.getElementById("loadLayer").files;
+        var file = event.target.files;
+
+        if (file.length <= 0) {
+            return false;
+        }
+
+        var fr = new FileReader();
+
+        fr.onload = function(e) {
+            try{
+                var result = JSON.parse(e.target.result);
+                this.modelParameters = result;
+                Brain( this.camera, this.scene );
+                // Hide buttons after clicking on it.
+                this.$("#modelButtons").css( { display: "none" } );
+                this.$("#startButtons").html( "Reload page to display model buttons again." );
+            } catch(e) {
+                window.alert("Please upload a correct JSON file");
+            }
+        }.bind(this)
+
+        fr.readAsText(file.item(0));
+    }
+
+    initParameters()
+    {
+        //this.$.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
+        this.$.getJSON( "/static/examples/brunel_converted.json", function( data )
+        {
+            this.modelParameters = data;
+            Brain( this.camera, this.scene );
+        }.bind(this) );
+    }
+
+    initGUI()
+    {
+        // make GUI when finished compiling the jsx file (this should be changed when precompiling)
+        var makeGuiInterval = setInterval(
+            function(){
+                try
                 {
-                    point = getGIDPoint( gid );
-                    V_m = response[ device ][ gid ][ 1 ];
-                    // TODO: Vm range should be variable
-                    colorVm = mapVmToColor( V_m, -70., -50. );
-
-                    var points = layer_points[ point.layer ].points;
-                    var colors = points.geometry.getAttribute( "customColor" ).array;
-
-                    colors[ point.pointIndex ] = colorVm[ 0 ];
-                    colors[ point.pointIndex + 1 ] = colorVm[ 1 ];
-                    colors[ point.pointIndex + 2 ] = colorVm[ 2 ];
-                    //points.geometry.attributes.customColor.needsUpdate = true;
+                    makeGUI();
+                    clearInterval(makeGuiInterval);
                 }
-            }
-        }
+                catch(err)
+                {}
+            }, 100);
     }
-}
 
-/*
- * Colours spiking node points.
- */
-function colorFromSpike( response )
-{
-    var time = 0;
-    var V_m = 0;
-    var point;
-    var spikedGIDs = [];
-    for ( var device in response )
+
+    /*
+     * Handles response from Server-Sent Events.
+     */
+    handleMessage( e )
     {
-        var deviceModel = device.slice( 0, device.lastIndexOf( "_" ) );
-        if ( deviceModel === "spike_detector" )
+        var data = JSON.parse(e.data);
+        var recordedData = data['stream_results'];
+        var deviceData = data['plot_results'];
+        console.log(data);
+
+        var t = deviceData['time'];
+        this.$("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+
+        // Color results:
+        var spiked = this.colorFromSpike(recordedData);
+        this.colorFromVm(recordedData, spiked);
+
+        for ( var layer in this.layer_points )
         {
-            for ( gid in response[ device ] )
-            {
-                point = getGIDPoint( gid );
-                colorSpike = [ 0.9, 0.0, 0.0 ];
-
-                var points = layer_points[ point.layer ].points;
-                var colors = points.geometry.getAttribute( "customColor" ).array;
-
-                colors[ point.pointIndex ] = colorSpike[ 0 ];
-                colors[ point.pointIndex + 1 ] = colorSpike[ 1 ];
-                colors[ point.pointIndex + 2 ] = colorSpike[ 2 ];
-                //points.geometry.attributes.customColor.needsUpdate = true;
-                spikedGIDs.push( gid );
-            }
+            this.layer_points[ layer ].points.geometry.attributes.customColor.needsUpdate = true;
         }
-    }
-    return spikedGIDs;
-}
 
-/*
- * Maps the membrane potential to a colour.
- */
-function mapVmToColor( Vm, minVm, maxVm )
-{
-    var clampedVm;
-    clampedVm = ( Vm < minVm ) ? minVm : Vm;
-    clampedVm = ( Vm > maxVm ) ? maxVm : Vm;
-    var colorRG = ( clampedVm - minVm ) / ( maxVm - minVm );
-    return [ colorRG, colorRG, 1.0 ];
-}
-
-/*
- * Resets colours in the box.
- */
-function resetBoxColors()
-{
-    for ( device in deviceBoxMap )
-    {
-        for ( i in deviceBoxMap[ device ].connectees )
+        // Plot results:
+        if ( deviceData['spike_det']['senders'].length >= 1 )
         {
-            deviceBoxMap[ device ].connectees[ i ].updateColors();
+            this.devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
+        }
+        if ( deviceData['rec_dev']['times'].length >= 1 )
+        {
+            this.devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
         }
     }
 
-}
-
-/*
- * Creates an object with specs and connectees for each device.
- */
-function makeProjections()
-{
-    var projections = {};
-    // projections['internal'] = modelParameters.projections;
-    $( "#infoconnected" ).html( "Gathering selections to be connected ..." );
-    for ( device in deviceBoxMap )
+    /*
+     * Converts coordinates of a point in space to coordinates on screen.
+     */
+    toScreenXY( point_pos )
     {
-        projections[ device ] = {
-            specs: deviceBoxMap[ device ].specs,
-            connectees: []
+
+        var point_vector = new this.THREE.Vector3( point_pos.x, point_pos.y, point_pos.z );
+        var projScreenMat = new this.THREE.Matrix4();
+        projScreenMat.multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse );
+        point_vector.applyMatrix4( projScreenMat );
+
+        return {
+            x: ( point_vector.x + 1 ) * this.renderer.getSize().width / 2,
+            y: this.renderer.getSize().height - ( -point_vector.y + 1 ) * this.renderer.getSize().height / 2
         };
-        for ( i in deviceBoxMap[ device ].connectees )
-        {
-            projections[ device ].connectees.push( deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
-        }
     }
-    return projections;
-}
 
-/*
- * Sends data to the server, creating the connections.
- */
-function makeConnections()
-{
-    // create object to be sent
-    var projections = makeProjections();
-    console.log( projections );
-
-    $( "#infoconnected" ).html( "Connecting ..." );
-    // send selected connections
-    $.ajax(
+    /*
+     * Converts coordinates on the screen to coordinates in space.
+     */
+    toObjectCoordinates( screenPos )
     {
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        url: "/connect",
-        data: JSON.stringify(
-        {
-            network: modelParameters,
-            synapses: synModels,
-            internalProjections: modelParameters.projections,
-            projections: projections
-        } ),
-        dataType: "json"
-    } );
-    getConnections();
-}
+        var vector = new this.THREE.Vector3();
 
-/*
- * Gets the number of connections from the server.
- */
-function getConnections()
-{
-    $.getJSON( "/connections",
-    {
-        input: "dummyData"
-    } ).done( function( data )
-    {
-        $( "#infoconnected" ).html( data.connections.toString() + " connection(s)" );
-    } );
-}
+        vector.set(
+            ( screenPos.x / this.container.clientWidth ) * 2 - 1, -( screenPos.y / this.container.clientHeight ) * 2 + 1,
+            0.5 );
 
-/*
- * Runs a simulation.
- */
-function runSimulation()
-{
-    var projections = makeProjections();
+        vector.unproject( this.camera );
 
-    $( "#infoconnected" ).html( "Simulating ..." );
+        var dir = vector.sub( this.camera.position ).normalize();
 
-    $.ajax(
-    {
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        url: "/simulate",
-        data: JSON.stringify(
-        {
-            network: modelParameters,
-            synapses: synModels,
-            internalProjections: modelParameters.projections,
-            projections: projections,
-            time: "1000"
-        } ),
-        dataType: "json"
-    } ).done( function( data )
-    {
-        console.log( "Simulation finished" );
-        console.log( data );
-        $( "#infoconnected" ).html( "Simulation finished" );
-    } );
+        var distance = -this.camera.position.z / dir.z;
 
-}
+        var pos = this.camera.position.clone().add( dir.multiplyScalar( distance ) );
 
-/*
- * Runs a simulation.
- */
-function streamSimulate()
-{
-    devicePlots.makeDevicePlot();
-
-    $.ajax(
-    {
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        url: "/streamSimulate",
-        data: JSON.stringify(
-        {
-            network: modelParameters,
-            synapses: synModels,
-            internalProjections: modelParameters.projections,
-            projections: makeProjections(),
-            time: "10000"
-        } ),
-        dataType: "json"
-    } ).done( function( data )
-    {
-        console.log( "Simulation started successfully" );
-    } );
-}
-
-/*
- * Aborts the current simulation.
- */
-function abortSimulation()
-{
-    $.ajax(
-    {
-        url: "/abortSimulation",
-    } ).done( function( data )
-    {
-        console.log( data );
-        resetBoxColors();
-    } );
-}
-
-/*
- * Saves selections to file.
- */
-function saveSelection()
-{
-    console.log( "##################" );
-    console.log( "    Selections" );
-    console.log( "##################" );
-    console.log( "deviceBoxMap", deviceBoxMap );
-    console.log( "circle_objects", circle_objects );
-    console.log( "selectionBoxArray", selectionBoxArray );
-    console.log( "##################" );
-
-    var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
-    if ( filename === null || filename === "" )
-    {
-        // User canceled saving
-        return;
+        return pos
     }
-    // create object to be saved
-    var projections = {};
-    for ( device in deviceBoxMap )
+
+    /*
+     * Finds the ll and ur coordinates of the selected square
+     */
+    findBounds( pos1, pos2 )
     {
-        deviceModel = deviceBoxMap[ device ].specs.model;
-        projections[ device ] = {
-            specs: deviceBoxMap[ device ].specs,
-            connectees: []
-        };
-        for ( i in deviceBoxMap[ device ].connectees )
+        var ll = {};
+        var ur = {};
+        ll.x = Math.min( pos1.x, pos2.x );
+        ll.y = Math.min( pos1.y, pos2.y );
+        ur.x = Math.max( pos1.x, pos2.x );
+        ur.y = Math.max( pos1.y, pos2.y );
+        return (
         {
-            projections[ device ].connectees.push( deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
-        }
+            ll: ll,
+            ur: ur
+        } );
     }
-    console.log( "projections", projections );
 
-    dlObject = {
-        projections: projections
-    };
-    jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject ) );
-    var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
-    dlAnchorElem.setAttribute( "href", jsonStr );
-    dlAnchorElem.setAttribute( "download", filename + ".json" );
-    dlAnchorElem.click();
-}
-
-/*
- * Loads selections from a file.
- */
-function loadSelection()
-{
-    document.getElementById( 'uploadAnchorElem' ).click();
-}
-
-/*
- * Creates the devices, selections, and connections, given a JSON with
- * connection data.
- */
-function loadFromJSON( textJSON )
-{
-    var inputObj = JSON.parse( textJSON );
-    console.log( inputObj )
-    var IDsCreated = [];
-    for ( device in inputObj.projections )
+    /*
+     * Callback for the rectangular shape button.
+     */
+    makeRectangularShape()
     {
-        var deviceModel = inputObj.projections[ device ].specs.model;
-        if ( deviceModel === "poisson_generator" )
+        var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
+        var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
+        var rectangleButtoncss = this.$( "#rectangleButton" );
+        rectangleButtoncss.css(
         {
-            makeStimulationDevice( deviceModel );
-        }
-        else
+            backgroundColor: selectedColor
+        } );
+        var ellipticalButtoncss = this.$( "#ellipticalButton" );
+        ellipticalButtoncss.css(
         {
-            makeRecordingDevice( deviceModel );
-        }
+            backgroundColor: unselectedColor
+        } );
 
-        var target = circle_objects[ circle_objects.length - 1 ];
+        this.selectedShape = 'rectangular';
+    }
 
-        for ( i in inputObj.projections[ device ].connectees )
+    /*
+     * Callback for the elliptical shape button.
+     */
+    makeEllipticalShape()
+    {
+        var selectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_selected_background' );
+        var unselectedColor = window.getComputedStyle( document.body ).getPropertyValue( '--shape_not_selected_background' );
+        var rectangleButtoncss = this.$( "#rectangleButton" );
+        rectangleButtoncss.css(
         {
-            var boxSpecs = inputObj.projections[ device ].connectees[ i ];
+            backgroundColor: unselectedColor
+        } );
+        var ellipticalButtoncss = this.$( "#ellipticalButton" );
+        ellipticalButtoncss.css(
+        {
+            backgroundColor: selectedColor
+        } );
 
-            // if not created yet, the box must be created
-            if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
+        this.selectedShape = 'elliptical';
+    }
+
+    /*
+     * Gets the selected value of a drop-down menu.
+     */
+    getSelectedDropDown( id )
+    {
+        var dd = document.getElementById( id );
+        return dd.options[ dd.selectedIndex ].value;
+    }
+
+    /*
+     * Returns the currently selected selection shape.
+     */
+    getSelectedShape()
+    {
+        return this.selectedShape;
+    }
+
+    /*
+     * Gets layer and point index for a specified GID.
+     */
+    getGIDPoint( gid )
+    {
+        var minGID = 0;
+        for ( var l in this.layer_points )
+        {
+            minGID += 1; // from the GID of the layer
+            var pos = this.layer_points[ l ].points.geometry.attributes.position;
+            // Check to see if the GID is less than or equal to the maximum GID in the layer.
+            // If so, the GID is in the layer, and we need the position and layer.
+            if ( gid <= minGID + ( pos.count * this.layer_points[ l ].noElements ) )
             {
-                IDsCreated.push( boxSpecs.uniqueID );
-                var box = new SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
-                box.uniqueID = boxSpecs.uniqueID;
-
-                // update our uniqueID count only if box.uniqueID is greater
-                uniqueID = ( boxSpecs.uniqueID > uniqueID ) ? boxSpecs.uniqueID : uniqueID;
-
-                box.layerName = boxSpecs.name;
-                box.selectedNeuronType = boxSpecs.neuronType;
-                box.selectedSynModel = boxSpecs.synModel;
-                box.selectedShape = boxSpecs.maskShape;
-
-                selectionBoxArray.push( box );
-                box.makeBox();
+                // point is in this layer
+                var pointIndex = 3 * ( gid - minGID - 1 );
+                return {
+                    layer: l,
+                    pointIndex: pointIndex
+                };
             }
-            // if the box is already created, it must be found
-            else
+            minGID += pos.count * this.layer_points[ l ].noElements;
+        }
+    }
+
+    /*
+     * Colours node points given their membrane potential, skipping nodes that
+     * just spiked.
+     */
+    colorFromVm( response, spiked )
+    {
+        var time = 0;
+        var V_m = 0;
+        var point;
+        for ( var device in response )
+        {
+            var deviceModel = device.slice( 0, device.lastIndexOf( "_" ) );
+            if ( deviceModel === "voltmeter" )
             {
-                for ( i in selectionBoxArray )
+                for ( var gid in response[ device ] )
                 {
-                    if ( selectionBoxArray[ i ].uniqueID === boxSpecs.uniqueID )
+                    if ( spiked.indexOf( gid ) === -1 ) // if GID did not spike
                     {
-                        var box = selectionBoxArray[ i ];
-                        break;
+                        point = this.getGIDPoint( gid );
+                        V_m = response[ device ][ gid ][ 1 ];
+                        // TODO: Vm range should be variable
+                        var colorVm = this.mapVmToColor( V_m, -70., -50. );
+
+                        var points = this.layer_points[ point.layer ].points;
+                        var colors = points.geometry.getAttribute( "customColor" ).array;
+
+                        colors[ point.pointIndex ] = colorVm[ 0 ];
+                        colors[ point.pointIndex + 1 ] = colorVm[ 1 ];
+                        colors[ point.pointIndex + 2 ] = colorVm[ 2 ];
+                        //points.geometry.attributes.customColor.needsUpdate = true;
                     }
                 }
             }
-
-            box.makeLine();
-            var radius = target.geometry.boundingSphere.radius;
-            box.setLineTarget( target.name );
-            box.lineToDevice( target.position, radius, target.name );
-
-            box.updateColors();
-            console.log( deviceBoxMap )
-            deviceBoxMap[ device ].connectees.push( box );
         }
     }
-}
 
-/*
- * Callback function for file upload when loading a JSON file.
- */
-function handleFileUpload( event )
-{
-    console.log( "file uploaded" )
-    // TODO: need some checks here
-    fr = new FileReader();
-    var result;
-    fr.onload = function( e )
+    /*
+     * Colours spiking node points.
+     */
+    colorFromSpike( response )
     {
-        loadFromJSON( fr.result );
-    };
-    fr.readAsText( event.target.files[ 0 ] );
-}
-
-/*
- * Creates a device, with given colour, texture map, and optional parameters.
- */
-function makeDevice( device, col, map, params = {} )
-{
-    var geometry = new THREE.CircleBufferGeometry( 0.05, 32 );
-    geometry.computeBoundingSphere(); // needed for loading
-    var material = new THREE.MeshBasicMaterial(
-    {
-        color: col,
-        map: map
-    } );
-    var circle = new THREE.Mesh( geometry, material );
-    var deviceName = device + "_" + String( deviceCounter++ );
-    circle.name = deviceName;
-
-    circle.position.y = newDevicePos[ newDeviceIndex ];
-    newDeviceIndex = ( newDeviceIndex + 1 === newDevicePos.length ) ? 0 : ++newDeviceIndex;
-
-    scene.add( circle );
-    circle_objects.push( circle );
-
-    controls.deviceInFocus = circle;
-    controls.makeOutline( controls.deviceInFocus );
-
-    deviceBoxMap[ deviceName ] = {
-        specs:
+        var time = 0;
+        var V_m = 0;
+        var point;
+        var spikedGIDs = [];
+        for ( var device in response )
         {
-            model: device,
-            params: params
-        },
-        connectees: []
-    };
-}
+            var deviceModel = device.slice( 0, device.lastIndexOf( "_" ) );
+            if ( deviceModel === "spike_detector" )
+            {
+                for ( var gid in response[ device ] )
+                {
+                    point = this.getGIDPoint( gid );
+                    var colorSpike = [ 0.9, 0.0, 0.0 ];
 
-/*
- * Creates a stimulation device.
- */
-function makeStimulationDevice( device )
-{
-    console.log( "making stimulation device of type", device )
+                    var points = this.layer_points[ point.layer ].points;
+                    var colors = points.geometry.getAttribute( "customColor" ).array;
 
-    if ( device === "poisson_generator" )
+                    colors[ point.pointIndex ] = colorSpike[ 0 ];
+                    colors[ point.pointIndex + 1 ] = colorSpike[ 1 ];
+                    colors[ point.pointIndex + 2 ] = colorSpike[ 2 ];
+                    //points.geometry.attributes.customColor.needsUpdate = true;
+                    spikedGIDs.push( gid );
+                }
+            }
+        }
+        return spikedGIDs;
+    }
+
+    /*
+     * Maps the membrane potential to a colour.
+     */
+    mapVmToColor( Vm, minVm, maxVm )
     {
-        var col = 0xB28080
-            //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-        var map = new THREE.TextureLoader().load( "static/js/textures/poisson.png" );
-        var params = {
-            rate: 70000.0
+        var clampedVm = Vm;
+        if ( Vm < minVm )
+        {
+            clampedVm = minVm;
+        }
+        else if ( Vm > maxVm )
+        {
+            clampedVm = maxVm;
+        }
+        console.log(clampedVm)
+        var colorRG = ( clampedVm - minVm ) / ( maxVm - minVm );
+        return [ colorRG, colorRG, 1.0 ];
+    }
+
+    /*
+     * Resets colours in the box.
+     */
+    resetBoxColors()
+    {
+        for ( var device in this.deviceBoxMap )
+        {
+            for ( var i in this.deviceBoxMap[ device ].connectees )
+            {
+                this.deviceBoxMap[ device ].connectees[ i ].updateColors();
+            }
+        }
+
+    }
+
+    /*
+     * Creates an object with specs and connectees for each device.
+     */
+    makeProjections()
+    {
+        var projections = {};
+        // projections['internal'] = this.modelParameters.projections;
+        this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        for ( var device in this.deviceBoxMap )
+        {
+            projections[ device ] = {
+                specs: this.deviceBoxMap[ device ].specs,
+                connectees: []
+            };
+            for ( var i in this.deviceBoxMap[ device ].connectees )
+            {
+                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
+            }
+        }
+        return projections;
+    }
+
+    /*
+     * Sends data to the server, creating the connections.
+     */
+    makeConnections()
+    {
+        // create object to be sent
+        var projections = this.makeProjections();
+        console.log( projections );
+
+        this.$( "#infoconnected" ).html( "Connecting ..." );
+        // send selected connections
+        this.$.ajax(
+        {
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/connect",
+            data: JSON.stringify(
+            {
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
+                projections: projections
+            } ),
+            dataType: "json"
+        } );
+        this.getConnections();
+    }
+
+    /*
+     * Gets the number of connections from the server.
+     */
+    getConnections()
+    {
+        this.$.getJSON( "/connections",
+        {
+            input: "dummyData"
+        } ).done( function( data )
+        {
+            this.$( "#infoconnected" ).html( data.connections.toString() + " connection(s)" );
+        }.bind(this) );
+    }
+
+    /*
+     * Runs a simulation.
+     */
+    runSimulation()
+    {
+        var projections = this.makeProjections();
+
+        this.$( "#infoconnected" ).html( "Simulating ..." );
+
+        this.$.ajax(
+        {
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/simulate",
+            data: JSON.stringify(
+            {
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
+                projections: projections,
+                time: "1000"
+            } ),
+            dataType: "json"
+        } ).done( function( data )
+        {
+            console.log( "Simulation finished" );
+            console.log( data );
+            this.$( "#infoconnected" ).html( "Simulation finished" );
+        }.bind(this) );
+
+    }
+
+    /*
+     * Runs a simulation.
+     */
+    streamSimulate()
+    {
+        this.devicePlots.makeDevicePlot();
+
+        this.$.ajax(
+        {
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/streamSimulate",
+            data: JSON.stringify(
+            {
+                network: this.modelParameters,
+                synapses: this.synModels,
+                internalProjections: this.modelParameters.projections,
+                projections: this.makeProjections(),
+                time: "10000"
+            } ),
+            dataType: "json"
+        } ).done( function( data )
+        {
+            console.log( "Simulation started successfully" );
+        } );
+    }
+
+    /*
+     * Aborts the current simulation.
+     */
+    abortSimulation()
+    {
+        this.$.ajax(
+        {
+            url: "/abortSimulation",
+        } ).done( function( data )
+        {
+            console.log( data );
+            this.resetBoxColors();
+        }.bind(this) );
+    }
+
+    /*
+     * Saves selections to file.
+     */
+    saveSelection()
+    {
+        console.log( "##################" );
+        console.log( "    Selections" );
+        console.log( "##################" );
+        console.log( "deviceBoxMap", this.deviceBoxMap );
+        console.log( "circle_objects", this.circle_objects );
+        console.log( "selectionBoxArray", this.selectionBoxArray );
+        console.log( "##################" );
+
+        var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
+        if ( filename === null || filename === "" )
+        {
+            // User cancelled saving
+            return;
+        }
+        // create object to be saved
+        var projections = {};
+        for ( var device in this.deviceBoxMap )
+        {
+            var deviceModel = this.deviceBoxMap[ device ].specs.model;
+            projections[ device ] = {
+                specs: this.deviceBoxMap[ device ].specs,
+                connectees: []
+            };
+            for ( var i in this.deviceBoxMap[ device ].connectees )
+            {
+                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
+            }
+        }
+        console.log( "projections", projections );
+
+        var dlObject = {
+            projections: projections
+        };
+        var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject ) );
+        var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
+        dlAnchorElem.setAttribute( "href", jsonStr );
+        dlAnchorElem.setAttribute( "download", filename + ".json" );
+        dlAnchorElem.click();
+    }
+
+    /*
+     * Loads selections from a file.
+     */
+    loadSelection()
+    {
+        document.getElementById( 'uploadAnchorElem' ).click();
+    }
+
+    /*
+     * Creates the devices, selections, and connections, given a JSON with
+     * connection data.
+     */
+    loadFromJSON( textJSON )
+    {
+        var inputObj = JSON.parse( textJSON );
+        var IDsCreated = [];
+        for ( var device in inputObj.projections )
+        {
+            var deviceModel = inputObj.projections[ device ].specs.model;
+            if ( deviceModel === "poisson_generator" )
+            {
+                this.makeStimulationDevice( deviceModel );
+            }
+            else
+            {
+                this.makeRecordingDevice( deviceModel );
+            }
+
+            var target = this.circle_objects[ this.circle_objects.length - 1 ];
+
+            for ( var i in inputObj.projections[ device ].connectees )
+            {
+                var boxSpecs = inputObj.projections[ device ].connectees[ i ];
+
+                // if not created yet, the box must be created
+                if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
+                {
+                    IDsCreated.push( boxSpecs.uniqueID );
+                    var box = new this.SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                    box.uniqueID = boxSpecs.uniqueID;
+
+                    // update our uniqueID count only if box.uniqueID is greater
+                    this.uniqueID = ( boxSpecs.uniqueID > this.uniqueID ) ? boxSpecs.uniqueID : this.uniqueID;
+
+                    box.layerName = boxSpecs.name;
+                    box.selectedNeuronType = boxSpecs.neuronType;
+                    box.selectedSynModel = boxSpecs.synModel;
+
+                    this.selectionBoxArray.push( box );
+                    box.makeBox();
+                }
+                // if the box is already created, it must be found
+                else
+                {
+                    for ( var i in this.selectionBoxArray )
+                    {
+                        if ( this.selectionBoxArray[ i ].uniqueID === boxSpecs.uniqueID )
+                        {
+                            var box = this.selectionBoxArray[ i ];
+                            break;
+                        }
+                    }
+                }
+
+                box.makeLine();
+                var radius = target.geometry.boundingSphere.radius;
+                box.setLineTarget( target.name );
+                box.lineToDevice( target.position, radius, target.name );
+
+                box.updateColors();
+                this.deviceBoxMap[ device ].connectees.push( box );
+            }
         }
     }
-    else if ( device === "ac_generator" )
+
+    /*
+     * Callback function for file upload when loading a JSON file.
+     */
+    handleFileUpload( event )
     {
-        var col = 0xc9725e
-            //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-        var map = new THREE.TextureLoader().load( "static/js/textures/sinus.png" );
-        var params = {'amplitude': 50., 'frequency': 35.}
+        console.log( "file uploaded" )
+        // TODO: need some checks here
+        var fr = new FileReader();
+        var result;
+        fr.onload = function( e )
+        {
+            this.loadFromJSON( fr.result );
+        }.bind(this);
+        fr.readAsText( event.target.files[ 0 ] );
     }
 
-    makeDevice( device, col, map, params );
+    /*
+     * Creates a device, with given colour, texture map, and optional parameters.
+     */
+    makeDevice( device, col, map, params = {} )
+    {
+        var geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
+        geometry.computeBoundingSphere(); // needed for loading
+        var material = new this.THREE.MeshBasicMaterial(
+        {
+            color: col,
+            map: map
+        } );
+        var circle = new this.THREE.Mesh( geometry, material );
+        var deviceName = device + "_" + String( this.deviceCounter++ );
+        circle.name = deviceName;
+
+        circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
+        this.newDeviceIndex = ( this.newDeviceIndex + 1 === this.newDevicePos.length ) ? 0 : ++this.newDeviceIndex;
+
+        this.scene.add( circle );
+        this.circle_objects.push( circle );
+
+        this.controls.deviceInFocus = circle;
+        this.controls.makeOutline( this.controls.deviceInFocus );
+
+        this.deviceBoxMap[ deviceName ] = {
+            specs:
+            {
+                model: device,
+                params: params
+            },
+            connectees: []
+        };
+    }
+
+    /*
+     * Creates a stimulation device.
+     */
+    makeStimulationDevice( device )
+    {
+        console.log( "making stimulation device of type", device )
+
+        if ( device === "poisson_generator" )
+        {
+            var col = 0xB28080
+                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+            var params = {
+                rate: 70000.0
+            }
+        }
+        else if ( device === "ac_generator" )
+        {
+            var col = 0xc9725e
+                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/sinus.png" );
+            var params = {'amplitude': 50., 'frequency': 35.}
+        }
+        this.makeDevice( device, col, map, params );
+    }
+
+    /*
+     * Creates a recording device.
+     */
+    makeRecordingDevice( device )
+    {
+        console.log( "making recording device of type", device )
+        if ( device === "voltmeter" )
+        {
+            var col = 0xBDB280;
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
+        }
+        else if ( device === "spike_detector" )
+        {
+            var col = 0x809980;
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
+        }
+        else
+        {
+            var col = 0xBDB280;
+            var map = new this.THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
+        }
+
+        this.makeDevice( device, col, map );
+    }
+
+    render()
+    {
+        requestAnimationFrame( this.render.bind(this) );
+
+        this.renderer.clear();
+        this.renderer.render( this.outlineScene, this.camera );
+        this.renderer.render( this.scene, this.camera );
+
+        if ( !this.layerNamesMade )
+        {
+            make_layer_names();
+            this.layerNamesMade = true;
+        }
+    }
 }
 
-/*
- * Creates a recording device.
- */
-function makeRecordingDevice( device )
+//  Try exporting App for testing
+try
 {
-    console.log( "making recording device of type", device )
-    if ( device === "voltmeter" )
-    {
-        var col = 0xBDB280;
-        var map = new THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
-    }
-    else if ( device === "spike_detector" )
-    {
-        var col = 0x809980;
-        var map = new THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
-    }
-    else
-    {
-        var col = 0xBDB280;
-        var map = new THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
-    }
-
-    makeDevice( device, col, map );
+    module.exports = App;
 }
-
-function render()
+catch(err)
 {
-    requestAnimationFrame( render );
-
-    renderer.clear();
-    renderer.render( outlineScene, camera );
-    renderer.render( scene, camera );
-
-    if ( !layerNamesMade )
-    {
-        make_layer_names();
-        layerNamesMade = true;
-    }
 }

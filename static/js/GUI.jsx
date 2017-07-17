@@ -1,16 +1,22 @@
+try  // try to import React and ReactDOM for testing
+{
+  var React = require('react');
+  var ReactDOM = require('react-dom');
+}
+catch(err)
+{}
+
 class GuiButtons extends React.Component{
     constructor() {
       super();
       this.state = {
-        //devices: [],
-        //newDevice: false
         neuronModels: [''],
         synapseModels: ['','']
       }
     }
 
     componentWillMount() {
-      synapseNeuronModelCallback.callback = (data) => {
+      app.synapseNeuronModelCallback.callback = (data) => {
         // `this` refers to our react component
         this.setState({neuronModels: data[0], synapseModels: data[1]});     
       };
@@ -32,7 +38,8 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Synapse model
               </div>
-              <DropDown items={this.state.synapseModels.map(function(model){return ({value: model[1], text: model[1]});})} id='synapseModel' />
+              <DropDown items={this.state.synapseModels.map(function(model){return ({value: model[1], text: model[1]});})}
+                        id='synapseModel' />
             </div>
 
             <div id="gui-box">
@@ -40,9 +47,9 @@ class GuiButtons extends React.Component{
                     Mask shape
                 </div>
                 <SelectionsButton button_class ='selectionsButton'
-                button_id='rectangleButton' text="&#x25FC;" function={function () {makeRectangularShape();}} />
+                button_id='rectangleButton' text="&#x25FC;" function={function () {app.makeRectangularShape();}} />
                 <SelectionsButton button_class ='selectionsButton'
-                button_id='ellipticalButton' text="&#x2b2c;" function={function () {makeEllipticalShape();}} />
+                button_id='ellipticalButton' text="&#x2b2c;" function={function () {app.makeEllipticalShape();}} />
             </div>
 
             <div id="gui-box">
@@ -50,12 +57,12 @@ class GuiButtons extends React.Component{
                     Stimulation device
                 </div>
                 <SelectionsButton text='poissonGenerator'
-                    function={function () {makeStimulationDevice("poisson_generator");}}
+                    function={function () {app.makeStimulationDevice("poisson_generator");}}
                     button_class ='button pill big'
                     button_id='poissonButton' />
                 <br/>
                 <SelectionsButton text=' ac Generator'
-                    function={function () {makeStimulationDevice("ac_generator");}}
+                    function={function () {app.makeStimulationDevice("ac_generator");}}
                     button_class ='button pill big'
                     button_id='acButton' />
             </div>
@@ -65,12 +72,12 @@ class GuiButtons extends React.Component{
                     Recording device
                 </div>
                 <SelectionsButton text='voltmeter' 
-                    function={function () {makeRecordingDevice("voltmeter");}}
+                    function={function () {app.makeRecordingDevice("voltmeter");}}
                     button_class ='button pill big'
                     button_id='voltmeterButton' />
                 <br/>
                 <SelectionsButton text='spikeDetector'
-                    function={function () {makeRecordingDevice("spike_detector");}}
+                    function={function () {app.makeRecordingDevice("spike_detector");}}
                     button_class ='button pill big'
                     button_id='spikeDetectorButton' />
             </div>
@@ -81,10 +88,10 @@ class GuiButtons extends React.Component{
                 </div>
                 <div className="button-group">
                     <SelectionsButton text='Connect'
-                                      function={makeConnections} button_class ='button'
+                                      function={app.makeConnections.bind(app)} button_class ='button'
                                       button_id='getSelectionsButton'/>
                     <SelectionsButton text='Simulate'
-                                      function={runSimulation} button_class ='button'
+                                      function={app.runSimulation.bind(app)} button_class ='button'
                                       button_id='runSimulationButton'/>
                 </div>
                 <br/><a>------------</a><br/>
@@ -92,19 +99,19 @@ class GuiButtons extends React.Component{
                     <a id="downloadAnchorElem" style={{display: "none"}}/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Save'
-                                      function={saveSelection} button_class ='button'
+                                      function={app.saveSelection.bind(app)} button_class ='button'
                                       button_id='saveSelectionButton'/>
                     <SelectionsButton text='Load'
-                                      function={loadSelection} button_class ='button'
+                                      function={app.loadSelection.bind(app)} button_class ='button'
                                       button_id='loadSelectionButton'/>
                 </div>
                 <br/><a>------------</a><br/>
                 <div className="button-group">
                     <SelectionsButton text='Stream'
-                                      function={streamSimulate} button_class ='button'
+                                      function={app.streamSimulate.bind(app)} button_class ='button'
                                       button_id='streamButton'/>
                     <SelectionsButton text='Abort'
-                                      function={abortSimulation} button_class ='button danger'
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger'
                                       button_id='streamButton'/>
                 </div>
             </div>
@@ -118,6 +125,7 @@ class DropDown extends React.Component {
     constructor(props) {
       super(props);
       //this.items = props.items;
+      this.state = {};
       if (props.items.length != 0)
       {
         this.state = { 
@@ -144,7 +152,7 @@ class DropDown extends React.Component {
       if (this.state.items.length === 1)
       {
         this.setState({
-          selectedOption: this.state.items[this.state.items.last].value
+          selectedOption: this.props.items[0].value
         });
       } else
       {
@@ -187,9 +195,26 @@ class SelectionsButton extends React.Component {
   }
 }
 
-var gui = ReactDOM.render(
-    <GuiButtons/>,
-    document.getElementById('gui_body')
-);
+var makeGUI = function()
+{
+  var gui = ReactDOM.render(
+      <GuiButtons/>,
+      document.getElementById('gui_body')
+  );
 
-document.getElementById('uploadAnchorElem').addEventListener('change', handleFileUpload, false);
+  document.getElementById('uploadAnchorElem').addEventListener('change', app.handleFileUpload.bind(app), false);
+}
+
+// Try exporting GUI for testing
+try
+{
+    module.exports = {
+      GuiButtons: GuiButtons,
+      DropDown: DropDown,
+      SelectionsButton: SelectionsButton,
+      makeGUI: makeGUI
+      };
+}
+catch(err)
+{
+}

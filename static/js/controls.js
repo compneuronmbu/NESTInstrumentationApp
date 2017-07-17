@@ -8,10 +8,10 @@ class Controls
     constructor( drag_objects, camera, domElement )
     {
         this.drag_objects = drag_objects;
-        this.camera = camera;
+        this.camera = camera;  // TODO: unused
         this.domElement = domElement;
 
-        this.marquee = $( "#select-square" );
+        this.marquee = app.$( "#select-square" );
 
         this.mouseDown = false;
         this.shiftDown = false;
@@ -20,7 +20,7 @@ class Controls
 
         this.plane;
         this.raycaster;
-        this.intersection = new THREE.Vector3();
+        this.intersection = new app.THREE.Vector3();
 
         this.boxInFocus;
         this.resizeSideInFocus;
@@ -56,15 +56,15 @@ class Controls
             height: 0,
             borderRadius: 0
         } );
-        mouseDownCoords = {
+        app.mouseDownCoords = {
             x: 0,
             y: 0
         };
-        mRelPos = {
+        app.mRelPos = {
             x: 0,
             y: 0
         };
-        layerSelected = "";
+        app.layerSelected = "";
     }
 
     /*
@@ -73,13 +73,13 @@ class Controls
     makeOutline( focusObject )
     {
         this.removeOutline();
-        this.outlineMesh = new THREE.Mesh( focusObject.geometry, outlineMaterial );
+        this.outlineMesh = new app.THREE.Mesh( focusObject.geometry, app.outlineMaterial );
         this.outlineMesh.material.depthWrite = false;
         //this.outlineMesh.quaternion = focusObject.quaternion;
         this.outlineMesh.position.copy( focusObject.position );
-        var scale = new THREE.Vector3( 1.08, 1.08, 1.08 );
+        var scale = new app.THREE.Vector3( 1.08, 1.08, 1.08 );
         this.outlineMesh.scale.copy( scale );
-        outlineScene.add( this.outlineMesh );
+        app.outlineScene.add( this.outlineMesh );
     }
 
     /*
@@ -87,7 +87,7 @@ class Controls
      */
     removeOutline()
     {
-        outlineScene.remove( this.outlineMesh );
+        app.outlineScene.remove( this.outlineMesh );
     }
 
     /*
@@ -98,14 +98,14 @@ class Controls
     {
         // ############ Send points to server for GID feedback ############
         // Send network specs to the server which makes the network
-        $.ajax(
+        app.$.ajax(
         {
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/selector",
             data: JSON.stringify(
             {
-                network: modelParameters,
+                network: app.modelParameters,
                 info: this.boxInFocus.getSelectionInfo()
             } ),
             success: function( data )
@@ -122,13 +122,13 @@ class Controls
      */
     getMouseIntersecting( mouseX, mouseY, objects )
     {
-        this.raycaster = new THREE.Raycaster();
+        this.raycaster = new app.THREE.Raycaster();
         var rect = this.domElement.getBoundingClientRect();
-        var mouse = new THREE.Vector2();
+        var mouse = new app.THREE.Vector2();
         mouse.x = ( ( mouseX - rect.left ) / rect.width ) * 2 - 1;
         mouse.y = -( ( mouseY - rect.top ) / rect.height ) * 2 + 1;
 
-        this.raycaster.setFromCamera( mouse, this.camera );
+        this.raycaster.setFromCamera( mouse, app.camera );
         return this.raycaster.intersectObjects( objects );
     }
 
@@ -138,8 +138,8 @@ class Controls
      */
     selectResizePoints()
     {
-        var pointIntersects = this.getMouseIntersecting( mouseDownCoords.x,
-            mouseDownCoords.y,
+        var pointIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+            app.mouseDownCoords.y,
             this.boxInFocus.resizePoints );
 
         if ( pointIntersects.length > 0 )
@@ -163,10 +163,10 @@ class Controls
     {
         this.shiftDown = true;
 
-        this.plane = new THREE.Plane();
+        this.plane = new app.THREE.Plane();
 
-        var intersects = this.getMouseIntersecting( mouseDownCoords.x,
-            mouseDownCoords.y,
+        var intersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+            app.mouseDownCoords.y,
             this.drag_objects )
 
         if ( intersects.length > 0 )
@@ -185,15 +185,16 @@ class Controls
     selectBox()
     {
         var mouseDownCorrected = {
-            x: mouseDownCoords.x,
-            y: renderer.getSize().height - mouseDownCoords.y
+            x: app.mouseDownCoords.x,
+            y: app.renderer.getSize().height - app.mouseDownCoords.y
         };
 
-        for ( var i in selectionBoxArray )
+        for ( var i in app.selectionBoxArray )
         {
-            if ( selectionBoxArray[ i ].withinBounds( mouseDownCorrected, selectionBoxArray[ i ] ) )
+            console.log(app.selectionBoxArray[ i ]);
+            if ( app.selectionBoxArray[ i ].withinBounds( mouseDownCorrected, app.selectionBoxArray[ i ] ) )
             {
-                this.boxInFocus = selectionBoxArray[ i ];
+                this.boxInFocus = app.selectionBoxArray[ i ];
 
                 if ( this.boxInFocus.curveObject === undefined )
                 {
@@ -216,10 +217,10 @@ class Controls
      */
     updateMarquee( mouseX, mouseY )
     {
-        mRelPos.x = mouseX - mouseDownCoords.x;
-        mRelPos.y = mouseY - mouseDownCoords.y;
+        app.mRelPos.x = mouseX - app.mouseDownCoords.x;
+        app.mRelPos.y = mouseY - app.mouseDownCoords.y;
         this.marquee.fadeIn();
-        var selectedShape = getSelectedShape();
+        var selectedShape = app.getSelectedShape();
 
         if ( selectedShape == "elliptical" )
         {
@@ -230,10 +231,10 @@ class Controls
         }
         this.marquee.css(
         {
-            left: Math.min( event.clientX, mouseDownCoords.x ) + 'px',
-            width: Math.abs( mRelPos.x ) + 'px',
-            top: Math.min( event.clientY, mouseDownCoords.y ) + 'px',
-            height: Math.abs( mRelPos.y ) + 'px'
+            left: Math.min( mouseX, app.mouseDownCoords.x ) + 'px',
+            width: Math.abs( app.mRelPos.x ) + 'px',
+            top: Math.min( mouseY, app.mouseDownCoords.y ) + 'px',
+            height: Math.abs( app.mRelPos.y ) + 'px'
         } );
     }
 
@@ -247,16 +248,16 @@ class Controls
         {
             case "lowerLeft":
                 this.boxInFocus.ll.x = mouseX;
-                this.boxInFocus.ll.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "lowerMiddle":
-                this.boxInFocus.ll.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "lowerRight":
                 this.boxInFocus.ur.x = mouseX;
-                this.boxInFocus.ll.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "middleRight":
@@ -265,16 +266,16 @@ class Controls
                 break;
             case "upperRight":
                 this.boxInFocus.ur.x = mouseX;
-                this.boxInFocus.ur.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "upperMiddle":
-                this.boxInFocus.ur.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "upperLeft":
                 this.boxInFocus.ll.x = mouseX;
-                this.boxInFocus.ur.y = renderer.getSize().height - mouseY;
+                this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
                 this.boxInFocus.updateBox();
                 break;
             case "middleLeft":
@@ -292,7 +293,7 @@ class Controls
      */
     updateLine( mouseX, mouseY )
     {
-        var relScreenPos = toObjectCoordinates(
+        var relScreenPos = app.toObjectCoordinates(
         {
             x: mouseX,
             y: mouseY
@@ -310,9 +311,10 @@ class Controls
      */
     updateDevicePosition( mouseX, mouseY )
     {
+        this.raycaster = new app.THREE.Raycaster();
         if ( this.raycaster.ray.intersectPlane( this.plane, this.intersection ) )
         {
-            var relScreenPos = toObjectCoordinates(
+            var relScreenPos = app.toObjectCoordinates(
             {
                 x: mouseX,
                 y: mouseY
@@ -321,9 +323,9 @@ class Controls
             this.makeOutline( this.deviceInFocus );
             var deviceName = this.deviceInFocus.name
             var radius = this.deviceInFocus.geometry.boundingSphere.radius;
-            for ( var i in deviceBoxMap[ deviceName ].connectees )
+            for ( var i in app.deviceBoxMap[ deviceName ].connectees )
             {
-                deviceBoxMap[ deviceName ].connectees[ i ].updateLineEnd(
+                app.deviceBoxMap[ deviceName ].connectees[ i ].updateLineEnd(
                 {
                     x: this.deviceInFocus.position.x,
                     y: this.deviceInFocus.position.y
@@ -339,35 +341,35 @@ class Controls
     makeSelectionBox()
     {
         var mouseDownCorrected = {
-            x: mouseDownCoords.x,
-            y: renderer.getSize().height - mouseDownCoords.y
+            x: app.mouseDownCoords.x,
+            y: app.renderer.getSize().height - app.mouseDownCoords.y
         };
 
         var mouseUpCoords = {
-            x: mRelPos.x + mouseDownCorrected.x,
-            y: -mRelPos.y + mouseDownCorrected.y
+            x: app.mRelPos.x + mouseDownCorrected.x,
+            y: -app.mRelPos.y + mouseDownCorrected.y
         };
 
-        var bounds = findBounds( mouseUpCoords, mouseDownCorrected );
+        var bounds = app.findBounds( mouseUpCoords, mouseDownCorrected );
 
-        this.boxInFocus = new SelectionBox( bounds.ll, bounds.ur, getSelectedShape() );
-        this.boxInFocus.uniqueID = uniqueID++;
-        layerSelected = this.boxInFocus.layerName;
+        this.boxInFocus = new app.SelectionBox( bounds.ll, bounds.ur, app.getSelectedShape() );
+        this.boxInFocus.uniqueID = app.uniqueID++;
+        app.layerSelected = this.boxInFocus.layerName;
 
         // If we didn't click on a layer, it will cause problems further down
-        if ( layerSelected === "" )
+        if ( app.layerSelected === "" )
         {
             this.resetButtons();
             return;
         }
 
-        selectionBoxArray.push( this.boxInFocus );
+        app.selectionBoxArray.push( this.boxInFocus );
 
         this.boxInFocus.makeBox();
         this.boxInFocus.makeSelectionPoints();
 
-        this.boxInFocus.selectedNeuronType = getSelectedDropDown( "neuronType" );
-        this.boxInFocus.selectedSynModel = getSelectedDropDown( "synapseModel" );
+        this.boxInFocus.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        this.boxInFocus.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
 
         this.serverPrintGids();
     }
@@ -403,8 +405,8 @@ class Controls
     {
         console.log( "make connection" );
 
-        var intersects = this.getMouseIntersecting( event.clientX,
-            event.clientY,
+        var intersects = this.getMouseIntersecting( mouseX,
+            mouseY,
             this.drag_objects )
         if ( intersects.length > 0 )
         {
@@ -413,7 +415,7 @@ class Controls
             this.boxInFocus.setLineTarget( intersect_target.name );
             this.boxInFocus.lineToDevice( intersect_target.position, radius, intersect_target.name )
 
-            deviceBoxMap[ intersect_target.name ].connectees.push( this.boxInFocus );
+            app.deviceBoxMap[ intersect_target.name ].connectees.push( this.boxInFocus );
         }
         else
         {
@@ -430,17 +432,17 @@ class Controls
         this.boxInFocus.removeBox();
         this.boxInFocus.removeLines();
 
-        var index = selectionBoxArray.indexOf( this.boxInFocus );
+        var index = app.selectionBoxArray.indexOf( this.boxInFocus );
         if ( index > -1 )
         {
-            selectionBoxArray.splice( index, 1 );
+            app.selectionBoxArray.splice( index, 1 );
         }
-        for ( var device in deviceBoxMap )
+        for ( var device in app.deviceBoxMap )
         {
-            index = deviceBoxMap[ device ].connectees.indexOf( this.boxInFocus );
+            index = app.deviceBoxMap[ device ].connectees.indexOf( this.boxInFocus );
             if ( index > -1 )
             {
-                deviceBoxMap[ device ].connectees.splice( index, 1 );
+                app.deviceBoxMap[ device ].connectees.splice( index, 1 );
             }
         }
         this.boxInFocus = undefined;
@@ -453,21 +455,21 @@ class Controls
     {
         // remove connection lines
         var deviceName = this.deviceInFocus.name;
-        for ( var i in deviceBoxMap[ deviceName ].connectees )
+        for ( var i in app.deviceBoxMap[ deviceName ].connectees )
         {
-            deviceBoxMap[ deviceName ].connectees[ i ].removeLines( deviceName );
+            app.deviceBoxMap[ deviceName ].connectees[ i ].removeLines( deviceName );
         }
         this.removeOutline()
-        for ( i in circle_objects )
+        for ( var i in app.circle_objects )
         {
-            if ( circle_objects[ i ].name === deviceName )
+            if ( app.circle_objects[ i ].name === deviceName )
             {
-                scene.remove( circle_objects[ i ] );
-                circle_objects.splice( i, 1 );
+                app.scene.remove( app.circle_objects[ i ] );
+                app.circle_objects.splice( i, 1 );
             }
         }
-        delete deviceBoxMap[ deviceName ].connectees;
-        delete deviceBoxMap[ deviceName ];
+        delete app.deviceBoxMap[ deviceName ].connectees;
+        delete app.deviceBoxMap[ deviceName ];
         this.deviceInFocus = undefined;
     }
 
@@ -482,8 +484,8 @@ class Controls
             event.preventDefault();
 
             this.mouseDown = true;
-            mouseDownCoords.x = event.clientX;
-            mouseDownCoords.y = event.clientY;
+            app.mouseDownCoords.x = event.clientX;
+            app.mouseDownCoords.y = event.clientY;
 
             this.deviceInFocus = undefined;
             this.removeOutline();
@@ -600,8 +602,17 @@ class Controls
      */
     onWindowResize()
     {
-        this.camera.aspect = container.clientWidth / container.clientHeight;
-        this.camera.updateProjectionMatrix();
-        renderer.setSize( container.clientWidth, container.clientHeight );
+        app.camera.aspect = app.container.clientWidth / app.container.clientHeight;
+        app.camera.updateProjectionMatrix();
+        app.renderer.setSize( app.container.clientWidth, app.container.clientHeight );
     }
 };
+
+// Try exporting Controls for testing
+try
+{
+    module.exports = Controls;
+}
+catch(err)
+{
+}

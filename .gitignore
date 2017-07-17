@@ -92,3 +92,9 @@ ENV/
 
 # Saved selections
 *.pkl
+
+# yarn packages
+node_modules/
+
+# test coverage files
+coverage/

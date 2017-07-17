@@ -27,6 +27,9 @@ class NESTInterface(object):
         if synapses:
             self.make_synapse_models()
 
+        # nest.set_verbosity("M_ERROR")
+        nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
     def reset_kernel(self):
         nest.ResetKernel()
 
@@ -213,10 +216,6 @@ class NESTInterface(object):
 
     def run(self, t, return_events=False):
         # nest.SetKernelStatus({'print_time': True})
-
-        # TODO: this should be moved
-        # nest.set_verbosity("M_ERROR")
-        nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
 
         nest.Run(t)
 
