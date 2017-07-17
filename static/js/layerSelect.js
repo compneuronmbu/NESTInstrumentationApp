@@ -39,6 +39,7 @@ class App
         this.modelParameters;
         this.neuronModels = [ 'All' ];
         this.synModels = [];
+        this.synapseNeuronModelCallback = {callback: function() {}};
 
         this.deviceCounter = 1;
 
@@ -69,7 +70,12 @@ class App
         this.initTHREEScene();
         this.initTHREERenderer();
         this.initContainer();
-        this.initParameters();
+
+        // Button that decides which model we will use
+        document.getElementById('startButtons').addEventListener('click', this.onLayerModelClicked.bind( this ), false);
+        // If we load model
+        document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind( this ), false);
+        //this.initParameters();
 
         this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
 
@@ -110,6 +116,79 @@ class App
     {
         document.body.appendChild( this.container );
         this.container.appendChild( this.renderer.domElement );
+    }
+
+    /*
+    * Finds out which of the model buttons we chose, and sends infomation to Brain, which
+    * then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
+    */
+    onLayerModelClicked(evt) {
+        var target = evt.target;
+        var JSONstring;
+
+        if ( target.id === 'brunel' )
+        {
+            console.log("Brunel!");
+            JSONstring = "/static/examples/brunel_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+        }
+        else if ( target.id === 'hillTononi' )
+        {
+            console.log("Hill-Tononi!");
+            JSONstring = "/static/examples/hill_tononi_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+        }
+        else if ( target.id === 'loadOwn' )
+        {
+            console.log("Custom made model!");
+            // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
+            // handles the file upload and subsequent allocation to Brain, which displays the model.
+            document.getElementById( 'loadLayer' ).click();
+
+        }
+        else if( target.id === 'loadLayer' )
+        {
+            return;
+        }
+
+        this.$.getJSON( JSONstring, function( data )
+        {
+            this.modelParameters = data;
+            Brain( this.camera, this.scene );
+        }.bind(this) );
+        $("#startButtons").html( "Reload page to display model buttons again." );
+    }
+
+    /*
+    * Function to handle file upload if user has chosen its own model.
+    */
+    handleModelFileUpload (event) {
+        console.log(event.target.files)
+        //var file = document.getElementById("loadLayer").files;
+        var file = event.target.files;
+
+        if (file.length <= 0) {
+            return false;
+        }
+
+        var fr = new FileReader();
+
+        fr.onload = function(e) {
+            try{
+                var result = JSON.parse(e.target.result);
+                this.modelParameters = result;
+                Brain( this.camera, this.scene );
+                // Hide buttons after clicking on it.
+                this.$("#modelButtons").css( { display: "none" } );
+                this.$("#startButtons").html( "Reload page to display model buttons again." );
+            } catch(e) {
+                window.alert("Please upload a correct JSON file");
+            }
+        }.bind(this)
+
+        fr.readAsText(file.item(0));
     }
 
     initParameters()

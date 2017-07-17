@@ -10,9 +10,16 @@ class GuiButtons extends React.Component{
     constructor() {
       super();
       this.state = {
-        devices: [],
-        newDevice: false
+        neuronModels: [''],
+        synapseModels: ['','']
       }
+    }
+
+    componentWillMount() {
+      app.synapseNeuronModelCallback.callback = (data) => {
+        // `this` refers to our react component
+        this.setState({neuronModels: data[0], synapseModels: data[1]});     
+      };
     }
 
     render() {
@@ -23,8 +30,7 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Neuron type
               </div>
-              <DropDown items={
-                app.neuronModels.map(function(model){return ({value: model, text: model});})}
+              <DropDown items={this.state.neuronModels.map(function(model){return ({value: model, text: model});})}
                         id='neuronType' />
             </div>
 
@@ -32,8 +38,7 @@ class GuiButtons extends React.Component{
               <div id="gui-box-title">
                 Synapse model
               </div>
-              <DropDown items={
-                app.synModels.map(function(model){return ({value: model[1], text: model[1]});})}
+              <DropDown items={this.state.synapseModels.map(function(model){return ({value: model[1], text: model[1]});})}
                         id='synapseModel' />
             </div>
 

@@ -49,10 +49,19 @@ test('Test initContainer', () => {
         '        </div>' +
         '        <div id="select-square"></div>' +
         '        <div id="spikeTrain"></div>' +
+        '</div>' +
+        '<div id="startButtons">' +
+        '    Press one of the buttons below to choose layer! </br>' +
+        '    <div class="button-group" id="modelButtons>' +
+        '        <button class ="button" id="brunel">Brunel</button>' +
+        '        <button class ="button" id="hillTononi">Hill-Tononi</button>' +
+        '        <button class ="button" id="loadOwn">Load your own</button>' +
+        '        <input id="loadLayer" type="file" value="Import" style="display: none;"/>' +
         '    </div>' +
-        '    <div id="gui_body">' +
-        '        <!-- Contents will be filled by React. -->' +
-        '    </div>';
+        '</div>' +
+        '<div id="gui_body">' +
+        '    <!-- Contents will be filled by React. -->' +
+        '</div>';
     console.error = jest.fn();  // suppress errors ("CanvasRenderer has been moved..")
     app.THREE = require('three');  // import THREE into the app
     app.renderer = new app.THREE.CanvasRenderer();

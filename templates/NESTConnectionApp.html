@@ -20,6 +20,16 @@
             <div id="spikeTrain"></div>
         </div>
 
+        <div id='startButtons'>
+            Press one of the buttons below to choose layer! </br>
+            <div class="button-group" id='modelButtons'>
+                <button class ='button' id='brunel'>Brunel</button>
+                <button class ='button' id='hillTononi'>Hill-Tononi</button>
+                <button class ='button' id='loadOwn'>Load your own</button>
+                <input id="loadLayer" type="file" value="Import" style="display: none;"/>
+            </div>
+        </div>
+
 
         <div id="gui_body">
             <!-- Contents will be filled by React. -->
@@ -30,14 +40,13 @@
         <script type='text/javascript' src="static/js/lib/three/build/three.js"></script>
         <script type='text/javascript' src="static/js/lib/jquery/dist/jquery.min.js"></script>
         <script type='text/javascript' src="static/js/old_lib/Detector.js"></script>
-
         <script type='text/javascript' src="static/js/lib/d3/build/d3.min.js"></script>
-        <script type='text/javascript' src="static/js/devicePlots.js"></script>
 
         <script type='text/javascript' src="static/js/lib/react/dist/react.js"></script>
         <script type='text/javascript' src="static/js/lib/react-dom/dist/react-dom.js"></script>
         <script type='text/javascript' src="static/js/lib/babel-standalone/babel.js"></script>
 
+        <script type='text/javascript' src="static/js/devicePlots.js"></script>
 		<script type='text/javascript' src="static/js/makeBrainRepresentation.js"></script>
         <script type='text/javascript' src="static/js/controls.js"></script>
         <script type='text/javascript' src="static/js/selectionBox.js"></script>

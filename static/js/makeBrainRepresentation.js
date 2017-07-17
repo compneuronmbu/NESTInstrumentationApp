@@ -279,6 +279,9 @@ var Brain = function( camera, scene )
                 app.neuronModels.push( model );
             }
         }
+
+        console.log("makeModelNameLists")
+        app.synapseNeuronModelCallback.callback([app.neuronModels, app.synModels]);
     }
 
     initLayers();

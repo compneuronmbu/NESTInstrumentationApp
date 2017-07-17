@@ -22,6 +22,17 @@ body {
   font-weight: bold;
 }
 
+#startButtons {
+  position: absolute;
+  width: 100;
+  height: 100;
+  top: 10px;
+  left: 10px;
+  margin:0px;
+  padding:0px;
+  color: #ffffff
+}
+
 #gui_body {
   float: right;
   width: var(--gui_width);
