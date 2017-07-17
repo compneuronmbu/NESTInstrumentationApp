@@ -74,7 +74,7 @@ class App
         // Button that decides which model we will use
         document.getElementById('startButtons').addEventListener('click', this.onLayerModelClicked.bind( this ), false);
         // If we load model
-        document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind(this), false);
+        document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind( this ), false);
         //this.initParameters();
 
         this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
