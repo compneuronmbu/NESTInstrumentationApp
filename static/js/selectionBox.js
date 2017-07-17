@@ -20,6 +20,12 @@ class SelectionBox
 
         this.box;
         this.resizePoints = [];
+        this.rotationPoints = [];
+
+        // SelectedFirstTime is used to turn the elliptical masks. If we press on an
+        // elliptical mask two times, we should get point that let us turn the mask the
+        // second time.
+        this.selectedFirstTime = false;
 
         this.currentCurve;
         this.currentCurveObject;
@@ -535,9 +541,6 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        var resizeGeometry = new app.THREE.BufferGeometry();
-        var resizePos = new Float32Array( 24 );
-
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
         var posArray = [
@@ -595,19 +598,19 @@ class SelectionBox
 
         for ( var i = 0; i < posArray.length; ++i )
         {
-            this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] ) );
+            this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
         }
     }
 
     /*
-     * Make a single resize point and add it to the scene.
+     * Make a single resize or rotation point and add it to the scene.
      */
-    makePoint( pos, name )
+    makePoint( pos, name, col )
     {
         var geometry = new app.THREE.CircleBufferGeometry( 0.009, 32 );
         var material = new app.THREE.MeshBasicMaterial(
         {
-            color: 0xcccccc
+            color: col
         } );
         var point = new app.THREE.Mesh( geometry, material );
         point.name = name;
@@ -619,7 +622,7 @@ class SelectionBox
     }
 
     /*
-     * Remove all resize points.
+     * Remove all resize and rotation points.
      */
     removePoints()
     {
@@ -628,6 +631,58 @@ class SelectionBox
             app.scene.remove( this.resizePoints[ i ] );
         }
         this.resizePoints = [];
+
+        for ( var i = 0; i < this.rotationPoints.length; ++i )
+        {
+            app.scene.remove( this.rotationPoints[ i ] );
+        }
+        this.rotationPoints = [];
+    }
+
+    /*
+     * Create points that can be used to rotate the elliptical box.
+     */
+    makeRotationPoints()
+    {
+        if( this.selectedShape == 'rectangular' )
+        {
+            this.makeSelectionPoints();
+            // We currently only allow elliptical masks to be rotated.
+            return;
+        }
+
+        var selectionBounds = this.getSelectionBounds();
+
+        // We have to move the points a tiny bit towards the camera to make it 
+        // appear over everything else.
+        // Rotation point in every corner.
+        var posArray = [
+        {
+            x: selectionBounds.ll.x,
+            y: selectionBounds.ll.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ur.x,
+            y: selectionBounds.ll.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ur.x,
+            y: selectionBounds.ur.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ll.x,
+            y: selectionBounds.ur.y,
+            z: 0.0001
+        } ];
+
+        for ( var i = 0; i < posArray.length; ++i )
+        {
+            // 0xffa726 is an orange color.
+            this.rotationPoints.push( this.makePoint( posArray[ i ], "rotationPoint" , 0xffa726 ) );
+        }
     }
 
     /*

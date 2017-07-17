@@ -1,19 +1,18 @@
 /*
- *
  * Controls
  *
  */
 class Controls
 {
-    constructor( drag_objects, camera, domElement )
+    constructor( drag_objects, domElement )
     {
         this.drag_objects = drag_objects;
-        this.camera = camera;  // TODO: unused
         this.domElement = domElement;
 
         this.marquee = app.$( "#select-square" );
 
         this.mouseDown = false;
+        this.mouseDownFirstTime = false;
         this.shiftDown = false;
         this.make_selection_box = false;
         this.make_connection = false;
@@ -204,11 +203,31 @@ class Controls
                 }
 
                 // Make resize points
-                this.boxInFocus.makeSelectionPoints();
+                //this.boxInFocus.makeSelectionPoints();
+
+                // SelectedFirstTime is used to turn the elliptical masks.
+                if( this.boxInFocus.selectedFirstTime )
+                {
+                    console.log( "Selected for second time!" );
+                    this.boxInFocus.makeRotationPoints();
+                    // If we have already pressed the selectionBox once, we have to reset the tracker.
+                    this.boxInFocus.selectedFirstTime = false;
+                }
+                else
+                {
+                    // Make resize points
+                    this.boxInFocus.makeSelectionPoints();
+                    this.boxInFocus.selectedFirstTime = true;
+                }
 
                 return;
             }
+            // We have to reset selectedFirstTime for all the other selectionBoxes
+            // because if we choose a new box, we don't want selectedFirst Time to be true
+            // the first time we go back to the original selectionBox
+            app.selectionBoxArray[ i ].selectedFirstTime = false;
         }
+
         this.make_selection_box = true;
     }
 
@@ -372,6 +391,8 @@ class Controls
         this.boxInFocus.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
 
         this.serverPrintGids();
+
+        this.boxInFocus.selectedFirstTime = true;
     }
 
     /*

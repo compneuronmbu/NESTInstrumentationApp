@@ -1,7 +1,6 @@
 /**
  * Script
  *
- *
  */
 
 // TODO: rename App -> ???
@@ -21,8 +20,6 @@ class App
 
         this.serverUpdateEvent;
         this.devicePlots;
-
-        // this.material;
 
         this.mouseDownCoords = {
             x: 0,
@@ -75,9 +72,8 @@ class App
         document.getElementById('startButtons').addEventListener('click', this.onLayerModelClicked.bind( this ), false);
         // If we load model
         document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind( this ), false);
-        //this.initParameters();
 
-        this.controls = new Controls( this.circle_objects, this.camera, this.renderer.domElement );
+        this.controls = new Controls( this.circle_objects, this.renderer.domElement );
 
         this.devicePlots = new DevicePlots();
 
@@ -165,8 +161,6 @@ class App
     * Function to handle file upload if user has chosen its own model.
     */
     handleModelFileUpload (event) {
-        console.log(event.target.files)
-        //var file = document.getElementById("loadLayer").files;
         var file = event.target.files;
 
         if (file.length <= 0) {
@@ -189,16 +183,6 @@ class App
         }.bind(this)
 
         fr.readAsText(file.item(0));
-    }
-
-    initParameters()
-    {
-        //this.$.getJSON( "/static/examples/hill_tononi_converted.json", function( data )
-        this.$.getJSON( "/static/examples/brunel_converted.json", function( data )
-        {
-            this.modelParameters = data;
-            Brain( this.camera, this.scene );
-        }.bind(this) );
     }
 
     initGUI()
