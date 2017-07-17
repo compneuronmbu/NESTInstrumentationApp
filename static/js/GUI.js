@@ -10,7 +10,7 @@ class GuiButtons extends React.Component{
     }
 
     componentWillMount() {
-      globalVar.callback = (data) => {
+      synapseNeuronModelCallback.callback = (data) => {
         // `this` refers to our react component
         this.setState({neuronModels: data[0], synapseModels: data[1]});     
       };

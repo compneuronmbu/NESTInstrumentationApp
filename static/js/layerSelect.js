@@ -8,8 +8,6 @@ if ( !Detector.webgl ) Detector.addGetWebGLMessage();
 
 //TODO: Have to do something about all the global variables.
 
-var globalVar = {callback: function() {}};
-
 var container
 var camera, scene, renderer, material;
 
@@ -38,6 +36,8 @@ var selectedShape = "rectangular";
 var layerNamesMade = false;
 var selectionBoxArray = [];
 var deviceBoxMap = {};
+
+var synapseNeuronModelCallback = {callback: function() {}};
 
 var nSelected = 0;
 var deviceCounter = 1;
@@ -97,28 +97,33 @@ function init()
     //render();
 }
 
-
-
-//TODO Move to another suitable place, controls or makeBrain? I think makeBrain.
+/*
+* Finds out which of the model buttons we chose, and sends infomation to Brain, which
+* then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
+*/
 function onLayerModelClicked(evt) {
     var target = evt.target;
-    var JSONstring
+    var JSONstring;
 
     if ( target.id === 'brunel' )
     {
         console.log("Brunel!");
         JSONstring = "/static/examples/brunel_converted.json";
-        $("#startButtons").css( { display: "none" } );
+        // Hide buttons after clicking on one.
+        $("#modelButtons").css( { display: "none" } );
     }
     else if ( target.id === 'hillTononi' )
     {
-        console.log("Hill-Tononi!")
+        console.log("Hill-Tononi!");
         JSONstring = "/static/examples/hill_tononi_converted.json";
-        $("#startButtons").css( { display: "none" } );
+        // Hide buttons after clicking on one.
+        $("#modelButtons").css( { display: "none" } );
     }
     else if ( target.id === 'loadOwn' )
     {
-        console.log("Custom made model!")
+        console.log("Custom made model!");
+        // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
+        // handles the file upload and subsequent allocation to Brain, which displays the model.
         document.getElementById( 'loadLayer' ).click();
 
     }
@@ -132,9 +137,12 @@ function onLayerModelClicked(evt) {
         modelParameters = data;
         Brain( camera, scene );
     } );
-
+    $("#startButtons").html( "Reload page to display model buttons again." );
 }
 
+/*
+* Function to handle file upload if user has chosen its own model.
+*/
 function handleModelFileUpload (event) {
     file = document.getElementById("loadLayer").files;
 
@@ -149,7 +157,9 @@ function handleModelFileUpload (event) {
             var result = JSON.parse(e.target.result);
             modelParameters = result;
             Brain( camera, scene );
-            $("#startButtons").css( { display: "none" } );
+            // Hide buttons after clicking on it.
+            $("#modelButtons").css( { display: "none" } );
+            $("#startButtons").html( "Reload page to display model buttons again." );
         } catch(e) {
             window.alert("Please upload a correct JSON file");
         }
@@ -157,10 +167,6 @@ function handleModelFileUpload (event) {
 
     fr.readAsText(file.item(0));
 }
-
-
-
-
 
 /*
  * Handles response from Server-Sent Events.
