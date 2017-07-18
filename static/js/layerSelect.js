@@ -39,7 +39,10 @@ class App
         this.modelParameters;
         this.neuronModels = [ 'All' ];
         this.synModels = [];
-        this.synapseNeuronModelCallback = {callback: function() {}};
+
+        // Callback functions to GUI, function definitions in GUI.jsx
+        this.synapseNeuronModelCallback = function() {};
+        this.setShowGUI = function() {};
 
         this.deviceCounter = 1;
 
@@ -153,12 +156,19 @@ class App
             return;
         }
 
+        var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
+        document.documentElement.style.setProperty('--gui_width', guiWidth);
+        this.setShowGUI(true);
+        this.controls.onWindowResize();
         this.$.getJSON( JSONstring, function( data )
         {
             this.modelParameters = data;
             Brain( this.camera, this.scene );
         }.bind(this) );
+
         $("#startButtons").html( "Reload page to display model buttons again." );
+        $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
+
     }
 
     /*

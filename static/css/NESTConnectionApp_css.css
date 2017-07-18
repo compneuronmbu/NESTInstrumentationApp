@@ -1,5 +1,6 @@
 :root {
-  --gui_width: 180px;
+  --gui_width: 0px;
+  --gui_target_width: 180px;
   --selection_button_width: 120px;
   --shape_selected_background: #FF6633;
   --shape_not_selected_background: #F1EEEC;
@@ -7,6 +8,7 @@
 
 body {
   display: block;
+  overflow: hidden;
   margin: 0px; /* A margin larger than zero here will mess up selection. */
 }
 
@@ -24,12 +26,14 @@ body {
 
 #startButtons {
   position: absolute;
-  width: 100;
-  height: 100;
-  top: 10px;
-  left: 10px;
-  margin:0px;
+  top: 30vh;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 350px;
   padding:0px;
+  text-align: center;
   color: #ffffff
 }
 
@@ -37,7 +41,7 @@ body {
   float: right;
   width: var(--gui_width);
   height: 100vh;
-  background-color: #ECF0F1;
+  background-color: #FFFFFF;
 }
 
 #gui-box-title
@@ -53,11 +57,29 @@ body {
 
 #gui-box
 {
+  width: calc(var(--gui_width) - 10px);
   border-radius: 4px;
   padding-bottom: 10px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  margin-left: auto;
+  margin-right: auto;
   text-align: center;
   background-color: #FFFFFF;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #F1EEEC;
+}
+
+hr {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 10px;
+  width: calc(var(--gui_width) - 50px);
+  border-width: 1px;
+  border-style: hidden;
+  border-bottom-style: solid;
+  border-color: #F1EEEC;
 }
 
 #poissonButton
@@ -401,6 +423,19 @@ body {
 
 .button.big {
     font-size: 12px;
+}
+
+.button.wide {
+  width: calc(0.5*var(--gui_width) - 14px);;
+}
+
+.button.start {
+  font-size: 14px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  width: 200px;
 }
 
 /* =============================================================================
