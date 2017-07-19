@@ -21,7 +21,7 @@ class GuiButtons extends React.Component{
         // `this` refers to our react component
         this.setState({neuronModels: data[0], synapseModels: data[1]});
       };
-      app.setShowGUI = (show) => {
+      app.setShowGUI = (show) => { // TODO: is using "display: none" needed?
         // `this` refers to our react component
         this.setState({hidden: !show});
       };
@@ -29,7 +29,7 @@ class GuiButtons extends React.Component{
 
     render() {
         return (
-          <div style={this.state.hidden ? {display: "none"} : {display: "block"}}>
+          <div id="reactroot" style={this.state.hidden ? {display: "none"} : {display: "block"}}>
 
             <div id="gui-box">
               <div id="gui-box-title">
