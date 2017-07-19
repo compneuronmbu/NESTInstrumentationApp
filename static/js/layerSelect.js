@@ -168,7 +168,6 @@ class App
 
         $("#startButtons").html( "Reload page to display model buttons again." );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
-
     }
 
     /*
@@ -213,7 +212,7 @@ class App
 
     initGUI()
     {
-        // make GUI when finished compiling the jsx file (this should be changed when precompiling)
+        // make GUI when finished compiling the jsx file (TODO: this should be changed when precompiling)
         var makeGuiInterval = setInterval(
             function(){
                 try
@@ -232,12 +231,24 @@ class App
      */
     handleMessage( e )
     {
-        var data = JSON.parse(e.data);
-        var recordedData = data['stream_results'];
-        var deviceData = data['plot_results'];
-        console.log(data);
+        try 
+        {
+            var data = JSON.parse(e.data);
+            var recordedData = data['stream_results'];
+            var deviceData = data['plot_results'];
+            console.log(data);
+            var t = deviceData['time'];
+        }
+        catch ( err )
+        {
+            if (data['simulation_end'])
+            {
+                this.onSimulationEnd();
+                return;
+            }
+            throw err;
+        }
 
-        var t = deviceData['time'];
         this.$("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
 
         // Color results:
@@ -501,7 +512,21 @@ class App
                 this.deviceBoxMap[ device ].connectees[ i ].updateColors();
             }
         }
+    }
 
+    /*
+     * Resets buttons at the end of the simulation.
+     */
+    onSimulationEnd()
+    {
+        document.documentElement.style.setProperty('--stream_button_width', 'calc(var(--gui_width) - 28px)');
+        let abortButton = document.getElementById( "abortButton" );
+        let hideButton = function(event) {
+            abortButton.style.setProperty('visibility', 'hidden');
+            document.getElementById( "streamButton" ).disabled = false;
+            abortButton.removeEventListener('transitionend', hideButton, false);
+        }
+        abortButton.addEventListener("transitionend", hideButton, false);
     }
 
     /*
@@ -605,6 +630,8 @@ class App
      */
     streamSimulate()
     {
+        document.getElementById( "streamButton" ).disabled = true;
+
         this.devicePlots.makeDevicePlot();
 
         this.$.ajax(
@@ -625,6 +652,9 @@ class App
         {
             console.log( "Simulation started successfully" );
         } );
+        document.getElementById( 'abortButton' ).style.setProperty('visibility', 'visible');
+        document.getElementById( "streamButton" ).disabled = true;
+        document.documentElement.style.setProperty('--stream_button_width', 'calc(0.5*var(--gui_width) - 14px)');
     }
 
     /*

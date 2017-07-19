@@ -101,11 +101,12 @@ class GuiButtons extends React.Component{
                 </div>
                 <hr/>
                 <div className="button-group">
-                    <a id="downloadAnchorElem" style={{display: "none"}}/>
-                    <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
+                    
                     <SelectionsButton text='Save'
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
+                    <a id="downloadAnchorElem" style={{display: "none"}}/>
+                    <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
@@ -113,11 +114,11 @@ class GuiButtons extends React.Component{
                 <hr/>
                 <div className="button-group">
                     <SelectionsButton text='Stream'
-                                      function={app.streamSimulate.bind(app)} button_class ='button wide'
+                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
                                       button_id='streamButton'/>
                     <SelectionsButton text='Abort'
-                                      function={app.abortSimulation.bind(app)} button_class ='button wide danger'
-                                      button_id='streamButton'/>
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
+                                      button_id='abortButton'/>
                 </div>
             </div>
 

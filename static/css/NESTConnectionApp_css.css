@@ -1,6 +1,7 @@
 :root {
   --gui_width: 0px;
   --gui_target_width: 180px;
+  --stream_button_width: calc(var(--gui_width) - 28px);
   --selection_button_width: 120px;
   --shape_selected_background: #FF6633;
   --shape_not_selected_background: #F1EEEC;
@@ -75,7 +76,7 @@ hr {
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 10px;
-  width: calc(var(--gui_width) - 50px);
+  width: calc(var(--gui_width) - 80px);
   border-width: 1px;
   border-style: hidden;
   border-bottom-style: solid;
@@ -289,10 +290,21 @@ hr {
 
 .selectionsButton{
   font-size: var(--selection_button_font_size);
-  height: var(--selection_button_heigt);
   width: var(--selection_button_width);
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+#streamButton {
+  width: var(--stream_button_width);
+}
+
+#abortButton {
+  width: calc( var(--gui_width) - 28px - var(--stream_button_width));
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 
@@ -336,8 +348,12 @@ hr {
     *display: inline;
 }
 
+.button:focus {
+  border-color: #3072b3;
+  border-bottom-color: #2a65a0;
+}
+
 .button:hover,
-.button:focus,
 .button:active,
 .button.active {
     border-color: #3072b3;
@@ -364,6 +380,26 @@ hr {
     background-image: linear-gradient(#3072b3, #599bdc);
 }
 
+.button:disabled {
+  background-color: #ececec;
+  opacity: 0.5;
+  border: 1px solid #d4d4d4;
+  margin: 0;
+  text-decoration: none;
+  text-align: center;
+  text-shadow: 1px 1px 0 #fff;
+  font:11px/normal sans-serif;
+  color: #333;
+  white-space: nowrap;
+  cursor: default;
+  outline: none;
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
+  background-image: -moz-linear-gradient(#f4f4f4, #ececec);
+  background-image: -ms-linear-gradient(#f4f4f4, #ececec);
+  background-image: -o-linear-gradient(#f4f4f4, #ececec);
+  background-image: linear-gradient(#f4f4f4, #ececec);
+}
+
 /* overrides extra padding on button elements in Firefox */
 .button::-moz-focus-inner {
     padding: 0;
@@ -374,6 +410,12 @@ hr {
    Button extensions
    ========================================================================== */
 
+.button.animated {
+  -webkit-transition: width 0.2s;
+  transition: width 0.2s;
+}
+
+
 /* Danger button
    ========================================================================== */
 
@@ -381,8 +423,12 @@ hr {
     color: #900;
 }
 
+.button.danger:focus {
+  border-color: #b53f3a;
+  border-bottom-color: #a0302a;
+}
+
 .button.danger:hover,
-.button.danger:focus,
 .button.danger:active {
     border-color: #b53f3a;
     border-bottom-color: #a0302a;
@@ -426,7 +472,7 @@ hr {
 }
 
 .button.wide {
-  width: calc(0.5*var(--gui_width) - 14px);;
+  width: calc(0.5*var(--gui_width) - 14px);
 }
 
 .button.start {
@@ -455,7 +501,6 @@ hr {
     *display: inline;
 }
 
-.button + .button,
 .button + .button-group,
 .button-group + .button,
 .button-group + .button-group {
