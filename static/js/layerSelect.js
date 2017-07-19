@@ -653,7 +653,6 @@ class App
             console.log( "Simulation started successfully" );
         } );
         document.getElementById( 'abortButton' ).style.setProperty('visibility', 'visible');
-        document.getElementById( "streamButton" ).disabled = true;
         document.documentElement.style.setProperty('--stream_button_width', 'calc(0.5*var(--gui_width) - 14px)');
     }
 

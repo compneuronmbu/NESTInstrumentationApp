@@ -13,7 +13,7 @@
     "test": "jest",
     "test_verbose": "jest --verbose",
     "test_coverage": "jest --verbose --coverage",
-    "test_all": "jest && nosetests"
+    "test_all": "jest; nosetests"
   },
   "jest": {},
   "babel": {
