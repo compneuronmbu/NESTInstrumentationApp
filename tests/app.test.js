@@ -463,6 +463,20 @@ test('Test streamSimulate', () => {
     app.devicePlots = {
         makeDevicePlot: jest.fn()
     }
+    let _getElementById = document.getElementById;
+    let _docElementSetProp = document.documentElement.style.setProperty;
+    var abortSetProperty = jest.fn();
+    document.getElementById = function(element) {
+        if (element === "streamButton")
+        {
+            return {disabled: false}
+        }
+        else if (element === "abortButton")
+        {
+            return {style: {setProperty: abortSetProperty}}
+        }
+    }
+    document.documentElement.style.setProperty = jest.fn();
     app.modelParameters = MODELPARAMETERS;
     app.streamSimulate();
     expect(app.$.ajax.mock.calls[0][0]).toMatchObject({
@@ -478,6 +492,10 @@ test('Test streamSimulate', () => {
         }),
         dataType: "json"
     });
+    expect(abortSetProperty.mock.calls[0]).toEqual(['visibility', 'visible']);
+    expect(document.documentElement.style.setProperty.mock.calls[0]).toEqual(['--stream_button_width', 'calc(0.5*var(--gui_width) - 14px)']);
+    document.getElementById = _getElementById;
+    document.documentElement.style.setProperty = _docElementSetProp;
 });
 
 test('Test abortSimulation', () => {

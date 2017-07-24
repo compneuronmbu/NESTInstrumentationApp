@@ -135,6 +135,8 @@ def g_simulate(network, synapses, internal_projections, projections, t):
         gevent.sleep(sleep_t)
     print("")
     interface.cleanup_simulation()
+    for sub in subscriptions:
+        sub.put(flask.json.dumps({"simulation_end": True}))
 
 
 @app.route('/streamSimulate', methods=['POST'])

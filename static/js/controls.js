@@ -464,7 +464,8 @@ class Controls
         var intersects = this.getMouseIntersecting( mouseX,
             mouseY,
             this.drag_objects )
-        if ( intersects.length > 0 )
+        if ( intersects.length > 0
+             && app.deviceBoxMap[ intersects[ 0 ].object.name ].connectees.indexOf( this.boxInFocus ) === -1 )
         {
             var intersect_target = intersects[ 0 ].object;
             var radius = intersect_target.geometry.boundingSphere.radius;

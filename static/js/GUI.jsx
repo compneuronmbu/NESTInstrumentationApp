@@ -11,20 +11,25 @@ class GuiButtons extends React.Component{
       super();
       this.state = {
         neuronModels: [''],
-        synapseModels: ['','']
+        synapseModels: ['',''],
+        hidden: true
       }
     }
 
     componentWillMount() {
-      app.synapseNeuronModelCallback.callback = (data) => {
+      app.synapseNeuronModelCallback = (data) => {
         // `this` refers to our react component
-        this.setState({neuronModels: data[0], synapseModels: data[1]});     
+        this.setState({neuronModels: data[0], synapseModels: data[1]});
+      };
+      app.setShowGUI = (show) => { // TODO: is using "display: none" needed?
+        // `this` refers to our react component
+        this.setState({hidden: !show});
       };
     }
 
     render() {
         return (
-          <div>
+          <div id="reactroot" style={this.state.hidden ? {display: "none"} : {display: "block"}}>
 
             <div id="gui-box">
               <div id="gui-box-title">
@@ -88,31 +93,32 @@ class GuiButtons extends React.Component{
                 </div>
                 <div className="button-group">
                     <SelectionsButton text='Connect'
-                                      function={app.makeConnections.bind(app)} button_class ='button'
+                                      function={app.makeConnections.bind(app)} button_class ='button wide'
                                       button_id='getSelectionsButton'/>
                     <SelectionsButton text='Simulate'
-                                      function={app.runSimulation.bind(app)} button_class ='button'
+                                      function={app.runSimulation.bind(app)} button_class ='button wide'
                                       button_id='runSimulationButton'/>
                 </div>
-                <br/><a>------------</a><br/>
+                <hr/>
                 <div className="button-group">
+                    
+                    <SelectionsButton text='Save'
+                                      function={app.saveSelection.bind(app)} button_class ='button wide'
+                                      button_id='saveSelectionButton'/>
                     <a id="downloadAnchorElem" style={{display: "none"}}/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
-                    <SelectionsButton text='Save'
-                                      function={app.saveSelection.bind(app)} button_class ='button'
-                                      button_id='saveSelectionButton'/>
                     <SelectionsButton text='Load'
-                                      function={app.loadSelection.bind(app)} button_class ='button'
+                                      function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
                 </div>
-                <br/><a>------------</a><br/>
+                <hr/>
                 <div className="button-group">
                     <SelectionsButton text='Stream'
-                                      function={app.streamSimulate.bind(app)} button_class ='button'
+                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
                                       button_id='streamButton'/>
                     <SelectionsButton text='Abort'
-                                      function={app.abortSimulation.bind(app)} button_class ='button danger'
-                                      button_id='streamButton'/>
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
+                                      button_id='abortButton'/>
                 </div>
             </div>
 
