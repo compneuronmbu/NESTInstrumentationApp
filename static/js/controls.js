@@ -24,6 +24,7 @@ class Controls
         this.boxInFocus;
         this.resizeSideInFocus;
         this.deviceInFocus;
+        this.rotationPoint;
 
         this.curveObject;
         this.curve;
@@ -128,23 +129,36 @@ class Controls
         mouse.y = -( ( mouseY - rect.top ) / rect.height ) * 2 + 1;
 
         this.raycaster.setFromCamera( mouse, app.camera );
+        
         return this.raycaster.intersectObjects( objects );
     }
 
     /*
-     * Checks if the mouse clicks on a resize point. If so, sets the point to be
+     * Checks if the mouse clicks on a resize or rotation point. If so, sets the point to be
      * selected. If not, removes the points.
      */
-    selectResizePoints()
+    selectResizeOrRotationPoints()
     {
         var pointIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
             app.mouseDownCoords.y,
             this.boxInFocus.resizePoints );
 
+        var rotatePointIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+            app.mouseDownCoords.y,
+            this.boxInFocus.rotationPoints );
+
         if ( pointIntersects.length > 0 )
         {
             this.resizeSideInFocus = pointIntersects[ 0 ].object.name;
             console.log( "intersects", this.resizeSideInFocus );
+            return;
+        }
+        else if( rotatePointIntersects.length > 0 )
+        {
+            console.log("rotationPoint!");
+            this.rotationPoint = rotatePointIntersects[ 0 ].object;
+            console.log(rotatePointIntersects[0])
+            console.log(this.rotationPoints)
             return;
         }
         else
@@ -202,13 +216,11 @@ class Controls
                     this.boxInFocus.makeLine();
                 }
 
-                // Make resize points
-                //this.boxInFocus.makeSelectionPoints();
-
                 // SelectedFirstTime is used to turn the elliptical masks.
                 if( this.boxInFocus.selectedFirstTime )
                 {
                     console.log( "Selected for second time!" );
+                    // We have chosen the selectionBox two times, and must make roation points.
                     this.boxInFocus.makeRotationPoints();
                     // If we have already pressed the selectionBox once, we have to reset the tracker.
                     this.boxInFocus.selectedFirstTime = false;
@@ -305,6 +317,35 @@ class Controls
         this.boxInFocus.makeSelectionPoints();
         this.boxInFocus.updateColors();
         this.boxInFocus.updateLineStart();
+    }
+
+    /*
+    * Finds the angle of rotation above the x-axis, and updates the ellipse to be tilted with the angle.
+    */
+    rotateBox( mouseX, mouseY )
+    {
+        var cntr = app.toScreenXY(this.boxInFocus.box.position);
+
+        // Could also use law of cosine with mouseDownCoords?
+        // Think we need to use sine if major axis is on y-axis?
+
+        // The length between the center of the ellipse and the mouse position.
+        var hyp = Math.sqrt( Math.pow( app.renderer.getSize().height - cntr.y - mouseY, 2 ) + Math.pow( mouseX - cntr.x, 2 ) );
+
+        if(  app.renderer.getSize().height - cntr.y - mouseY >= 0 )
+        {
+            // If the mouse position is at the upper half of the ellipse.
+            var angle = Math.acos( ( mouseX - cntr.x ) / hyp );
+        }
+        else
+        {
+            // If the mouse position is at the bottom half of the ellipse.
+            var angle = - Math.acos( ( mouseX - cntr.x ) / hyp ) ;
+        }
+
+        this.boxInFocus.angle = angle;
+        this.boxInFocus.updateBox();
+        this.boxInFocus.updateColors();
     }
 
     /*
@@ -514,9 +555,9 @@ class Controls
             if ( this.boxInFocus !== undefined )
             {
                 console.log( "Select resize points" )
-                // If a box is selected, check if we click on a resize point.
-                this.selectResizePoints( event.clientX, event.clientY );
-                if ( this.resizeSideInFocus !== undefined )
+                // If a box is selected, check if we click on a resize or rotation point.
+                this.selectResizeOrRotationPoints( event.clientX, event.clientY );
+                if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
                 {
                     return;
                 }
@@ -555,6 +596,11 @@ class Controls
             // the box.
             this.resizeBox( event.clientX, event.clientY );
         }
+        else if ( this.rotationPoint !== undefined )
+        {
+            // If we have selected one of the rotation points, rotate the selection.
+            this.rotateBox( event.clientX, event.clientY );
+        }
         else if ( this.make_connection )
         {
             // If we are making a connection, update the connection line
@@ -586,6 +632,15 @@ class Controls
         {
             // Check if we have flipped any of the axes of the box.
             this.checkFlipBox();
+        }
+        else if ( this.rotationPoint !== undefined )
+        {
+            // NB! Making new resize-points after having updated the ellipse does not work!!!
+            console.log(this.boxInFocus)
+
+            this.boxInFocus.removePoints();
+            this.boxInFocus.makeRotationPoints();
+            this.rotationPoint = undefined;
         }
         else if ( this.make_connection )
         {

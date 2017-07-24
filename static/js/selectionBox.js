@@ -14,6 +14,10 @@ class SelectionBox
         this.ll = ll;
         this.ur = ur;
 
+        this.majorAxis = ( ur.x - ll.x ) / 2;
+        this.minorAxis = ( ur.y - ll.y ) / 2;
+        this.angle = 0.0;
+
         this.selectedNeuronType;
         this.selectedSynModel;
         this.selectedShape = shape;
@@ -196,7 +200,7 @@ class SelectionBox
         else if ( this.selectedShape == "elliptical" )
         {
             var ellipseShape = new app.THREE.Shape();
-            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0 );
+            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0, this.angle );
             var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
 
@@ -237,7 +241,7 @@ class SelectionBox
         else if ( this.selectedShape == "elliptical" )
         {
             var ellipseShape = new app.THREE.Shape();
-            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0 );
+            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0, this.angle );
             var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
         this.box.geometry = geometry;
@@ -543,47 +547,137 @@ class SelectionBox
 
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
+        /*var posArray = [
+        {
+            x: selectionBounds.ll.x,
+            y: selectionBounds.ll.y,
+            z: 0.0001
+        },
+        {
+            x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2,
+            y: selectionBounds.ll.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ur.x,
+            y: selectionBounds.ll.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ur.x,
+            y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ur.x,
+            y: selectionBounds.ur.y,
+            z: 0.0001
+        },
+        {
+            x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2,
+            y: selectionBounds.ur.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ll.x,
+            y: selectionBounds.ur.y,
+            z: 0.0001
+        },
+        {
+            x: selectionBounds.ll.x,
+            y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
+            z: 0.0001
+        }, ]; */
+
+        /*var center = {
+            x: ( selectionBounds.ur.x + selectionBounds.ll.x ) / 2.0,
+            y: ( selectionBounds.ur.y + selectionBounds.ll.y ) / 2.0
+        };
+
+        // Translate ur to origin
+        var tempX = selectionBounds.ur.x - center.x;
+        var tempY = selectionBounds.ur.y - center.y;
+
+        var tempXll = selectionBounds.ll.x - center.x;
+        var tempYll = selectionBounds.ll.y - center.y;
+
+        // Apply rotation
+        var rotatedX = tempX * Math.cos(this.angle) - tempY * Math.sin(this.angle);
+        var rotatedY = tempX * Math.sin(this.angle) + tempY * Math.cos(this.angle);
+
+        var rotatedXll = tempXll * Math.cos(this.angle) - tempYll * Math.sin(this.angle);
+        var rotatedYll = tempXll * Math.sin(this.angle) + tempYll * Math.cos(this.angle);
+
+        //translate back
+        selectionBounds.ur.x = rotatedX + center.x;
+        selectionBounds.ur.y = rotatedY + center.y;
+        selectionBounds.ll.x = rotatedXll + center.x;
+        selectionBounds.ll.y = rotatedYll + center.y;
+
+        console.log("selectionBounds", selectionBounds)*/
+
+        this.box.geometry.computeBoundingBox();
+        console.log(this.box.geometry)
+        var bbox = this.box.geometry.boundingBox;
+        var pos = this.box.position;
+
+        var center = {
+            x: ( bbox.max.x + bbox.min.x ) / 2.0,
+            y: ( bbox.max.y + bbox.min.y ) / 2.0
+        };
+
+        var minor = ( selectionBounds.ur.y - selectionBounds.ll.y ) / 2;
+        var major = ( selectionBounds.ur.x - selectionBounds.ll.x ) / 2;
+        console.log("major", major)
+        console.log("minor", minor)
+
+        var tempX = bbox.max.x - center.x + pos.x;
+        var tempY = bbox.min.y - center.y + pos.y;
+
+        var rotatedX = tempX * Math.cos(this.angle) - tempY * Math.sin(this.angle);
+        var rotatedY = tempX * Math.sin(this.angle) + tempY * Math.cos(this.angle);
+
         var posArray = [
         {
-            x: selectionBounds.ll.x,
-            y: selectionBounds.ll.y,
+            x: bbox.min.x + pos.x,
+            y: bbox.min.y + pos.y,
             z: 0.0001
         },
         {
-            x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2,
-            y: selectionBounds.ll.y,
+            x: bbox.min.x + pos.x + minor*Math.sin(this.angle),//( bbox.min.x + bbox.max.x ) / 2 + pos.x,
+            y: bbox.min.y + pos.y - minor*Math.cos(this.angle),
             z: 0.0001
         },
         {
-            x: selectionBounds.ur.x,
-            y: selectionBounds.ll.y,
+            x: ( bbox.min.x + pos.x + minor*Math.sin(this.angle) + bbox.max.x + pos.x + minor*Math.sin(this.angle) ) / 2, //rotatedX + center.x, //bbox.max.x + pos.x,
+            y: ( bbox.min.y + pos.y - minor*Math.cos(this.angle) + bbox.max.y + pos.y - minor*Math.cos(this.angle) ) / 2, //rotatedY + center.y,//bbox.min.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ur.x,
-            y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
+            x: bbox.max.x + pos.x + minor*Math.sin(this.angle), //bbox.max.x + pos.x,
+            y: bbox.max.y + pos.y - minor*Math.cos(this.angle), //( bbox.min.y + bbox.max.y ) / 2 + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ur.x,
-            y: selectionBounds.ur.y,
+            x: bbox.max.x + pos.x,
+            y: bbox.max.y + pos.y,
             z: 0.0001
         },
         {
-            x: ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2,
-            y: selectionBounds.ur.y,
+            x: ( bbox.min.x + bbox.max.x ) / 2 + pos.x,
+            y: bbox.max.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ll.x,
-            y: selectionBounds.ur.y,
+            x: bbox.min.x + pos.x,
+            y: bbox.max.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ll.x,
-            y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
+            x: bbox.min.x + pos.x,
+            y: ( bbox.min.y + bbox.max.y ) / 2 + pos.y,
             z: 0.0001
-        }, ];
+        } ];
 
         var nameArray = [
             'lowerLeft',
@@ -600,6 +694,32 @@ class SelectionBox
         {
             this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
         }
+    }
+
+    updateLLAndUR()
+    {
+        var center = {
+            x: ( this.ur.x + this.ll.x ) / 2.0,
+            y: ( this.ur.y + this.ll.y ) / 2.0
+        };
+
+        // Translate ur to origin
+        var tempXur = this.ur.x - center.x;
+        var tempYur = this.ur.y - center.y;
+        var tempXll = this.ll.x - center.x;
+        var tempYll = this.ll.y - center.y;
+
+        // Apply rotation
+        var rotatedXur = tempXur * Math.cos(this.angle) - tempYur * Math.sin(this.angle);
+        var rotatedYur = tempXur * Math.sin(this.angle) + tempYur * Math.cos(this.angle);
+        var rotatedXll = tempXll * Math.cos(this.angle) - tempYll * Math.sin(this.angle);
+        var rotatedYll = tempXll * Math.sin(this.angle) + tempYll * Math.cos(this.angle);
+
+        //translate back
+        this.ur.x = rotatedXur + center.x;
+        this.ur.y = rotatedYur + center.y;
+        this.ll.x = rotatedXll + center.x;
+        this.ll.y = rotatedYll + center.y;
     }
 
     /*
@@ -644,6 +764,7 @@ class SelectionBox
      */
     makeRotationPoints()
     {
+        console.log("makeSelectionPoints")
         if( this.selectedShape == 'rectangular' )
         {
             this.makeSelectionPoints();
@@ -651,30 +772,34 @@ class SelectionBox
             return;
         }
 
-        var selectionBounds = this.getSelectionBounds();
+        // TODO: We shouldn't need to compute the boundingBox so many times.
+        this.box.geometry.computeBoundingBox();
+        console.log(this.box.geometry)
+        var bbox = this.box.geometry.boundingBox;
+        var pos = this.box.position;
 
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
         // Rotation point in every corner.
         var posArray = [
         {
-            x: selectionBounds.ll.x,
-            y: selectionBounds.ll.y,
+            x: bbox.min.x + pos.x,
+            y: bbox.min.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ur.x,
-            y: selectionBounds.ll.y,
+            x: bbox.max.x + pos.x,
+            y: bbox.min.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ur.x,
-            y: selectionBounds.ur.y,
+            x: bbox.max.x + pos.x,
+            y: bbox.max.y + pos.y,
             z: 0.0001
         },
         {
-            x: selectionBounds.ll.x,
-            y: selectionBounds.ur.y,
+            x: bbox.min.x + pos.x,
+            y: bbox.max.y + pos.y,
             z: 0.0001
         } ];
 
@@ -713,14 +838,16 @@ class SelectionBox
      */
     withinEllipticalBounds( pos )
     {
-        var x_side = ( this.ur.x - this.ll.x ) / 2;
-        var y_side = ( this.ur.y - this.ll.y ) / 2;
+        //var x_side = ( this.ur.x - this.ll.x ) / 2;
+        //var y_side = ( this.ur.y - this.ll.y ) / 2;
         var center = {
             x: ( this.ur.x + this.ll.x ) / 2.0,
             y: ( this.ur.y + this.ll.y ) / 2.0
         };
 
-        return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
+        // TODO: I think using major and minor axis might have been a bad idea on my side.
+        //return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
+        return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
     }
 }
 
