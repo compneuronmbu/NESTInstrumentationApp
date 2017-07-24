@@ -93,6 +93,7 @@ class Controls
     /*
      * Sends the specifications and selection to the server which prints the
      * GIDs.
+     * For debugging purposes.
      */
     serverPrintGids()
     {
@@ -280,39 +281,32 @@ class Controls
             case "lowerLeft":
                 this.boxInFocus.ll.x = mouseX;
                 this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "lowerMiddle":
                 this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "lowerRight":
                 this.boxInFocus.ur.x = mouseX;
                 this.boxInFocus.ll.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "middleRight":
                 this.boxInFocus.ur.x = mouseX;
-                this.boxInFocus.updateBox();
                 break;
             case "upperRight":
                 this.boxInFocus.ur.x = mouseX;
                 this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "upperMiddle":
                 this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "upperLeft":
                 this.boxInFocus.ll.x = mouseX;
                 this.boxInFocus.ur.y = app.renderer.getSize().height - mouseY;
-                this.boxInFocus.updateBox();
                 break;
             case "middleLeft":
                 this.boxInFocus.ll.x = mouseX;
-                this.boxInFocus.updateBox();
         }
+        this.boxInFocus.updateBox();
         this.boxInFocus.removePoints();
         this.boxInFocus.makeSelectionPoints();
         this.boxInFocus.updateColors();
@@ -641,6 +635,8 @@ class Controls
             this.boxInFocus.removePoints();
             this.boxInFocus.makeRotationPoints();
             this.rotationPoint = undefined;
+
+            this.serverPrintGids();
         }
         else if ( this.make_connection )
         {

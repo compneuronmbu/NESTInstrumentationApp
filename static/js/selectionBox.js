@@ -188,6 +188,8 @@ class SelectionBox
      */
     makeBox()
     {
+        console.log(this.ll)
+        console.log(this.ur)
         var objectBoundsLL = app.toObjectCoordinates( this.ll );
         var objectBoundsUR = app.toObjectCoordinates( this.ur );
         var xLength = objectBoundsUR.x - objectBoundsLL.x;
@@ -219,6 +221,10 @@ class SelectionBox
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
             z: 0.0
         }
+
+        console.log(objectBoundsLL)
+        console.log(objectBoundsUR)
+        console.log(boxPosition)
 
         this.box.position.copy( boxPosition );
         app.scene.add( this.box );
@@ -512,6 +518,7 @@ class SelectionBox
         var selectionInfo = {
             name: this.layerName,
             selection: selectionBox,
+            angle: this.angle,
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
@@ -529,6 +536,7 @@ class SelectionBox
             name: this.layerName,
             ll: this.ll,
             ur: this.ur,
+            angle: this.angle,
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,
             maskShape: this.selectedShape,
@@ -547,7 +555,7 @@ class SelectionBox
 
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
-        /*var posArray = [
+        var posArray = [
         {
             x: selectionBounds.ll.x,
             y: selectionBounds.ll.y,
@@ -587,7 +595,7 @@ class SelectionBox
             x: selectionBounds.ll.x,
             y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
             z: 0.0001
-        }, ]; */
+        }, ]; 
 
         /*var center = {
             x: ( selectionBounds.ur.x + selectionBounds.ll.x ) / 2.0,
@@ -616,7 +624,9 @@ class SelectionBox
 
         console.log("selectionBounds", selectionBounds)*/
 
-        this.box.geometry.computeBoundingBox();
+
+        // This is closest to working
+        /*this.box.geometry.computeBoundingBox();
         console.log(this.box.geometry)
         var bbox = this.box.geometry.boundingBox;
         var pos = this.box.position;
@@ -626,6 +636,7 @@ class SelectionBox
             y: ( bbox.max.y + bbox.min.y ) / 2.0
         };
 
+        // TODO: Har major og minor axis....
         var minor = ( selectionBounds.ur.y - selectionBounds.ll.y ) / 2;
         var major = ( selectionBounds.ur.x - selectionBounds.ll.x ) / 2;
         console.log("major", major)
@@ -677,7 +688,7 @@ class SelectionBox
             x: bbox.min.x + pos.x,
             y: ( bbox.min.y + bbox.max.y ) / 2 + pos.y,
             z: 0.0001
-        } ];
+        } ]; */
 
         var nameArray = [
             'lowerLeft',
@@ -694,32 +705,6 @@ class SelectionBox
         {
             this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
         }
-    }
-
-    updateLLAndUR()
-    {
-        var center = {
-            x: ( this.ur.x + this.ll.x ) / 2.0,
-            y: ( this.ur.y + this.ll.y ) / 2.0
-        };
-
-        // Translate ur to origin
-        var tempXur = this.ur.x - center.x;
-        var tempYur = this.ur.y - center.y;
-        var tempXll = this.ll.x - center.x;
-        var tempYll = this.ll.y - center.y;
-
-        // Apply rotation
-        var rotatedXur = tempXur * Math.cos(this.angle) - tempYur * Math.sin(this.angle);
-        var rotatedYur = tempXur * Math.sin(this.angle) + tempYur * Math.cos(this.angle);
-        var rotatedXll = tempXll * Math.cos(this.angle) - tempYll * Math.sin(this.angle);
-        var rotatedYll = tempXll * Math.sin(this.angle) + tempYll * Math.cos(this.angle);
-
-        //translate back
-        this.ur.x = rotatedXur + center.x;
-        this.ur.y = rotatedYur + center.y;
-        this.ll.x = rotatedXll + center.x;
-        this.ll.y = rotatedYll + center.y;
     }
 
     /*

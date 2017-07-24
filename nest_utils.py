@@ -66,7 +66,7 @@ class NESTInterface(object):
         for new_mod, old_mod in models.items():
             nest.CopyModel(old_mod, new_mod)
 
-    def make_mask(self, lower_left, upper_right, mask_type, cntr):
+    def make_mask(self, lower_left, upper_right, mask_type, angle, cntr):
         """
         Makes a mask from the specifications.
 
@@ -91,11 +91,11 @@ class NESTInterface(object):
             x_side = upper_right[0] - lower_left[0]
             y_side = upper_right[1] - lower_left[1]
             if x_side >= y_side:
-                angle = 0.0
+            #    angle = 0.0
                 major = x_side
                 minor = y_side
             else:
-                angle = 90.
+            #    angle = 90.
                 major = y_side
                 minor = x_side
             spec = {'major_axis': major, 'minor_axis': minor,
@@ -119,12 +119,13 @@ class NESTInterface(object):
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
+        angle = float(selection_dict['angle'])
 
         ll = [selection['ll']['x'], selection['ll']['y']]
         ur = [selection['ur']['x'], selection['ur']['y']]
 
         cntr = [0.0, 0.0]
-        mask = self.make_mask(ll, ur, mask_type, cntr)
+        mask = self.make_mask(ll, ur, mask_type, angle, cntr)
         print("Layers:")
         print(self.layers)
         gids = tp.SelectNodesByMask(self.layers[name],
