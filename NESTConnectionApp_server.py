@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
 import sys
 import pprint
 import gevent
@@ -113,6 +114,7 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     print("dt=%f" % dt)
     interface.prepare_simulation()
     for i in range(steps):
+        print("step: ", i)
         if not q.empty():
             abort = q.get()
             if abort:
@@ -142,6 +144,7 @@ def streamSimulate():
     data = flask.request.json
     network = data['network']
     synapses = data['synapses']
+    print("synapses: ", synapses)
     internal_projections = data['internalProjections']
     projections = data['projections']
     t = data['time']
@@ -178,5 +181,9 @@ def simulationData():
 
 if __name__ == '__main__':
     # app.run()
-    server = gevent.wsgi.WSGIServer(("", 5000), app)
+
+    #print('Serving on https://127.0.0.1:8443/NESTConnectionApp')
+    #server = pywsgi.WSGIServer(('', 8443), app, keyfile='server.key', certfile='server.crt')
+    #print('Serving on http://127.0.0.1:5000/NESTConnectionApp')
+    server = gevent.pywsgi.WSGIServer(("", 5000), app)
     server.serve_forever()
