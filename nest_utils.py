@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 import nest
 import nest.topology as tp
 import numbers
@@ -117,7 +118,7 @@ class NESTInterface(object):
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
-        angle = float(selection_dict['angle'])
+        angle = float(selection_dict['angle']) * 180 / math.pi
 
         ll = [selection['ll']['x'], selection['ll']['y']]
         ur = [selection['ur']['x'], selection['ur']['y']]

@@ -14,9 +14,9 @@ class SelectionBox
         this.ll = ll;
         this.ur = ur;
 
-        this.majorAxis = ( ur.x - ll.x ) / 2;
-        this.minorAxis = ( ur.y - ll.y ) / 2;
-        this.angle = 0.0;
+        this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
+        this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
+        this.angle = ( this.majorAxis == ( ur.x - ll.x )  / 2 ) ? 0.0: Math.PI / 2;
 
         this.selectedNeuronType;
         this.selectedSynModel;
@@ -202,7 +202,9 @@ class SelectionBox
         else if ( this.selectedShape == "elliptical" )
         {
             var ellipseShape = new app.THREE.Shape();
-            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0, this.angle );
+            var major = Math.max( Math.abs(xLength), Math.abs(yLength) );
+            var minor = Math.min( Math.abs(xLength), Math.abs(yLength) );
+            ellipseShape.ellipse( 0, 0, major / 2, minor / 2, 0, 2 * Math.PI, 0, this.angle );
             var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
 
@@ -247,7 +249,9 @@ class SelectionBox
         else if ( this.selectedShape == "elliptical" )
         {
             var ellipseShape = new app.THREE.Shape();
-            ellipseShape.ellipse( 0, 0, Math.abs( xLength / 2 ), Math.abs( yLength / 2 ), 0, 2 * Math.PI, 0, this.angle );
+            var major = Math.max( Math.abs(xLength), Math.abs(yLength) );
+            var minor = Math.min( Math.abs(xLength), Math.abs(yLength) );
+            ellipseShape.ellipse( 0, 0, major / 2, minor / 2, 0, 2 * Math.PI, 0, this.angle );
             var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
         this.box.geometry = geometry;
