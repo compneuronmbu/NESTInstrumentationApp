@@ -147,7 +147,7 @@ class App
             document.getElementById( 'loadLayer' ).click();
 
         }
-        else if( target.id === 'loadLayer' )
+        else
         {
             return;
         }

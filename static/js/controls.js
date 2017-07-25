@@ -156,10 +156,7 @@ class Controls
         }
         else if( rotatePointIntersects.length > 0 )
         {
-            console.log("rotationPoint!");
             this.rotationPoint = rotatePointIntersects[ 0 ].object;
-            console.log(rotatePointIntersects[0])
-            console.log(this.rotationPoints)
             return;
         }
         else
@@ -306,6 +303,7 @@ class Controls
             case "middleLeft":
                 this.boxInFocus.ll.x = mouseX;
         }
+        this.boxInFocus.updateMajorAndMinorAxis();
         this.boxInFocus.updateBox();
         this.boxInFocus.removePoints();
         this.boxInFocus.makeSelectionPoints();
@@ -319,9 +317,6 @@ class Controls
     rotateBox( mouseX, mouseY )
     {
         var cntr = app.toScreenXY(this.boxInFocus.box.position);
-
-        // Could also use law of cosine with mouseDownCoords?
-        // Think we need to use sine if major axis is on y-axis?
 
         // The length between the center of the ellipse and the mouse position.
         var hyp = Math.sqrt( Math.pow( app.renderer.getSize().height - cntr.y - mouseY, 2 ) + Math.pow( mouseX - cntr.x, 2 ) );
@@ -630,13 +625,13 @@ class Controls
         }
         else if ( this.rotationPoint !== undefined )
         {
-            // NB! Making new resize-points after having updated the ellipse does not work!!!
-            console.log(this.boxInFocus)
-
+            // Update the rotation points
             this.boxInFocus.removePoints();
             this.boxInFocus.makeRotationPoints();
+
             this.rotationPoint = undefined;
 
+            // Print GIDs for debugging purposes
             this.serverPrintGids();
         }
         else if ( this.make_connection )

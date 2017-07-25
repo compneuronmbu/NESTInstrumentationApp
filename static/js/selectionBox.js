@@ -599,100 +599,7 @@ class SelectionBox
             x: selectionBounds.ll.x,
             y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
             z: 0.0001
-        }, ]; 
-
-        /*var center = {
-            x: ( selectionBounds.ur.x + selectionBounds.ll.x ) / 2.0,
-            y: ( selectionBounds.ur.y + selectionBounds.ll.y ) / 2.0
-        };
-
-        // Translate ur to origin
-        var tempX = selectionBounds.ur.x - center.x;
-        var tempY = selectionBounds.ur.y - center.y;
-
-        var tempXll = selectionBounds.ll.x - center.x;
-        var tempYll = selectionBounds.ll.y - center.y;
-
-        // Apply rotation
-        var rotatedX = tempX * Math.cos(this.angle) - tempY * Math.sin(this.angle);
-        var rotatedY = tempX * Math.sin(this.angle) + tempY * Math.cos(this.angle);
-
-        var rotatedXll = tempXll * Math.cos(this.angle) - tempYll * Math.sin(this.angle);
-        var rotatedYll = tempXll * Math.sin(this.angle) + tempYll * Math.cos(this.angle);
-
-        //translate back
-        selectionBounds.ur.x = rotatedX + center.x;
-        selectionBounds.ur.y = rotatedY + center.y;
-        selectionBounds.ll.x = rotatedXll + center.x;
-        selectionBounds.ll.y = rotatedYll + center.y;
-
-        console.log("selectionBounds", selectionBounds)*/
-
-
-        // This is closest to working
-        /*this.box.geometry.computeBoundingBox();
-        console.log(this.box.geometry)
-        var bbox = this.box.geometry.boundingBox;
-        var pos = this.box.position;
-
-        var center = {
-            x: ( bbox.max.x + bbox.min.x ) / 2.0,
-            y: ( bbox.max.y + bbox.min.y ) / 2.0
-        };
-
-        // TODO: Har major og minor axis....
-        var minor = ( selectionBounds.ur.y - selectionBounds.ll.y ) / 2;
-        var major = ( selectionBounds.ur.x - selectionBounds.ll.x ) / 2;
-        console.log("major", major)
-        console.log("minor", minor)
-
-        var tempX = bbox.max.x - center.x + pos.x;
-        var tempY = bbox.min.y - center.y + pos.y;
-
-        var rotatedX = tempX * Math.cos(this.angle) - tempY * Math.sin(this.angle);
-        var rotatedY = tempX * Math.sin(this.angle) + tempY * Math.cos(this.angle);
-
-        var posArray = [
-        {
-            x: bbox.min.x + pos.x,
-            y: bbox.min.y + pos.y,
-            z: 0.0001
-        },
-        {
-            x: bbox.min.x + pos.x + minor*Math.sin(this.angle),//( bbox.min.x + bbox.max.x ) / 2 + pos.x,
-            y: bbox.min.y + pos.y - minor*Math.cos(this.angle),
-            z: 0.0001
-        },
-        {
-            x: ( bbox.min.x + pos.x + minor*Math.sin(this.angle) + bbox.max.x + pos.x + minor*Math.sin(this.angle) ) / 2, //rotatedX + center.x, //bbox.max.x + pos.x,
-            y: ( bbox.min.y + pos.y - minor*Math.cos(this.angle) + bbox.max.y + pos.y - minor*Math.cos(this.angle) ) / 2, //rotatedY + center.y,//bbox.min.y + pos.y,
-            z: 0.0001
-        },
-        {
-            x: bbox.max.x + pos.x + minor*Math.sin(this.angle), //bbox.max.x + pos.x,
-            y: bbox.max.y + pos.y - minor*Math.cos(this.angle), //( bbox.min.y + bbox.max.y ) / 2 + pos.y,
-            z: 0.0001
-        },
-        {
-            x: bbox.max.x + pos.x,
-            y: bbox.max.y + pos.y,
-            z: 0.0001
-        },
-        {
-            x: ( bbox.min.x + bbox.max.x ) / 2 + pos.x,
-            y: bbox.max.y + pos.y,
-            z: 0.0001
-        },
-        {
-            x: bbox.min.x + pos.x,
-            y: bbox.max.y + pos.y,
-            z: 0.0001
-        },
-        {
-            x: bbox.min.x + pos.x,
-            y: ( bbox.min.y + bbox.max.y ) / 2 + pos.y,
-            z: 0.0001
-        } ]; */
+        }, ];
 
         var nameArray = [
             'lowerLeft',
@@ -708,6 +615,20 @@ class SelectionBox
         for ( var i = 0; i < posArray.length; ++i )
         {
             this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
+        }
+
+        // Rotate points in case we have a tilted ellipse.
+        var center = this.box.position;
+
+        for ( var i = 0; i < this.resizePoints.length; ++i )
+        {
+            var pos = this.resizePoints[i].position;
+            var rotatedPosition = {
+                x: ( pos.x - center.x ) * Math.cos(this.angle) - ( pos.y - center.y ) * Math.sin(this.angle) + center.x,
+                y: ( pos.x - center.x ) * Math.sin(this.angle) + ( pos.y - center.y ) * Math.cos(this.angle) + center.y,
+                z: 0.0001
+            }
+            this.resizePoints[i].position.copy( rotatedPosition );
         }
     }
 
@@ -797,6 +718,12 @@ class SelectionBox
             // 0xffa726 is an orange color.
             this.rotationPoints.push( this.makePoint( posArray[ i ], "rotationPoint" , 0xffa726 ) );
         }
+    }
+
+    updateMajorAndMinorAxis()
+    {
+        this.majorAxis = Math.max( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
+        this.minorAxis = Math.min( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
     }
 
     /*
