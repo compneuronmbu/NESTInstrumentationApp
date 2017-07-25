@@ -599,7 +599,7 @@ class SelectionBox
             x: selectionBounds.ll.x,
             y: ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2,
             z: 0.0001
-        }, ];
+        } ];
 
         var nameArray = [
             'lowerLeft',
@@ -620,12 +620,21 @@ class SelectionBox
         // Rotate points in case we have a tilted ellipse.
         var center = this.box.position;
 
+        if ( this.majorAxis == ( this.ur.x - this.ll.x ) / 2 )
+        {
+            var angle = this.angle;
+        }
+        else
+        {
+            var angle = this.angle + Math.PI / 2;
+        }
+
         for ( var i = 0; i < this.resizePoints.length; ++i )
         {
             var pos = this.resizePoints[i].position;
             var rotatedPosition = {
-                x: ( pos.x - center.x ) * Math.cos(this.angle) - ( pos.y - center.y ) * Math.sin(this.angle) + center.x,
-                y: ( pos.x - center.x ) * Math.sin(this.angle) + ( pos.y - center.y ) * Math.cos(this.angle) + center.y,
+                x: ( pos.x - center.x ) * Math.cos( angle ) - ( pos.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( pos.x - center.x ) * Math.sin( angle ) + ( pos.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             }
             this.resizePoints[i].position.copy( rotatedPosition );
@@ -674,7 +683,6 @@ class SelectionBox
      */
     makeRotationPoints()
     {
-        console.log("makeSelectionPoints")
         if( this.selectedShape == 'rectangular' )
         {
             this.makeSelectionPoints();
@@ -682,9 +690,7 @@ class SelectionBox
             return;
         }
 
-        // TODO: We shouldn't need to compute the boundingBox so many times.
         this.box.geometry.computeBoundingBox();
-        console.log(this.box.geometry)
         var bbox = this.box.geometry.boundingBox;
         var pos = this.box.position;
 
