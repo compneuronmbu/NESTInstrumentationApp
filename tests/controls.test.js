@@ -22,7 +22,7 @@ beforeEach( () => {
             }
         },
     }
-    app.controls = new Controls( undefined, undefined, {
+    app.controls = new Controls( undefined, {
         addEventListener: jest.fn(),
         style: {}
     } );

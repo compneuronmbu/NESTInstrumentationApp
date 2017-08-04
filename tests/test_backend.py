@@ -84,8 +84,9 @@ class TestBackend(unittest.TestCase):
         ll = [-0.50, 0.48]
         ur = [-0.47, 0.51]
         mask_type = 'rectangular'
+        angle = 0.0
         centre = [0.0, 0.0]
-        mask = interface.make_mask(ll, ur, mask_type, centre)
+        mask = interface.make_mask(ll, ur, mask_type, angle, centre)
         gids = server.nu.tp.SelectNodesByMask((1,), centre, mask)
         self.assertEqual(gids, (2,))  # Expect to get only one GID, the first
 

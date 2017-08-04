@@ -69,23 +69,6 @@ test('Test initContainer', () => {
     app.initContainer();
 });
 
-test('Test initParameters', () => {
-    app.THREE = require('three');  // import THREE into the app
-    app.$ = require('jquery');  // import jquery into the app
-    Brain = jest.fn();
-    app.container = {
-        clientWidth: 800,
-        clientHeight: 600
-    }
-    app.initTHREEScene();
-    app.$.getJSON = jest.fn();
-    app.initParameters();
-    app.$.getJSON.mock.calls[0][1](MODELPARAMETERS);
-    expect(app.modelParameters).toBe(MODELPARAMETERS);
-    expect(Brain.mock.calls[0][0]).toBeInstanceOf(app.THREE.PerspectiveCamera);
-    expect(Brain.mock.calls[0][1]).toBeInstanceOf(app.THREE.Scene);
-});
-
 test('Test initGUI', () => {
     makeGUI = jest.fn();
     app.initGUI();
