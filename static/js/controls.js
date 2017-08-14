@@ -14,6 +14,7 @@ class Controls
         this.mouseDown = false;
         this.mouseDownFirstTime = false;
         this.shiftDown = false;
+        this.resizeBoxSwitch = false;
         this.make_selection_box = false;
         this.make_connection = false;
 
@@ -36,6 +37,7 @@ class Controls
         this.domElement.addEventListener( 'mousedown', this.onMouseDown.bind( this ), false );
         this.domElement.addEventListener( 'mouseup', this.onMouseUp.bind( this ), false );
 
+        window.addEventListener( 'keydown', this.onKeyDown.bind( this ), false );
         window.addEventListener( 'keyup', this.onKeyUp.bind( this ), false );
         window.addEventListener( 'resize', this.onWindowResize.bind( this ), false );
     }
@@ -47,6 +49,7 @@ class Controls
     {
         this.mouseDown = false;
         this.shiftDown = false;
+        this.resizeBoxSwitch = false;
         this.make_selection_box = false;
         this.make_connection = false;
         this.marquee.fadeOut();
@@ -166,14 +169,30 @@ class Controls
         }
     }
 
+    select3DResizePoint()
+    {
+        var pointIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+            app.mouseDownCoords.y,
+            this.boxInFocus.resizePoints );
+        if ( pointIntersects.length > 0 )
+        {
+            this.resizeSideInFocus = pointIntersects[ 0 ].object.name;
+            console.log( "intersects", this.resizeSideInFocus );
+            return;
+        }
+        else
+        {
+            this.boxInFocus.removePoints();
+            this.boxInFocus = undefined;
+        }
+    }
+
     /*
      * Checks if the mouse clicks on a device. If so, sets the device as
      * selected, and creates an outline around the device icon.
      */
     selectDevice()
     {
-        this.shiftDown = true;
-
         this.plane = new app.THREE.Plane();
 
         var intersects = this.getMouseIntersecting( app.mouseDownCoords.x,
@@ -309,6 +328,53 @@ class Controls
         this.boxInFocus.makeSelectionPoints();
         this.boxInFocus.updateColors();
         this.boxInFocus.updateLineStart();
+    }
+
+    resizeBox3D( mouseX, mouseY )
+    {
+        var speed = 0.5;
+        switch ( this.resizeSideInFocus )
+        {
+            case "width_1":
+            case "width_2":
+                this.boxInFocus.width += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+            case "depth_1":
+            case "depth_2":
+                this.boxInFocus.depth += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+            case "height_1":
+            case "height_2":
+                this.boxInFocus.height += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+        }
+        this.boxInFocus.updateBox();
+    }
+
+    moveBox( mouseX, mouseY )
+    {
+        console.log("moving box")
+        /*
+        Bevege på aksen i henhold til punkt man trykket på?
+        Bevege i xy-planet parallelt med kamera?
+        */
+        var speed = 0.5;
+        switch ( this.resizeSideInFocus )
+        {
+            case "width_1":
+            case "width_2":
+                this.boxInFocus.position.x += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+            case "depth_1":
+            case "depth_2":
+                this.boxInFocus.position.z += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+            case "height_1":
+            case "height_2":
+                this.boxInFocus.position.y += speed * ( mouseX - this.prevMouseCoords.x );
+                break;
+        }
+        this.boxInFocus.updatePosition();
     }
 
     /*
@@ -530,14 +596,30 @@ class Controls
      */
     onMouseDown( event )
     {
-        //event.preventDefault();
+
         if ( event.target.localName === "canvas" )
         {
-            event.preventDefault();
-
-            this.mouseDown = true;
+            // check if we hit a resize point
+            // this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
+            this.prevMouseCoords = {x: event.clientX, y: event.clientY};
+
+            if ( this.boxInFocus !== undefined )
+            {
+                this.select3DResizePoint( event.clientX, event.clientY );
+                if ( this.resizeSideInFocus !== undefined )
+                {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                if ( this.shiftDown )
+                {
+                    this.resizeBoxSwitch = true;
+                }
+            }
+            
+            /*
 
             this.deviceInFocus = undefined;
             this.removeOutline();
@@ -564,7 +646,9 @@ class Controls
                 // If neither of the above, check if we click on a box.
                 this.selectBox()
             }
+            */
         }
+        
     }
 
     /*
@@ -572,8 +656,6 @@ class Controls
      */
     onMouseMove( event )
     {
-        //event.preventDefault();
-        event.stopPropagation();
 
         if ( this.make_selection_box )
         {
@@ -584,7 +666,18 @@ class Controls
         {
             // If we have selected one of the resize points, update the size of
             // the box.
-            this.resizeBox( event.clientX, event.clientY );
+            // this.resizeBox( event.clientX, event.clientY );
+            event.preventDefault();
+            event.stopPropagation();
+            if ( this.resizeBoxSwitch )
+            {
+                this.resizeBox3D( event.clientX, event.clientY );
+            }
+            else
+            {
+                this.moveBox( event.clientX, event.clientY );
+            }
+            this.prevMouseCoords = {x: event.clientX, y: event.clientY};
         }
         else if ( this.rotationPoint !== undefined )
         {
@@ -611,8 +704,8 @@ class Controls
      */
     onMouseUp( event )
     {
-        event.preventDefault();
-        event.stopPropagation();
+        //event.preventDefault();
+        //event.stopPropagation();
 
         if ( this.make_selection_box )
         {
@@ -621,7 +714,8 @@ class Controls
         else if ( this.resizeSideInFocus !== undefined )
         {
             // Check if we have flipped any of the axes of the box.
-            this.checkFlipBox();
+            // this.checkFlipBox();
+            this.resizeSideInFocus = undefined;
         }
         else if ( this.rotationPoint !== undefined )
         {
@@ -646,6 +740,15 @@ class Controls
         this.resetButtons();
     }
 
+    onKeyDown( event )
+    {
+        if ( event.keyCode == 16 ) // shift key
+        {
+            console.log("shift down");
+            this.shiftDown = true;
+        }
+    }
+
     /*
      * Callback function for key up.
      */
@@ -662,6 +765,11 @@ class Controls
             {
                 this.deleteDevice();
             }
+        }
+        else if ( event.keyCode == 16 )
+        {
+            console.log("shift up");
+            this.shiftDown = false;
         }
     }
 

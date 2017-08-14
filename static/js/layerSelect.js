@@ -52,6 +52,7 @@ class App
         this.deviceBoxMap = {};
 
         this.nSelected = 0;
+
     }
 
     /*
@@ -77,6 +78,7 @@ class App
         document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind( this ), false);
 
         this.controls = new Controls( this.circle_objects, this.renderer.domElement );
+        this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
 
         this.devicePlots = new DevicePlots();
 
@@ -90,13 +92,16 @@ class App
     initTHREEScene()
     {
         // CAMERA
-        this.camera = new this.THREE.PerspectiveCamera( 45, this.container.clientWidth / this.container.clientHeight, 0.5, 10 );
+        this.camera = new this.THREE.PerspectiveCamera( 45, this.container.clientWidth / this.container.clientHeight, 0.5, 1000 );
+        this.camera.position.x = 100;
         this.scene = new this.THREE.Scene();
         this.outlineScene = new this.THREE.Scene();
 
         // POINTS
-        this.color = new this.THREE.Color();
-        this.color.setRGB( 0.5, 0.5, 0.5 );
+        this.colorEx = new this.THREE.Color();
+        this.colorIn = new this.THREE.Color();
+        this.colorEx.setRGB( 0.4, 0.4, 0.7 );
+        this.colorIn.setRGB( 0.7, 0.4, 0.4 );
     }
 
     initTHREERenderer()
@@ -115,6 +120,121 @@ class App
     {
         document.body.appendChild( this.container );
         this.container.appendChild( this.renderer.domElement );
+    }
+
+    init3D()
+    {
+        $("#modelButtons").css( { display: "none" } );
+        var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
+        document.documentElement.style.setProperty('--gui_width', guiWidth);
+        this.setShowGUI(true);
+        this.controls.onWindowResize();
+        /*
+        this.$.getJSON( JSONstring, function( data )
+        {
+            this.modelParameters = data;
+            Brain( this.camera, this.scene );
+        }.bind(this) );
+        */
+        this.init3DPoints();
+
+        $("#startButtons").html( "Reload page to display model buttons again." );
+        $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
+    }
+
+    init3DPoints()
+    {
+        // generate points with random positions
+        var neurons = [];
+        var N = 10000  // number of points
+        var scale = 50;
+        for (var i = 0; i < N; ++i)
+        {
+            neurons.push({
+                x: Math.random()*scale - scale/2.,
+                y: Math.random()*scale - scale/2.,
+                z: Math.random()*scale - scale/2.});
+        }
+
+        ////////////////////////////////////////////////////////////////////
+
+        var geometry = new app.THREE.BufferGeometry();
+
+        var positions = new Float32Array( neurons.length * 3 );
+        var colors = new Float32Array( neurons.length * 3 );
+        var sizes = new Float32Array( neurons.length );
+
+        var i = 0;
+        for ( var neuron in neurons )
+        {
+            positions[ i ] = neurons[ neuron ].x;
+            positions[ i + 1 ] = neurons[ neuron ].y;
+            positions[ i + 2 ] = neurons[ neuron ].z;
+
+            if (Math.random() > 0.2)
+            {
+                colors[ i ] = app.colorEx.r;
+                colors[ i + 1 ] = app.colorEx.g;
+                colors[ i + 2 ] = app.colorEx.b;
+            }
+            else
+            {
+                colors[ i ] = app.colorIn.r;
+                colors[ i + 1 ] = app.colorIn.g;
+                colors[ i + 2 ] = app.colorIn.b;
+            }
+
+            i += 3;
+        }
+
+        geometry.addAttribute( 'position', new app.THREE.BufferAttribute( positions, 3 ) );
+        geometry.addAttribute( 'color', new app.THREE.BufferAttribute( colors, 3 ) );
+        geometry.addAttribute( 'size', new app.THREE.BufferAttribute( sizes, 1 ) );
+
+        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
+
+        var texture = new app.THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
+        var material = new app.THREE.PointsMaterial({size: 0.5, vertexColors: THREE.VertexColors}); /* app.THREE.ShaderMaterial(
+        {
+            uniforms:
+            {
+                color:
+                {
+                    value: new app.THREE.Color( 0xffffff )
+                },
+                texture:
+                {
+                    value: texture
+                }
+            },
+            vertexShader: [
+                "attribute float size;",
+                "attribute vec3 customColor;",
+                "varying vec3 vColor;",
+                "void main() {",
+                "vColor = customColor;",
+                "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "gl_Position = projectionMatrix * mvPosition;",
+                "gl_PointSize = 0.04 * ( 300.0 / -mvPosition.z );",
+                "}"
+            ].join( "\n" ),
+            fragmentShader: [
+                "uniform vec3 color;",
+                "uniform sampler2D texture;",
+                "varying vec3 vColor;",
+                "void main() {",
+                "gl_FragColor = vec4( color * vColor, 1.0 );",
+                "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
+                "}"
+            ].join( "\n" )
+        } ); */
+
+        var points = new app.THREE.Points( geometry, material );
+
+        this.scene.add( points );
+        this.layerNamesMade = true; // TODO: skipping layer names
+        requestAnimationFrame( this.render.bind(this) )
     }
 
     /*
@@ -145,7 +265,11 @@ class App
             // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
             // handles the file upload and subsequent allocation to Brain, which displays the model.
             document.getElementById( 'loadLayer' ).click();
-
+        }
+        else if ( target.id === '3D' )
+        {
+            this.init3D();
+            return;
         }
         else
         {
@@ -877,9 +1001,21 @@ class App
         this.makeDevice( device, col, map );
     }
 
+    makeMaskBox()
+    {
+        var dim = 10;
+        var pos = {x: 0, y: 0, z: 0};
+        var shape = 'box';
+
+        var box = new SelectionBox3D( dim, dim, dim, pos, shape );
+        this.controls.boxInFocus = box;
+    }
+
     render()
     {
         requestAnimationFrame( this.render.bind(this) );
+
+        this.orbitControls.update();
 
         this.renderer.clear();
         this.renderer.render( this.outlineScene, this.camera );

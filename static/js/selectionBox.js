@@ -836,6 +836,138 @@ class SelectionBox
     }
 }
 
+class SelectionBox3D
+{
+    constructor( width, height, depth, position, shape )
+    {
+        // this.uniqueID = -1;
+        // this.layerName = "";
+        // ll and ur use screen coordinates
+        // this.ll = ll;
+        // this.ur = ur;
+
+        this.width = width;
+        this.height = height;
+        this.depth = depth;
+        this.position = position;
+
+        // this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
+        // this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
+        // this.angle = ( this.majorAxis == ( ur.x - ll.x )  / 2 ) ? 0.0: Math.PI / 2;
+
+        this.selectedNeuronType;
+        this.selectedSynModel;
+        this.selectedShape = shape;
+
+        this.box;
+        this.resizePoints = [];
+        // this.rotationPoints = [];
+
+        // SelectedFirstTime is used to turn the elliptical masks. If we press on an
+        // elliptical mask two times, we should get point that let us turn the mask the
+        // second time.
+        // this.selectedFirstTime = false;
+
+        // this.currentCurve;
+        // this.currentCurveObject;
+        // this.curves = [];
+
+        // this.selectedPointIDs = [];
+        // this.nSelected = 0;
+
+        this.makeBox();
+        // this.CURVE_SEGMENTS = 100;
+    }
+
+    makeBox()
+    {
+        var geometry = new app.THREE.BoxBufferGeometry(this.width, this.height, this.depth);
+        var material = new app.THREE.MeshBasicMaterial();
+        material.transparent = true;
+        material.opacity = 0.3;
+        this.box = new app.THREE.Mesh( geometry, material );
+        this.box.position.copy( this.position );
+        app.scene.add( this.box );
+        this.makeResizePoints();
+    }
+
+    makeResizePoints()
+    {
+        /*
+            width = x
+            height = y
+            depth = z
+        */
+        var widthHalf = this.width / 2.0;
+        var heightHalf = this.height / 2.0;
+        var depthHalf = this.depth / 2.0;
+        var pointPositions = [{x: -widthHalf, y: 0, z: 0},
+                              {x: 0, y: -heightHalf, z: 0},
+                              {x: 0, y: 0, z: -depthHalf},
+                              {x: widthHalf, y: 0, z: 0},
+                              {x: 0, y: heightHalf, z: 0},
+                              {x: 0, y: 0, z: depthHalf},
+                             ];
+        var pointNames = ['width_1',
+                          'height_1',
+                          'depth_1',
+                          'width_2',
+                          'height_2',
+                          'depth_2'
+                          ]
+        for ( var i in pointPositions )
+        {
+            var geometry = new app.THREE.SphereBufferGeometry( 1.0, 32, 32 );
+            var material = new app.THREE.MeshBasicMaterial(
+            {
+                color: 0x66bb6a  // green
+            } );
+            var point = new app.THREE.Mesh( geometry, material );
+            // point.name = name;
+            point.position.copy( pointPositions[ i ] );
+            point.name = pointNames[ i ];
+
+            app.scene.add( point );
+            this.resizePoints.push( point );
+        }
+    }
+
+    updateBox()
+    {
+        this.box.geometry.dispose();
+        this.box.geometry = new app.THREE.BoxBufferGeometry( this.width, this.height, this.depth );
+        this.updatePoints();
+    }
+
+    updatePoints()
+    {
+        var widthHalf = this.width / 2.0;
+        var heightHalf = this.height / 2.0;
+        var depthHalf = this.depth / 2.0;
+        var xPos = this.position.x;
+        var yPos = this.position.y;
+        var zPos = this.position.z;
+        var pointPositions = [{x: xPos - widthHalf, y: yPos, z: zPos},
+                              {x: xPos, y: yPos - heightHalf, z: zPos},
+                              {x: xPos, y: yPos, z: zPos - depthHalf},
+                              {x: xPos + widthHalf, y: yPos, z: zPos},
+                              {x: xPos, y: yPos + heightHalf, z: zPos},
+                              {x: xPos, y: yPos, z: zPos + depthHalf},
+                             ];
+        for ( var i in this.resizePoints )
+        {
+            this.resizePoints[ i ].position.copy( pointPositions[i] );
+        }
+    }
+
+    updatePosition()
+    {
+        this.box.position.copy( this.position );
+        this.updatePoints();
+    }
+}
+
+
 // Try exporting SelectionBox for testing
 try
 {
