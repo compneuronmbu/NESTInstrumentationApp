@@ -46,9 +46,6 @@ class Parameters:
     assert lengthE**2 == NE and lengthI**2 == NI
     
     neuron_model = 'iaf_psc_alpha'
-    stimulator_model = 'poisson_generator'
-    recorder_model = 'voltmeter'
-    detector_model = 'spike_detector'
 
     g = 5.0  # ratio inhibitory weight/excitatory weight
     eta = 2.0  # external rate relative to threshold rate
@@ -67,7 +64,6 @@ class Parameters:
 
     nu_th = theta / (J * CE * tauMem)
     nu_ex = eta * nu_th
-    p_rate = 1000.0 * nu_ex * CE
 
     neuron_params = {"C_m": 1.0,
                      "tau_m": tauMem,
@@ -76,10 +72,6 @@ class Parameters:
                      "V_reset": 0.0,
                      "V_m": 0.0,
                      "V_th": theta}
-    stimulator_params = {"rate": p_rate}
-    recorder_params = {}
-    detector_params = {}
-
     
 def modified_copy(orig, diff):
     """
@@ -100,29 +92,18 @@ def make_layers():
 
     P = Parameters
     
-    models = [(P.stimulator_model, 'stimulator', P.stimulator_params),
-              (P.neuron_model, 'excitatory', P.neuron_params),
-              (P.neuron_model, 'inhibitory', P.neuron_params),
-              (P.detector_model, 'spikedet', P.detector_params),
-              (P.recorder_model, 'vmeter', P.recorder_params)]
+    models = [(P.neuron_model, 'excitatory', P.neuron_params),
+              (P.neuron_model, 'inhibitory', P.neuron_params)]
 
     syn_models = [('static_synapse', 'static_excitatory', {})]
 
-    layers = [('PoissonGenerator', {'rows': 1, 'columns': 1,
-                                    'elements': 'stimulator'}),
-              ('Excitatory', {'rows': P.lengthE, 'columns': P.lengthE,
+    layers = [('Excitatory', {'rows': P.lengthE, 'columns': P.lengthE,
                               'edge_wrap': True,
                               # 'center': [-1., 2.],  # For testing purposes
                               'elements': 'excitatory'}),
               ('Inhibitory', {'rows': P.lengthI, 'columns': P.lengthI,
                               'edge_wrap': True,
-                              'elements': 'inhibitory'}),
-              ('SpikeDetector', {'rows': 1, 'columns': 1,
-                                 'elements': 'spikedet'}),
-              ('Voltmeter_A', {'rows': 1, 'columns': 1,
-                              'elements': 'vmeter'}),
-              ('Voltmeter_B', {'rows': 1, 'columns': 1,
-                               'elements': 'vmeter'})]
+                              'elements': 'inhibitory'})]
 
     return layers, models, syn_models
 

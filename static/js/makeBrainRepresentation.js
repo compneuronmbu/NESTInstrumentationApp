@@ -32,12 +32,23 @@ var Brain = function( camera, scene )
             window.alert( "Please reconsider the number of layers. The app is constructed to properly display at most 12 layers." );
         }
 
-        var no_rows = Math.round( Math.sqrt( number_of_layers ) );
-        var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
+        var offsett_x;
+        var offsett_y;
+        if ( app.layer3D )
+        {
+            offsett_x = 0.0;
+            offsett_y = 0.0;
+            var no_rows = 1;
+        }
+        else
+        {
+            var no_rows = Math.round( Math.sqrt( number_of_layers ) );
+            var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
-        var offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
-        var offsett_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0; //0.0;
-        var i = 1;
+            offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
+            offsett_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0;
+            var i = 1;
+        }
 
         for ( var layer in layers )
         {
@@ -51,7 +62,7 @@ var Brain = function( camera, scene )
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
                     app.layer_points[ layers[ layer ].name ] = {
-                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center ),
+                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center, layers[layer].neuronType ),
                         offsets:
                             {
                                 x: offsett_x,
@@ -62,19 +73,25 @@ var Brain = function( camera, scene )
                         noElements: getNumberOfElements(layers[layer].elements)
                     };
 
-                    if ( i % no_cols == 0 )
+                    if ( !app.layer3D )
                     {
-                        offsett_x = -0.6 * ( no_cols - 1 );
-                        offsett_y += -1.2;
+                        if ( i % no_cols == 0 )
+                        {
+                            offsett_x = -0.6 * ( no_cols - 1 );
+                            offsett_y += -1.2;
+                        }
+                        else
+                        {
+                            offsett_x += 0.6 * 2;
+                        }
+                        ++i;
                     }
-                    else
-                    {
-                        offsett_x += 0.6 * 2;
-                    }
-                    ++i;
                 }
             }
         }
+
+        console.log(app.layer_points)
+        console.log(layers)
 
         app.outlineMaterial = new app.THREE.ShaderMaterial(
         {
@@ -113,31 +130,44 @@ var Brain = function( camera, scene )
     /*
      * Creates the points representing nodes.
      */
-    function initPoints( neurons, offsett_x, offsett_y, extent, center )
+    function initPoints( neurons, offsett_x, offsett_y, extent, center, neuronType )
     {
         var geometry = new app.THREE.BufferGeometry();
 
         var positions = new Float32Array( neurons.length * 3 );
         var colors = new Float32Array( neurons.length * 3 );
-        var sizes = new Float32Array( neurons.length );
 
         var i = 0;
         for ( var neuron in neurons )
         {
             positions[ i ] = ( neurons[ neuron ].x - center[0] ) / extent[0] + offsett_x;
             positions[ i + 1 ] = ( neurons[ neuron ].y - center[1] ) / extent[1] + offsett_y;
-            positions[ i + 2 ] = 0;
+            positions[ i + 2 ] = ( neurons[ neuron ].z - center[2] ) / extent[2];
 
-            colors[ i ] = app.color.r;
-            colors[ i + 1 ] = app.color.g;
-            colors[ i + 2 ] = app.color.b;
+            if ( neuronType === 'excitatory' )
+            {
+                colors[ i ] = app.colorEx.r;
+                colors[ i + 1 ] = app.colorEx.g;
+                colors[ i + 2 ] = app.colorEx.b;
+            }
+            else if ( neuronType === "inhibitory" )
+            {
+                colors[ i ] = app.colorIn.r;
+                colors[ i + 1 ] = app.colorIn.g;
+                colors[ i + 2 ] = app.colorIn.b;
+            }
+            else
+            {
+                colors[ i ] = app.color.r;
+                colors[ i + 1 ] = app.color.g;
+                colors[ i + 2 ] = app.color.b;
+            }
 
             i += 3;
         }
 
         geometry.addAttribute( 'position', new app.THREE.BufferAttribute( positions, 3 ) );
         geometry.addAttribute( 'customColor', new app.THREE.BufferAttribute( colors, 3 ) );
-        geometry.addAttribute( 'size', new app.THREE.BufferAttribute( sizes, 1 ) );
 
         geometry.computeBoundingBox();
         geometry.computeBoundingSphere();

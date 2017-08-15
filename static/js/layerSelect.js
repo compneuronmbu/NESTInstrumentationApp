@@ -37,6 +37,9 @@ class App
         this.neuronModels = [ 'All' ];
         this.synModels = [];
 
+        // 3D layer is default.
+        this.layer3D = true;
+
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
         this.setShowGUI = function() {};
@@ -98,6 +101,7 @@ class App
         this.outlineScene = new this.THREE.Scene();
 
         // POINTS
+        this.color = new this.THREE.Color();
         this.colorEx = new this.THREE.Color();
         this.colorIn = new this.THREE.Color();
         this.colorEx.setRGB( 0.4, 0.4, 0.7 );
@@ -251,11 +255,20 @@ class App
             JSONstring = "/static/examples/brunel_converted.json";
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
+            this.layer3D = false;
         }
         else if ( target.id === 'hillTononi' )
         {
             console.log("Hill-Tononi!");
             JSONstring = "/static/examples/hill_tononi_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+            this.layer3D = false;
+        }
+        else if ( target.id === "brunel3D" )
+        {
+            console.log("Brunel 3D!");
+            JSONstring = "/static/examples/brunel_3D_converted.json";
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
         }
@@ -265,6 +278,8 @@ class App
             // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
             // handles the file upload and subsequent allocation to Brain, which displays the model.
             document.getElementById( 'loadLayer' ).click();
+
+            // TODO: Must find a way to find if we have 2D or 3D layer on uploaded layers.
         }
         else if ( target.id === '3D' )
         {
@@ -1021,7 +1036,7 @@ class App
         this.renderer.render( this.outlineScene, this.camera );
         this.renderer.render( this.scene, this.camera );
 
-        if ( !this.layerNamesMade )
+        if ( !this.layerNamesMade && !this.layer3D)
         {
             make_layer_names();
             this.layerNamesMade = true;
