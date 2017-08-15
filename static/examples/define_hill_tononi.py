@@ -104,14 +104,7 @@ def make_layers():
 
     models = [(nrnmod, 'Relay', thalPars),
               (nrnmod, 'Inter', thalPars),
-              (nrnmod, 'RpNeuron', reticPars),
-              ('sinusoidal_poisson_generator', 'RetinaNode',
-               {'amplitude': params['ret_amplitude'],
-                'rate': params['ret_rate'],
-                'frequency': params['temporal_frequency'],
-                'phase': 0.0,
-                'individual_spike_trains': False
-                })]
+              (nrnmod, 'RpNeuron', reticPars)]
 
     # Build lists of cortical models using list comprehension.
     models += [(nrnmod, layer + 'pyr', ctxExPars) for layer in ('L23', 'L4')]
@@ -135,11 +128,7 @@ def make_layers():
                    # 'center': [3, -1], # For testing purposes
                    'edge_wrap': True}
 
-    layers = [('SinPoissonGenerator_A', modified_copy(layerPropsP,
-                                                {'rows': 1, 'columns': 1, 'elements': 'RetinaNode'})),
-              ('SinPoissonGenerator_B', modified_copy(layerPropsP,
-                                                {'rows': 1, 'columns': 1, 'elements': 'RetinaNode'})),
-              ('Tp', modified_copy(layerPropsP, {'elements': ['Relay', 'Inter']})),
+    layers = [('Tp', modified_copy(layerPropsP, {'elements': ['Relay', 'Inter']})),
               ('Rp', modified_copy(layerPropsP, {'elements': 'RpNeuron'})),
               ('Vp_h', modified_copy(layerPropsP, {'elements':
                                              ['L23pyr', 2, 'L23in', 1,
@@ -148,10 +137,7 @@ def make_layers():
               ('Vp_v', modified_copy(layerPropsP, {'elements':
                                              ['L23pyr', 2, 'L23in', 1,
                                               'L4pyr', 2, 'L4in', 1,
-                                              'L56pyr', 2, 'L56in', 1]})),
-              ('Voltmeter_A', modified_copy(layerPropsP,{'rows': 1, 'columns': 1, 'elements': 'voltmeter'})),
-              ('Voltmeter_B', modified_copy(layerPropsP,{'rows': 1, 'columns': 1, 'elements': 'voltmeter'}))
-              ]
+                                              'L56pyr', 2, 'L56in', 1]}))]
 
     return layers, models, syn_models
 
