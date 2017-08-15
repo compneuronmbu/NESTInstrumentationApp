@@ -34,7 +34,7 @@ var Brain = function( camera, scene )
 
         var offsett_x;
         var offsett_y;
-        if ( app.layer3D )
+        if ( app.is3DLayer )
         {
             offsett_x = 0.0;
             offsett_y = 0.0;
@@ -73,7 +73,7 @@ var Brain = function( camera, scene )
                         noElements: getNumberOfElements(layers[layer].elements)
                     };
 
-                    if ( !app.layer3D )
+                    if ( !app.is3DLayer )
                     {
                         if ( i % no_cols == 0 )
                         {

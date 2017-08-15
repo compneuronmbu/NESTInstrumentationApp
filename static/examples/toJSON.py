@@ -8,6 +8,7 @@ def convert(specs, conn_specs, file_name):
     json_dict['syn_models'] = specs[2]
     json_dict['models'] = {s[1]: s[0] for s in specs[1]}
     layers = specs[0]
+    is3DLayer = True;
 
     for layer in layers:
         name = layer[0]
@@ -15,7 +16,6 @@ def convert(specs, conn_specs, file_name):
             continue
 
         layer_dict = {"neurons": []}
-        print(layer)
         layer_dict['elements'] = layer[1]['elements']
         layer_dict['name'] = name
         if 'neuronType' in layer[1]:
@@ -64,6 +64,7 @@ def convert(specs, conn_specs, file_name):
 
             # If we are given rowns and columns, we have a 2D layer, and we set z-coordinates to zero.
             zpos = [0]*len(xpos)
+            is3DLayer = False
         else:
             # Positions through positions vector
             xpos = [x[0] for x in layer[1]['positions']]
@@ -73,11 +74,13 @@ def convert(specs, conn_specs, file_name):
                 zpos = [z[2] for z in layer[1]['positions']]
             else:
                 zpos = [0]*len(xpos)
+                is3DLayer = False
 
         for i in range(len(xpos)):
             layer_dict["neurons"].append({"x": xpos[i], "y": ypos[i], "z": zpos[i]})
         json_dict["layers"].append(layer_dict)
 
+    json_dict["is3DLayer"] = is3DLayer
     json_dict["projections"] = conn_specs
     print("##############################")
     pprint.pprint(json_dict)

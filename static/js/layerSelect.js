@@ -38,7 +38,7 @@ class App
         this.synModels = [];
 
         // 3D layer is default.
-        this.layer3D = true;
+        this.is3DLayer = true;
 
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
@@ -255,7 +255,7 @@ class App
             JSONstring = "/static/examples/brunel_converted.json";
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
-            this.layer3D = false;
+            this.is3DLayer = false;
         }
         else if ( target.id === 'hillTononi' )
         {
@@ -263,7 +263,7 @@ class App
             JSONstring = "/static/examples/hill_tononi_converted.json";
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
-            this.layer3D = false;
+            this.is3DLayer = false;
         }
         else if ( target.id === "brunel3D" )
         {
@@ -321,6 +321,8 @@ class App
             try{
                 var result = JSON.parse(e.target.result);
                 this.modelParameters = result;
+                console.log(result)
+                this.is3DLayer = this.modelParameters.is3DLayer;
                 Brain( this.camera, this.scene );
                 // Hide buttons after clicking on it.
                 this.$("#modelButtons").css( { display: "none" } );
@@ -1036,7 +1038,7 @@ class App
         this.renderer.render( this.outlineScene, this.camera );
         this.renderer.render( this.scene, this.camera );
 
-        if ( !this.layerNamesMade && !this.layer3D)
+        if ( !this.layerNamesMade && !this.is3DLayer )
         {
             make_layer_names();
             this.layerNamesMade = true;
