@@ -15,7 +15,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -93,3 +92,9 @@ ENV/
 
 # Saved selections
 *.pkl
+
+# yarn packages
+node_modules/
+
+# test coverage files
+coverage/

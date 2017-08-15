@@ -2,62 +2,60 @@
 
 The NESTConnectionApp is a graphical user interface to create connections in [NEST](http://www.nest-simulator.org).
 
-## Installing the App
+## Dependencies
 
-The NESTConnectionApp requires the following packages to run:
+You need NEST built with Python support, and importable from Python.
+You also need a JavaScript package manager installed, like [Yarn](https://yarnpkg.com) or [npm](https://www.npmjs.com/). To run the JavaScript tests, you will also need [Node.js](https://nodejs.org/en/).
 
-- numpy
-- matplotlib
-- PyQt5
-- IPython and ipywidgets
+Once you have a package manager for JavaScript, installing the dependencies is done by simply running either
 
-Note that NEST is not required to run the App. If NEST is available,
-you can run simulations directly from the App. You will need the NEST
-developer version with tag
-[`External/TopologySelectNodes`](https://github.com/nest/nest-simulator/tree/External/TopologySelectNodes)
-or later.
-
-To build the NESTConnectionApp you can simply run
 ```
-$ python setup.py install
+$ yarn
 ```
-This will build and install it to Python's site-packages folder.
 
-### Running the testsuite
+or 
 
-After installing the app, run the following in Python to execute the
-testsuite (requires NEST in `PYTHONPATH`):
 ```
-import NESTConnectionApp.tests.test_all as nca_tests
-nca_tests.run()
+$ npm
 ```
+
+depending on your package manager of choice.
+
+For testing the Python backend, you'll need [nose](http://nose.readthedocs.io/en/latest/).
 
 ## Running the App
 
-There are two ways to run the NESTConnectionApp. 
+First start the server with
 
-The first is to use `nest_connection_app`. For the Brunel example it can be run with
 ```
-$ ./nest_connection_app.py examples/define_brunel.py
-```
-And for the Hill-Tononi example it can be run with
-```
-$ ./nest_connection_app.py examples/define_hill_tononi.py
+$ yarn start
 ```
 
-Another way to run the App is in an interactive Jupyter Notebook, 
-for which there is an example in `examples/ConnectionAppDemo.ipynb`.
+or
 
-## Building the documentation
-
-The documentation is created using [Sphinx](http://www.sphinx-doc.org/en/stable/), 
-and can be built using `make`. To output the documentation to HTML, you can from 
-the `/docs` directory run
 ```
-$ make html
+$ npm start
 ```
-The documentation will then be the output in `docs/_build/html`.
 
-Note that Sphinx uses *autodoc*, which imports the modules to be documented. 
-NEST must therefore be in the `PYTHONPATH` if documentation for the class 
-`NESTInterface` is to be generated.
+Then open your web browser and go to `http://127.0.0.1:5000/NESTConnectionApp`.
+
+
+## Running the testsuite
+
+To run the JavaScript testsuite with Yarn, run
+
+```
+$ yarn test
+```
+
+To run them with npm, run
+
+```
+$ npm test
+```
+
+Testing the Python backend can be done with
+
+```
+$ nosetests
+```
