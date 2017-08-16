@@ -93,11 +93,9 @@ class NESTInterface(object):
             x_side = upper_right[0] - lower_left[0]
             y_side = upper_right[1] - lower_left[1]
             if x_side >= y_side:
-            #    angle = 0.0
                 major = x_side
                 minor = y_side
             else:
-            #    angle = 90.
                 major = y_side
                 minor = x_side
             spec = {'major_axis': major, 'minor_axis': minor,
@@ -115,10 +113,10 @@ class NESTInterface(object):
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
-        # TODO: We do not take neuron type into account yet! We can choose it in app, but it does not do anything!
         name = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
+        neuron_type = selection_dict['neuronType']
         angle = float(selection_dict['angle']) * 180 / math.pi
 
         ll = [selection['ll']['x'], selection['ll']['y']]
@@ -128,7 +126,71 @@ class NESTInterface(object):
         mask = self.make_mask(ll, ur, mask_type, angle, cntr)
         gids = tp.SelectNodesByMask(self.layers[name],
                                     cntr, mask)
-        return gids
+
+        # If we have chosen neuron_type All, we return all the GIDs.
+        if neuron_type == "All":
+            return gids
+
+        # If we have chosen a spesific neuron_type, we have to find the correct GIDs.
+        for layer in self.networkSpecs['layers']:
+            if name == layer['name']:
+                # All the elements in the selected layer
+                models = layer['elements']
+
+                # If neuron_type is in models, the layer contains the chosen neuron_type,
+                # and we must find the correct GIDs. 
+                if neuron_type in models:
+                    print(models)
+                    # If models is not a list, the layer contains only one element type, we have chosen
+                    # this type and the found GIDs are the GIDs of the chosen element type.
+                    if not isinstance(models, list):
+                        return gids
+
+                    # If models is a list, we need to find how many positions we have chosen in the mask, how many nodes the
+                    # neuron_type have at each position and how many nodes there are before the neuron_type.
+                    # That is, we need to find the indices for the neuron_type in the GID list found above.
+
+                    totalNoOfEl = selection_dict['noOfNeuronTypesInLayer']
+                    numberOfPositions = len(gids) / totalNoOfEl
+
+                    start_index, end_index = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
+                    return gids[start_index:end_index]
+                else:
+                    # If neuron_type is not in models, we have chosen a neuron_type that belongs to a different
+                    # layer, and we return an empty list.
+                    return []
+
+    def getIndicesOfNeuronType(self, neuron_type, models, numberOfPositions):
+        # models can for instance be of the form
+        # ['L23pyr', 2, 'L23in', 1, 'L4pyr', 2, 'L4in', 1, 'L56pyr', 2, 'L56in', 1] or
+        # ['Relay', 'Inter']
+
+        # We count number of elements. So Relay will set counter to 1, while L23pyr will set counter to 2.
+        counter = 0
+        list_counter = 0
+        for mod in models:
+            # If mod is a string, we add the element, unless we have hit apon the neuron type, in which we need to
+            # find the indices.
+            if isinstance(mod, str):
+                if mod == neuron_type:
+                    start_index = counter * numberOfPositions
+
+                    if list_counter + 1 == len(models) or isinstance(models[list_counter + 1], str):
+                        end_index = ( counter + 1 ) * numberOfPositions
+                    else:
+                        end_index = ( counter + models[ list_counter + 1 ] ) * numberOfPositions
+                    break
+                # Adding element
+                counter += 1
+            else:
+                # If mod is not a string, we have a number telling us how many elements of the last type
+                # there is, so we add the number and subtract the element count from above.
+                counter += mod - 1
+                #            elem.append(self.networkSpecs['models'][mod])
+            list_counter += 1
+
+        return int(start_index), int(end_index)
+
 
     def printGIDs(self, selection):
         gids = self.get_gids(selection)

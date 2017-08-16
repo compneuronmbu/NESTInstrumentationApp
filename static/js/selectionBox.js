@@ -526,6 +526,7 @@ class SelectionBox
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
+            noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
         };
 
         return selectionInfo;
