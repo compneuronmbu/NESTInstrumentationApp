@@ -901,12 +901,15 @@ class SelectionBox3D
         var widthHalf = this.width / 2.0;
         var heightHalf = this.height / 2.0;
         var depthHalf = this.depth / 2.0;
-        var pointPositions = [{x: -widthHalf, y: 0, z: 0},
-                              {x: 0, y: -heightHalf, z: 0},
-                              {x: 0, y: 0, z: -depthHalf},
-                              {x: widthHalf, y: 0, z: 0},
-                              {x: 0, y: heightHalf, z: 0},
-                              {x: 0, y: 0, z: depthHalf},
+        var xPos = this.position.x;
+        var yPos = this.position.y;
+        var zPos = this.position.z;
+        var pointPositions = [{x: xPos - widthHalf, y: yPos, z: zPos},
+                              {x: xPos, y: yPos - heightHalf, z: zPos},
+                              {x: xPos, y: yPos, z: zPos - depthHalf},
+                              {x: xPos + widthHalf, y: yPos, z: zPos},
+                              {x: xPos, y: yPos + heightHalf, z: zPos},
+                              {x: xPos, y: yPos, z: zPos + depthHalf},
                              ];
         var pointNames = ['width_1',
                           'height_1',
@@ -930,6 +933,15 @@ class SelectionBox3D
             app.scene.add( point );
             this.resizePoints.push( point );
         }
+    }
+
+    removePoints()
+    {
+        for ( var i = 0; i < this.resizePoints.length; ++i )
+        {
+            app.scene.remove( this.resizePoints[ i ] );
+        }
+        this.resizePoints = [];
     }
 
     updateBox()

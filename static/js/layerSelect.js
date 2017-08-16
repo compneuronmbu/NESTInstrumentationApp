@@ -1031,6 +1031,19 @@ class App
 
         var box = new SelectionBox3D( dim, dim, dim, pos, shape );
         this.controls.boxInFocus = box;
+        this.selectionBoxArray.push( box );
+    }
+    /*
+     * Returns the boxes of all the SelectionBox3D objects in selectionBoxArray.
+     */
+    getMaskBoxes()
+    {
+        var boxes = []
+        for ( var i in this.selectionBoxArray )
+        {
+            boxes.push( this.selectionBoxArray[ i ].box );
+        }
+        return boxes;
     }
 
     render()

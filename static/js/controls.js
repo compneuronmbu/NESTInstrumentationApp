@@ -180,12 +180,6 @@ class Controls
             console.log( "intersects", this.resizeSideInFocus );
             return;
         }
-        else
-        {
-            // TODO: implement 3D removePoints
-            //this.boxInFocus.removePoints();
-            this.boxInFocus = undefined;
-        }
     }
 
     /*
@@ -259,6 +253,26 @@ class Controls
         }
 
         this.make_selection_box = true;
+    }
+
+    getBoxClicked3D()
+    {
+        var selectedBox = undefined;
+        var boxIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+                    app.mouseDownCoords.y,
+                    app.getMaskBoxes() );
+        if ( boxIntersects.length > 0 )
+        {
+            //console.log(pointIntersects[ 0 ].object);
+            for ( var i in app.selectionBoxArray )
+            {
+                if (app.selectionBoxArray[ i ].box === boxIntersects[ 0 ].object )
+                {
+                    selectedBox = app.selectionBoxArray[ i ];
+                }
+            }
+        }
+        return selectedBox;
     }
 
     /*
@@ -605,20 +619,36 @@ class Controls
             app.mouseDownCoords.y = event.clientY;
             if (app.is3DLayer)
             {
-                // check if we hit a resize point
                 this.prevMouseCoords = {x: event.clientX, y: event.clientY};
-
                 if ( this.boxInFocus !== undefined )
                 {
+                    // check if we click on a resize point
                     this.select3DResizePoint( event.clientX, event.clientY );
                     if ( this.resizeSideInFocus !== undefined )
                     {
                         event.preventDefault();
                         event.stopPropagation();
+                        if ( this.shiftDown )
+                        {
+                            this.resizeBoxSwitch = true;
+                        }
                     }
-                    if ( this.shiftDown )
+                    else
                     {
-                        this.resizeBoxSwitch = true;
+                        if ( this.getBoxClicked3D() === undefined )
+                        {
+                            this.boxInFocus.removePoints();
+                            this.boxInFocus = undefined;
+                        }
+                    }
+                }
+                else
+                {
+                    // check if we click on a box
+                    this.boxInFocus = this.getBoxClicked3D();
+                    if ( this.boxInFocus !== undefined )
+                    {
+                        this.boxInFocus.makeResizePoints();
                     }
                 }
             }
@@ -660,7 +690,7 @@ class Controls
     {
         if ( app.is3DLayer )
         {
-            if ( this.resizeSideInFocus !== undefined )
+            if ( this.resizeSideInFocus !== undefined && this.mouseDown )
             {
                 // If we have selected one of the resize points, update the size of
                 // the box.
