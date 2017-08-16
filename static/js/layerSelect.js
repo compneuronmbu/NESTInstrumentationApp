@@ -81,7 +81,6 @@ class App
         document.getElementById('loadLayer').addEventListener('change', this.handleModelFileUpload.bind( this ), false);
 
         this.controls = new Controls( this.circle_objects, this.renderer.domElement );
-        this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
 
         this.devicePlots = new DevicePlots();
 
@@ -102,6 +101,7 @@ class App
 
         // POINTS
         this.color = new this.THREE.Color();
+        this.color.setRGB( 0.7, 0.7, 0.7 );
         this.colorEx = new this.THREE.Color();
         this.colorIn = new this.THREE.Color();
         this.colorEx.setRGB( 0.4, 0.4, 0.7 );
@@ -300,6 +300,11 @@ class App
             this.modelParameters = data;
             Brain( this.camera, this.scene );
         }.bind(this) );
+
+        if ( this.is3DLayer )
+        {
+            this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
+        }
 
         $("#startButtons").html( "Reload page to display model buttons again." );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
@@ -1032,7 +1037,10 @@ class App
     {
         requestAnimationFrame( this.render.bind(this) );
 
-        this.orbitControls.update();
+        if ( this.orbitControls )
+        {
+            this.orbitControls.update();
+        }
 
         this.renderer.clear();
         this.renderer.render( this.outlineScene, this.camera );

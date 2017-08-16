@@ -182,7 +182,8 @@ class Controls
         }
         else
         {
-            this.boxInFocus.removePoints();
+            // TODO: implement 3D removePoints
+            //this.boxInFocus.removePoints();
             this.boxInFocus = undefined;
         }
     }
@@ -599,56 +600,57 @@ class Controls
 
         if ( event.target.localName === "canvas" )
         {
-            // check if we hit a resize point
-            // this.mouseDown = true;
+            this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
-            this.prevMouseCoords = {x: event.clientX, y: event.clientY};
-
-            if ( this.boxInFocus !== undefined )
+            if (app.is3DLayer)
             {
-                this.select3DResizePoint( event.clientX, event.clientY );
-                if ( this.resizeSideInFocus !== undefined )
-                {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                if ( this.shiftDown )
-                {
-                    this.resizeBoxSwitch = true;
-                }
-            }
-            
-            /*
+                // check if we hit a resize point
+                this.prevMouseCoords = {x: event.clientX, y: event.clientY};
 
-            this.deviceInFocus = undefined;
-            this.removeOutline();
-
-            if ( this.boxInFocus !== undefined )
-            {
-                console.log( "Select resize points" )
-                // If a box is selected, check if we click on a resize or rotation point.
-                this.selectResizeOrRotationPoints( event.clientX, event.clientY );
-                if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
+                if ( this.boxInFocus !== undefined )
                 {
-                    return;
+                    this.select3DResizePoint( event.clientX, event.clientY );
+                    if ( this.resizeSideInFocus !== undefined )
+                    {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    if ( this.shiftDown )
+                    {
+                        this.resizeBoxSwitch = true;
+                    }
                 }
-            }
-            if ( event.shiftKey )
-            {
-                console.log( "Select device" )
-                // If the shift key is down, check if we click on a device.
-                this.selectDevice( event.clientX, event.clientY );
             }
             else
             {
-                console.log( "Select box" )
-                // If neither of the above, check if we click on a box.
-                this.selectBox()
+                this.deviceInFocus = undefined;
+                this.removeOutline();
+
+                if ( this.boxInFocus !== undefined )
+                {
+                    console.log( "Select resize points" )
+                    // If a box is selected, check if we click on a resize or rotation point.
+                    this.selectResizeOrRotationPoints( event.clientX, event.clientY );
+                    if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
+                    {
+                        return;
+                    }
+                }
+                if ( event.shiftKey )
+                {
+                    console.log( "Select device" )
+                    // If the shift key is down, check if we click on a device.
+                    this.selectDevice( event.clientX, event.clientY );
+                }
+                else
+                {
+                    console.log( "Select box" )
+                    // If neither of the above, check if we click on a box.
+                    this.selectBox()
+                }
             }
-            */
         }
-        
     }
 
     /*
@@ -656,45 +658,56 @@ class Controls
      */
     onMouseMove( event )
     {
-
-        if ( this.make_selection_box )
+        if ( app.is3DLayer )
         {
-            // If we are making a box, update the marquee
-            this.updateMarquee( event.clientX, event.clientY );
-        }
-        else if ( this.resizeSideInFocus !== undefined )
-        {
-            // If we have selected one of the resize points, update the size of
-            // the box.
-            // this.resizeBox( event.clientX, event.clientY );
-            event.preventDefault();
-            event.stopPropagation();
-            if ( this.resizeBoxSwitch )
+            if ( this.resizeSideInFocus !== undefined )
             {
-                this.resizeBox3D( event.clientX, event.clientY );
+                // If we have selected one of the resize points, update the size of
+                // the box.
+                // this.resizeBox( event.clientX, event.clientY );
+                event.preventDefault();
+                event.stopPropagation();
+                if ( this.resizeBoxSwitch )
+                {
+                    this.resizeBox3D( event.clientX, event.clientY );
+                }
+                else
+                {
+                    this.moveBox( event.clientX, event.clientY );
+                }
+                this.prevMouseCoords = {x: event.clientX, y: event.clientY};
             }
-            else
+        }
+        else
+        {
+            if ( this.make_selection_box )
             {
-                this.moveBox( event.clientX, event.clientY );
+                // If we are making a box, update the marquee
+                this.updateMarquee( event.clientX, event.clientY );
             }
-            this.prevMouseCoords = {x: event.clientX, y: event.clientY};
-        }
-        else if ( this.rotationPoint !== undefined )
-        {
-            // If we have selected one of the rotation points, rotate the selection.
-            this.rotateBox( event.clientX, event.clientY );
-        }
-        else if ( this.make_connection )
-        {
-            // If we are making a connection, update the connection line
-            this.updateLine( event.clientX, event.clientY );
-        }
-        else if ( this.deviceInFocus != undefined && this.mouseDown )
-        {
-            // If we are moving a device, update device position.
-            if ( this.deviceInFocus )
+            else if ( this.resizeSideInFocus !== undefined )
             {
-                this.updateDevicePosition( event.clientX, event.clientY );
+                // If we have selected one of the resize points, update the size of
+                // the box.
+                this.resizeBox( event.clientX, event.clientY );
+            }
+            else if ( this.rotationPoint !== undefined )
+            {
+                // If we have selected one of the rotation points, rotate the selection.
+                this.rotateBox( event.clientX, event.clientY );
+            }
+            else if ( this.make_connection )
+            {
+                // If we are making a connection, update the connection line
+                this.updateLine( event.clientX, event.clientY );
+            }
+            else if ( this.deviceInFocus != undefined && this.mouseDown )
+            {
+                // If we are moving a device, update device position.
+                if ( this.deviceInFocus )
+                {
+                    this.updateDevicePosition( event.clientX, event.clientY );
+                }
             }
         }
     }
@@ -707,37 +720,50 @@ class Controls
         //event.preventDefault();
         //event.stopPropagation();
 
-        if ( this.make_selection_box )
+        if ( app.is3DLayer )
         {
-            this.makeSelectionBox();
+            if ( this.resizeSideInFocus !== undefined )
+            {
+                // Check if we have flipped any of the axes of the box.
+                // this.checkFlipBox();
+                this.resizeSideInFocus = undefined;
+            }
+            this.resetButtons();
         }
-        else if ( this.resizeSideInFocus !== undefined )
+        else
         {
-            // Check if we have flipped any of the axes of the box.
-            // this.checkFlipBox();
-            this.resizeSideInFocus = undefined;
-        }
-        else if ( this.rotationPoint !== undefined )
-        {
-            // Update the rotation points
-            this.boxInFocus.removePoints();
-            this.boxInFocus.makeRotationPoints();
+            if ( this.make_selection_box )
+            {
+                this.makeSelectionBox();
+            }
+            else if ( this.resizeSideInFocus !== undefined )
+            {
+                // Check if we have flipped any of the axes of the box.
+                this.checkFlipBox();
+            }
+            else if ( this.rotationPoint !== undefined )
+            {
+                // Update the rotation points
+                this.boxInFocus.removePoints();
+                this.boxInFocus.makeRotationPoints();
 
-            this.rotationPoint = undefined;
+                this.rotationPoint = undefined;
 
-            // Print GIDs for debugging purposes
-            this.serverPrintGids();
+                // Print GIDs for debugging purposes
+                this.serverPrintGids();
+            }
+            else if ( this.make_connection )
+            {
+                this.makeConnection( event.clientX, event.clientY );
+            }
+            else if ( this.deviceInFocus != undefined )
+            {
+                // Dropping a device will reset the cursor.
+                this.domElement.style.cursor = 'auto';
+            }
+            this.resetButtons();
         }
-        else if ( this.make_connection )
-        {
-            this.makeConnection( event.clientX, event.clientY );
-        }
-        else if ( this.deviceInFocus != undefined )
-        {
-            // Dropping a device will reset the cursor.
-            this.domElement.style.cursor = 'auto';
-        }
-        this.resetButtons();
+
     }
 
     onKeyDown( event )
