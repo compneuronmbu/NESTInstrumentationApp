@@ -332,7 +332,7 @@ class Controls
 
     resizeBox3D( mouseX, mouseY )
     {
-        var speed = 0.5;
+        var speed = 0.01;
         switch ( this.resizeSideInFocus )
         {
             case "width_1":
@@ -358,7 +358,7 @@ class Controls
         Bevege på aksen i henhold til punkt man trykket på?
         Bevege i xy-planet parallelt med kamera?
         */
-        var speed = 0.5;
+        var speed = 0.01;
         switch ( this.resizeSideInFocus )
         {
             case "width_1":

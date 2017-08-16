@@ -1020,7 +1020,7 @@ class App
 
     makeMaskBox()
     {
-        var dim = 10;
+        var dim = 0.2;
         var pos = {x: 0, y: 0, z: 0};
         var shape = 'box';
 

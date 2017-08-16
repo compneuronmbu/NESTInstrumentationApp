@@ -917,7 +917,7 @@ class SelectionBox3D
                           ]
         for ( var i in pointPositions )
         {
-            var geometry = new app.THREE.SphereBufferGeometry( 1.0, 32, 32 );
+            var geometry = new app.THREE.SphereBufferGeometry( 0.01, 32, 32 );
             var material = new app.THREE.MeshBasicMaterial(
             {
                 color: 0x66bb6a  // green
