@@ -90,9 +90,6 @@ var Brain = function( camera, scene )
             }
         }
 
-        console.log(app.layer_points)
-        console.log(layers)
-
         app.outlineMaterial = new app.THREE.ShaderMaterial(
         {
             uniforms:
