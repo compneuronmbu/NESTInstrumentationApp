@@ -862,6 +862,11 @@ class SelectionBox3D
 
         this.box;
         this.resizePoints = [];
+        this.borderBox;
+        this.activeColor = new app.THREE.Color();
+        this.activeColor.setRGB( 1.0, 1.0, 0.0 );
+        this.inactiveColor = new app.THREE.Color();
+        this.inactiveColor.setRGB( 0.7, 0.7, 0.7 );
         // this.rotationPoints = [];
 
         // SelectedFirstTime is used to turn the elliptical masks. If we press on an
@@ -889,7 +894,9 @@ class SelectionBox3D
         this.box = new app.THREE.Mesh( geometry, material );
         this.box.position.copy( this.position );
         app.scene.add( this.box );
-        this.makeResizePoints();
+        // this.makeResizePoints();
+        this.makeBorderLines();
+        this.makeTransformControls();
     }
 
     makeResizePoints()
@@ -936,6 +943,35 @@ class SelectionBox3D
         }
     }
 
+    makeBorderLines()
+    {
+        this.borderBox = new app.THREE.BoxHelper( );
+        this.borderBox.material.depthTest = false;
+        this.borderBox.material.transparent = true;
+
+        app.scene.add( this.borderBox );
+
+        this.borderBox.setFromObject( this.box );
+        this.setBorderLinesColor(this.activeColor);
+    }
+
+    updateBorderLines()
+    {
+        this.borderBox.setFromObject( this.box );
+    }
+
+    setBorderLinesColor( color)
+    {
+        this.borderBox.material.color = color;
+    }
+
+    makeTransformControls()
+    {
+        this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
+        app.scene.add( this.transformControls );
+        this.transformControls.attach( this.box );
+    }
+
     removePoints()
     {
         for ( var i = 0; i < this.resizePoints.length; ++i )
@@ -971,12 +1007,25 @@ class SelectionBox3D
         {
             this.resizePoints[ i ].position.copy( pointPositions[i] );
         }
+        this.updateBorderLines();
     }
 
     updatePosition()
     {
         this.box.position.copy( this.position );
         this.updatePoints();
+    }
+
+    setActive()
+    {
+        this.transformControls.attach( this.box );
+        this.setBorderLinesColor(this.activeColor);
+    }
+
+    setInactive()
+    {
+        this.transformControls.detach();
+        this.setBorderLinesColor(this.inactiveColor);
     }
 }
 

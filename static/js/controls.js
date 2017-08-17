@@ -619,27 +619,25 @@ class Controls
             app.mouseDownCoords.y = event.clientY;
             if (app.is3DLayer)
             {
-                this.prevMouseCoords = {x: event.clientX, y: event.clientY};
+                // this.prevMouseCoords = {x: event.clientX, y: event.clientY};
                 if ( this.boxInFocus !== undefined )
                 {
-                    // check if we click on a resize point
-                    this.select3DResizePoint( event.clientX, event.clientY );
-                    if ( this.resizeSideInFocus !== undefined )
+                    var boxClicked = this.getBoxClicked3D();
+                    if ( boxClicked === undefined )
                     {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if ( this.shiftDown )
+                        if ( this.boxInFocus.transformControls.axis === null )
                         {
-                            this.resizeBoxSwitch = true;
-                        }
-                    }
-                    else
-                    {
-                        if ( this.getBoxClicked3D() === undefined )
-                        {
-                            this.boxInFocus.removePoints();
+                            this.boxInFocus.setInactive();
                             this.boxInFocus = undefined;
+                            return;
                         }
+                        return;
+                    }
+                    else if ( boxClicked !== this.boxInFocus )
+                    {
+                        this.boxInFocus.setInactive();
+                        this.boxInFocus = boxClicked;
+                        this.boxInFocus.setActive();
                     }
                 }
                 else
@@ -648,7 +646,7 @@ class Controls
                     this.boxInFocus = this.getBoxClicked3D();
                     if ( this.boxInFocus !== undefined )
                     {
-                        this.boxInFocus.makeResizePoints();
+                        this.boxInFocus.setActive();
                     }
                 }
             }
@@ -690,23 +688,7 @@ class Controls
     {
         if ( app.is3DLayer )
         {
-            if ( this.resizeSideInFocus !== undefined && this.mouseDown )
-            {
-                // If we have selected one of the resize points, update the size of
-                // the box.
-                // this.resizeBox( event.clientX, event.clientY );
-                event.preventDefault();
-                event.stopPropagation();
-                if ( this.resizeBoxSwitch )
-                {
-                    this.resizeBox3D( event.clientX, event.clientY );
-                }
-                else
-                {
-                    this.moveBox( event.clientX, event.clientY );
-                }
-                this.prevMouseCoords = {x: event.clientX, y: event.clientY};
-            }
+            this.boxInFocus && this.boxInFocus.updateBorderLines();
         }
         else
         {
@@ -752,12 +734,6 @@ class Controls
 
         if ( app.is3DLayer )
         {
-            if ( this.resizeSideInFocus !== undefined )
-            {
-                // Check if we have flipped any of the axes of the box.
-                // this.checkFlipBox();
-                this.resizeSideInFocus = undefined;
-            }
             this.resetButtons();
         }
         else
@@ -798,10 +774,21 @@ class Controls
 
     onKeyDown( event )
     {
-        if ( event.keyCode == 16 ) // shift key
+        switch ( event.keyCode )
         {
-            console.log("shift down");
-            this.shiftDown = true;
+            case 16:  // shift key
+                console.log("shift down");
+                this.shiftDown = true;
+                break;
+            case 82:  // R key
+                this.boxInFocus
+                    && this.boxInFocus.transformControls
+                    && this.boxInFocus.transformControls.setMode( "rotate" );
+                break;
+            case 83:  // S key
+                this.boxInFocus
+                    && this.boxInFocus.transformControls
+                    && this.boxInFocus.transformControls.setMode( "scale" );
         }
     }
 
@@ -810,22 +797,26 @@ class Controls
      */
     onKeyUp( event )
     {
-        // For releasing the delete key (46).
-        if ( event.keyCode == 46 )
+        switch ( event.keyCode )
         {
-            if ( this.boxInFocus !== undefined )
-            {
-                this.deleteBox();
-            }
-            else if ( this.deviceInFocus != undefined )
-            {
-                this.deleteDevice();
-            }
-        }
-        else if ( event.keyCode == 16 )
-        {
-            console.log("shift up");
-            this.shiftDown = false;
+            case 46:  // delete key
+                if ( this.boxInFocus !== undefined )
+                {
+                    this.deleteBox();
+                }
+                else if ( this.deviceInFocus != undefined )
+                {
+                    this.deleteDevice();
+                }
+            case 16:  // shift key
+                console.log("shift up");
+                this.shiftDown = false;
+                break;
+            case 82:  // R key
+            case 83:  // S key
+                this.boxInFocus
+                    && this.boxInFocus.transformControls
+                    && this.boxInFocus.transformControls.setMode( "translate" );
         }
     }
 
