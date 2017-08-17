@@ -126,121 +126,6 @@ class App
         this.container.appendChild( this.renderer.domElement );
     }
 
-    init3D()
-    {
-        $("#modelButtons").css( { display: "none" } );
-        var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
-        document.documentElement.style.setProperty('--gui_width', guiWidth);
-        this.setShowGUI(true);
-        this.controls.onWindowResize();
-        /*
-        this.$.getJSON( JSONstring, function( data )
-        {
-            this.modelParameters = data;
-            Brain( this.camera, this.scene );
-        }.bind(this) );
-        */
-        this.init3DPoints();
-
-        $("#startButtons").html( "Reload page to display model buttons again." );
-        $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
-    }
-
-    init3DPoints()
-    {
-        // generate points with random positions
-        var neurons = [];
-        var N = 10000  // number of points
-        var scale = 50;
-        for (var i = 0; i < N; ++i)
-        {
-            neurons.push({
-                x: Math.random()*scale - scale/2.,
-                y: Math.random()*scale - scale/2.,
-                z: Math.random()*scale - scale/2.});
-        }
-
-        ////////////////////////////////////////////////////////////////////
-
-        var geometry = new app.THREE.BufferGeometry();
-
-        var positions = new Float32Array( neurons.length * 3 );
-        var colors = new Float32Array( neurons.length * 3 );
-        var sizes = new Float32Array( neurons.length );
-
-        var i = 0;
-        for ( var neuron in neurons )
-        {
-            positions[ i ] = neurons[ neuron ].x;
-            positions[ i + 1 ] = neurons[ neuron ].y;
-            positions[ i + 2 ] = neurons[ neuron ].z;
-
-            if (Math.random() > 0.2)
-            {
-                colors[ i ] = app.colorEx.r;
-                colors[ i + 1 ] = app.colorEx.g;
-                colors[ i + 2 ] = app.colorEx.b;
-            }
-            else
-            {
-                colors[ i ] = app.colorIn.r;
-                colors[ i + 1 ] = app.colorIn.g;
-                colors[ i + 2 ] = app.colorIn.b;
-            }
-
-            i += 3;
-        }
-
-        geometry.addAttribute( 'position', new app.THREE.BufferAttribute( positions, 3 ) );
-        geometry.addAttribute( 'color', new app.THREE.BufferAttribute( colors, 3 ) );
-        geometry.addAttribute( 'size', new app.THREE.BufferAttribute( sizes, 1 ) );
-
-        geometry.computeBoundingBox();
-        geometry.computeBoundingSphere();
-
-        var texture = new app.THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
-        var material = new app.THREE.PointsMaterial({size: 0.5, vertexColors: THREE.VertexColors}); /* app.THREE.ShaderMaterial(
-        {
-            uniforms:
-            {
-                color:
-                {
-                    value: new app.THREE.Color( 0xffffff )
-                },
-                texture:
-                {
-                    value: texture
-                }
-            },
-            vertexShader: [
-                "attribute float size;",
-                "attribute vec3 customColor;",
-                "varying vec3 vColor;",
-                "void main() {",
-                "vColor = customColor;",
-                "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
-                "gl_Position = projectionMatrix * mvPosition;",
-                "gl_PointSize = 0.04 * ( 300.0 / -mvPosition.z );",
-                "}"
-            ].join( "\n" ),
-            fragmentShader: [
-                "uniform vec3 color;",
-                "uniform sampler2D texture;",
-                "varying vec3 vColor;",
-                "void main() {",
-                "gl_FragColor = vec4( color * vColor, 1.0 );",
-                "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
-                "}"
-            ].join( "\n" )
-        } ); */
-
-        var points = new app.THREE.Points( geometry, material );
-
-        this.scene.add( points );
-        this.layerNamesMade = true; // TODO: skipping layer names
-        requestAnimationFrame( this.render.bind(this) )
-    }
-
     /*
     * Finds out which of the model buttons we chose, and sends infomation to Brain, which
     * then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
@@ -278,13 +163,6 @@ class App
             // Need to simulate click on hidden button ´loadLayer´, and then ´handleModelFileUpload´
             // handles the file upload and subsequent allocation to Brain, which displays the model.
             document.getElementById( 'loadLayer' ).click();
-
-            // TODO: Must find a way to find if we have 2D or 3D layer on uploaded layers.
-        }
-        else if ( target.id === '3D' )
-        {
-            this.init3D();
-            return;
         }
         else
         {
@@ -301,6 +179,8 @@ class App
             Brain( this.camera, this.scene );
         }.bind(this) );
 
+        // Define orbit controls here, because we need to know if we have a 2D or 3D model before defining the controls
+        // as we do not want to define them if we have a 2D model.
         if ( this.is3DLayer )
         {
             this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
@@ -942,18 +822,48 @@ class App
      */
     makeDevice( device, col, map, params = {} )
     {
-        var geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
+        if ( this.is3DLayer )
+        {
+            var geometry = new this.THREE.SphereGeometry( 0.05, 32, 32 );
+            // Need to properly map the 2D image onto the 3D sphere.
+            var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+            for ( var i = 0; i < faceVertexUvs.length; ++i )
+            {
+                var uvs = faceVertexUvs[ i ];
+                var face = geometry.faces[ i ];
+
+                for ( var j = 0; j < 3; j ++ )
+                {
+                    uvs[ j ].x = face.vertexNormals[ j ].x * 0.5 + 0.5;
+                    uvs[ j ].y = face.vertexNormals[ j ].y * 0.5 + 0.5;
+                }
+            }
+        }
+        else
+        {
+            var geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
+        }
+
         geometry.computeBoundingSphere(); // needed for loading
         var material = new this.THREE.MeshBasicMaterial(
         {
             color: col,
             map: map
         } );
+
         var circle = new this.THREE.Mesh( geometry, material );
         var deviceName = device + "_" + String( this.deviceCounter++ );
         circle.name = deviceName;
 
-        circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
+        if ( this.is3DLayer )
+        {
+            circle.position.x = this.newDevicePos[ this.newDeviceIndex ];
+            circle.position.y = 0.75;
+        }
+        else
+        {
+            circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
+        }
         this.newDeviceIndex = ( this.newDeviceIndex + 1 === this.newDevicePos.length ) ? 0 : ++this.newDeviceIndex;
 
         this.scene.add( circle );
