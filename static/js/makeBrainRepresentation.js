@@ -172,8 +172,6 @@ var Brain = function( camera, scene )
         var texture = new app.THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
         var material = new app.THREE.ShaderMaterial(
         {
-            transparent: true,
-            depthTest: false,
             uniforms:
             {
                 color:
@@ -203,6 +201,7 @@ var Brain = function( camera, scene )
                 "void main() {",
                 "gl_FragColor = vec4( color * vColor, 1.0 );",
                 "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
+                "if (gl_FragColor.a < 0.5) discard;",
                 "}"
             ].join( "\n" )
         } );
