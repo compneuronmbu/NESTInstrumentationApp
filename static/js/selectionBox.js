@@ -999,6 +999,7 @@ class SelectionBox3D
     {
         this.transformControls.attach( this.box );
         this.setBorderLinesColor(this.activeColor);
+        this.updateColors();
     }
 
     setInactive()

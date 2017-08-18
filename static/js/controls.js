@@ -611,20 +611,29 @@ class Controls
      */
     onMouseDown( event )
     {
-
         if ( event.target.localName === "canvas" )
         {
+            // TODO: onMouseDown is long. Should be cleaned up. We do basically the same
+            // things in 3D and 2D, but call different functions. Should be distributed somewhere else?
             this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
-            if (app.is3DLayer)
+
+            this.deviceInFocus = undefined;
+            this.removeOutline();
+
+            if ( app.is3DLayer )
             {
-                // this.prevMouseCoords = {x: event.clientX, y: event.clientY};
+                // In 3D we don't actually need to make a selectionBox, because it is done by pressing
+                // the button. We therefore don't need a make_selection_box boolean, and we only need to 
+                // check if we have pressed a selection box or a device when the mouse button is pressed.
                 if ( this.boxInFocus !== undefined )
                 {
                     var boxClicked = this.getBoxClicked3D();
                     if ( boxClicked === undefined )
                     {
+                        // If we have not pressed a box, but we have a box in focus, we need to inactivate the
+                        // box in focus, because we have pressed somewhere else. 
                         if ( this.boxInFocus.transformControls.axis === null )
                         {
                             this.boxInFocus.setInactive();
@@ -637,6 +646,8 @@ class Controls
                     }
                     else if ( boxClicked !== this.boxInFocus )
                     {
+                        // If we have pressed on a box, but it is not the one that is in focus, we need
+                        // to make the clicked box the box in focus.
                         this.boxInFocus.setInactive();
                         this.boxInFocus = boxClicked;
                         this.boxInFocus.setActive();
@@ -644,19 +655,27 @@ class Controls
                 }
                 else
                 {
-                    // check if we click on a box
+                    // If we don't have a box in focus, we check if we click on a box, and if so, make it the one in focus.
                     this.boxInFocus = this.getBoxClicked3D();
                     if ( this.boxInFocus !== undefined )
                     {
                         this.boxInFocus.setActive();
                     }
                 }
+
+                if ( event.shiftKey )
+                {
+                    console.log( "Select device" )
+                    // If the shift key is down, check if we click on a device.
+                    this.selectDevice( event.clientX, event.clientY );
+
+                    // Don't want to rotate the camera if we are moving a device. This is only relevant
+                    // if we have a 3D model.
+                    this.deviceInFocus && app.disableEnableOrbitControls( false );
+                }
             }
             else
             {
-                this.deviceInFocus = undefined;
-                this.removeOutline();
-
                 if ( this.boxInFocus !== undefined )
                 {
                     console.log( "Select resize points" )
@@ -693,36 +712,33 @@ class Controls
             this.boxInFocus && this.boxInFocus.updateBorderLines();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
         }
-        else
+        if ( this.make_selection_box )
         {
-            if ( this.make_selection_box )
+            // If we are making a box, update the marquee
+            this.updateMarquee( event.clientX, event.clientY );
+        }
+        else if ( this.resizeSideInFocus !== undefined )
+        {
+            // If we have selected one of the resize points, update the size of
+            // the box.
+            this.resizeBox( event.clientX, event.clientY );
+        }
+        else if ( this.rotationPoint !== undefined )
+        {
+            // If we have selected one of the rotation points, rotate the selection.
+            this.rotateBox( event.clientX, event.clientY );
+        }
+        else if ( this.make_connection )
+        {
+            // If we are making a connection, update the connection line
+            this.updateLine( event.clientX, event.clientY );
+        }
+        else if ( this.deviceInFocus != undefined && this.mouseDown )
+        {
+            // If we are moving a device, update device position.
+            if ( this.deviceInFocus )
             {
-                // If we are making a box, update the marquee
-                this.updateMarquee( event.clientX, event.clientY );
-            }
-            else if ( this.resizeSideInFocus !== undefined )
-            {
-                // If we have selected one of the resize points, update the size of
-                // the box.
-                this.resizeBox( event.clientX, event.clientY );
-            }
-            else if ( this.rotationPoint !== undefined )
-            {
-                // If we have selected one of the rotation points, rotate the selection.
-                this.rotateBox( event.clientX, event.clientY );
-            }
-            else if ( this.make_connection )
-            {
-                // If we are making a connection, update the connection line
-                this.updateLine( event.clientX, event.clientY );
-            }
-            else if ( this.deviceInFocus != undefined && this.mouseDown )
-            {
-                // If we are moving a device, update device position.
-                if ( this.deviceInFocus )
-                {
-                    this.updateDevicePosition( event.clientX, event.clientY );
-                }
+                this.updateDevicePosition( event.clientX, event.clientY );
             }
         }
     }
@@ -735,45 +751,40 @@ class Controls
         //event.preventDefault();
         //event.stopPropagation();
 
-        if ( app.is3DLayer )
+        if ( this.make_selection_box )
         {
             this.boxInFocus && this.boxInFocus.updateColors();
-            this.resetButtons();
+            this.makeSelectionBox();
         }
-        else
+        else if ( this.resizeSideInFocus !== undefined )
         {
-            if ( this.make_selection_box )
-            {
-                this.makeSelectionBox();
-            }
-            else if ( this.resizeSideInFocus !== undefined )
-            {
-                // Check if we have flipped any of the axes of the box.
-                this.checkFlipBox();
-            }
-            else if ( this.rotationPoint !== undefined )
-            {
-                // Update the rotation points
-                this.boxInFocus.removePoints();
-                this.boxInFocus.makeRotationPoints();
-
-                this.rotationPoint = undefined;
-
-                // Print GIDs for debugging purposes
-                this.serverPrintGids();
-            }
-            else if ( this.make_connection )
-            {
-                this.makeConnection( event.clientX, event.clientY );
-            }
-            else if ( this.deviceInFocus != undefined )
-            {
-                // Dropping a device will reset the cursor.
-                this.domElement.style.cursor = 'auto';
-            }
-            this.resetButtons();
+            // Check if we have flipped any of the axes of the box.
+            this.checkFlipBox();
         }
+        else if ( this.rotationPoint !== undefined )
+        {
+            // Update the rotation points
+            this.boxInFocus.removePoints();
+            this.boxInFocus.makeRotationPoints();
 
+            this.rotationPoint = undefined;
+
+            // Print GIDs for debugging purposes
+            this.serverPrintGids();
+        }
+        else if ( this.make_connection )
+        {
+            this.makeConnection( event.clientX, event.clientY );
+        }
+        else if ( this.deviceInFocus != undefined )
+        {
+            // Dropping a device will reset the cursor.
+            this.domElement.style.cursor = 'auto';
+
+            // Must enable orbit controls again
+            app.is3DLayer && app.disableEnableOrbitControls( true );
+        }
+        this.resetButtons();
     }
 
     onKeyDown( event )
