@@ -652,8 +652,9 @@ class Controls
                     // If the shift key is down, check if we click on a device.
                     this.selectDevice( event.clientX, event.clientY );
 
-                    // Don't want to rotate the camera if we are moving a device. This is only relevant if we have a 3D model.
-                    app.orbitControls.enabled = false;
+                    // Don't want to rotate the camera if we are moving a device. This is only relevant
+                    // if we have a 3D model.
+                    this.deviceInFocus && app.disableEnableOrbitControls( false );
                 }
                 else
                 {
@@ -770,11 +771,8 @@ class Controls
             // Dropping a device will reset the cursor.
             this.domElement.style.cursor = 'auto';
 
-            if ( app.is3DLayer )
-            {
-                // Must enable orbit controls again
-                app.orbitControls.enabled = true;
-            }
+            // Must enable orbit controls again
+            app.is3DLayer && app.disableEnableOrbitControls( true );
         }
         this.resetButtons();
     }

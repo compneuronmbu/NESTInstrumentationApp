@@ -235,6 +235,14 @@ class App
             }, 100);
     }
 
+    /*
+    * Enables or disables the orbit controls.
+    */
+    disableEnableOrbitControls( booleanValue )
+    {
+        this.orbitControls.enabled = booleanValue;
+    }
+
 
     /*
      * Handles response from Server-Sent Events.
