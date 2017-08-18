@@ -613,6 +613,8 @@ class Controls
     {
         if ( event.target.localName === "canvas" )
         {
+            // TODO: onMouseDown is long. Should be cleaned up. We do basically the same
+            // things in 3D and 2D, but call different functions. Should be distributed somewhere else?
             this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
@@ -665,9 +667,6 @@ class Controls
             }
             else
             {
-                //this.deviceInFocus = undefined;
-                //this.removeOutline();
-
                 if ( this.boxInFocus !== undefined )
                 {
                     console.log( "Select resize points" )
