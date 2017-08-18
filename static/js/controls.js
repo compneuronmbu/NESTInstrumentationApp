@@ -14,7 +14,7 @@ class Controls
         this.mouseDown = false;
         this.mouseDownFirstTime = false;
         this.shiftDown = false;
-        this.resizeBoxSwitch = false;
+        this.translatingBox = false;
         this.make_selection_box = false;
         this.make_connection = false;
 
@@ -49,7 +49,7 @@ class Controls
     {
         this.mouseDown = false;
         this.shiftDown = false;
-        this.resizeBoxSwitch = false;
+        this.translatingBox = false;
         this.make_selection_box = false;
         this.make_connection = false;
         this.marquee.fadeOut();
@@ -629,8 +629,10 @@ class Controls
                         {
                             this.boxInFocus.setInactive();
                             this.boxInFocus = undefined;
+                            app.resetVisibility();
                             return;
                         }
+                        this.translatingBox = true;
                         return;
                     }
                     else if ( boxClicked !== this.boxInFocus )
@@ -689,6 +691,7 @@ class Controls
         if ( app.is3DLayer )
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
+            this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
         }
         else
         {
@@ -734,6 +737,7 @@ class Controls
 
         if ( app.is3DLayer )
         {
+            this.boxInFocus && this.boxInFocus.updateColors();
             this.resetButtons();
         }
         else
@@ -808,6 +812,7 @@ class Controls
                 {
                     this.deleteDevice();
                 }
+                break;
             case 16:  // shift key
                 console.log("shift up");
                 this.shiftDown = false;

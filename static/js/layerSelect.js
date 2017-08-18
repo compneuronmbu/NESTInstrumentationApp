@@ -956,6 +956,21 @@ class App
         return boxes;
     }
 
+    resetVisibility()
+    {
+        for ( var layer in app.layer_points )
+        {
+            var points = this.layer_points[ layer ].points;
+            var visibility = points.geometry.getAttribute( "visible" ).array;
+
+            for ( var i = 0; i < visibility.length; ++i )
+            {
+                visibility[ i ] = 1.0;
+            }
+            points.geometry.attributes.visible.needsUpdate = true;
+        }
+    }
+
     render()
     {
         requestAnimationFrame( this.render.bind(this) );

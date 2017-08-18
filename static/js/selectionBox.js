@@ -125,7 +125,7 @@ class SelectionBox
     }
 
     /*
-     * Updtes the colors of the points within the box.
+     * Updates the colors of the points within the box.
      */
     updateColors()
     {
@@ -878,7 +878,7 @@ class SelectionBox3D
         // this.currentCurveObject;
         // this.curves = [];
 
-        // this.selectedPointIDs = [];
+        this.selectedPoints = [];
         // this.nSelected = 0;
 
         this.makeBox();
@@ -897,6 +897,7 @@ class SelectionBox3D
         // this.makeResizePoints();
         this.makeBorderLines();
         this.makeTransformControls();
+        this.updateColors();
     }
 
     makeResizePoints()
@@ -988,28 +989,6 @@ class SelectionBox3D
         this.updatePoints();
     }
 
-    updatePoints()
-    {
-        var widthHalf = this.width / 2.0;
-        var heightHalf = this.height / 2.0;
-        var depthHalf = this.depth / 2.0;
-        var xPos = this.position.x;
-        var yPos = this.position.y;
-        var zPos = this.position.z;
-        var pointPositions = [{x: xPos - widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos - heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos - depthHalf},
-                              {x: xPos + widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos + heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos + depthHalf},
-                             ];
-        for ( var i in this.resizePoints )
-        {
-            this.resizePoints[ i ].position.copy( pointPositions[i] );
-        }
-        this.updateBorderLines();
-    }
-
     updatePosition()
     {
         this.box.position.copy( this.position );
@@ -1026,6 +1005,80 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+    }
+
+    /*
+     * Finds which points lie within the box, and colors them.
+     */
+    updateColors()
+    {
+        var points;
+        var colors;
+        var positions;
+        var visibility;
+        var newPoints = [];
+        var oldPointIDs = this.selectedPoints;
+
+        for ( var layer in app.layer_points )
+        {
+            points = app.layer_points[ layer ].points;
+            colors = points.geometry.getAttribute( "customColor" ).array;
+            positions = points.geometry.getAttribute( "position" ).array;
+            visibility = points.geometry.getAttribute( "visible" ).array;
+
+            for ( var i = 0; i < oldPointIDs.length; ++i )
+            {
+                var colorID = oldPointIDs[ i ];
+
+                // TODO: need to check if excitatory or inhibitory
+                colors[ colorID ] = app.colorEx.r;
+                colors[ colorID + 1 ] = app.colorEx.g;
+                colors[ colorID + 2 ] = app.colorEx.b;
+            }
+
+            for ( var i = 0; i < positions.length; i += 3 )
+            {
+                var p = {};
+                p.x = positions[ i ];
+                p.y = positions[ i + 1 ];
+                p.z = positions[ i + 2 ];
+                if ( this.containsPoint( p ) )
+                {
+                    colors[ i ] = 0.0;
+                    colors[ i + 1 ] = 1.0;
+                    colors[ i + 2 ] = 0.0;
+                    visibility[i / 3] = 1.0;
+                    points.geometry.attributes.customColor.needsUpdate = true;
+                    newPoints.push( i );
+                }
+                else
+                {
+                    if ( p.x > this.box.position.x )
+                        //&& p.y > this.box.position.y
+                        //&& p.z > this.box.position.z )
+                    {
+                        visibility[i / 3] = 1.0;
+                    }
+                    else 
+                    {
+                        visibility[i / 3] = 0.0;
+                    }
+
+                }
+                points.geometry.attributes.visible.needsUpdate = true;
+            }
+            this.selectedPoints = newPoints;
+        }
+    }
+
+    containsPoint( pos )
+    {
+        var xHalf = ( this.width * this.box.scale.x ) / 2.0;
+        var yHalf = ( this.height * this.box.scale.y ) / 2.0;
+        var zHalf = ( this.depth * this.box.scale.z ) / 2.0;
+        return pos.x > ( this.box.position.x - xHalf ) && pos.x < ( this.box.position.x + xHalf )
+             && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
+             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );
     }
 }
 
