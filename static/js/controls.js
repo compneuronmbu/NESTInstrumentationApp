@@ -624,12 +624,16 @@ class Controls
 
             if ( app.is3DLayer )
             {
-                // this.prevMouseCoords = {x: event.clientX, y: event.clientY};
+                // In 3D we don't actually need to make a selectionBox, because it is done by pressing
+                // the button. We therefore don't need a make_selection_box boolean, and we only need to 
+                // check if we have pressed a selection box or a device when the mouse button is pressed.
                 if ( this.boxInFocus !== undefined )
                 {
                     var boxClicked = this.getBoxClicked3D();
                     if ( boxClicked === undefined )
                     {
+                        // If we have not pressed a box, but we have a box in focus, we need to inactivate the
+                        // box in focus, because we have pressed somewhere else. 
                         if ( this.boxInFocus.transformControls.axis === null )
                         {
                             this.boxInFocus.setInactive();
@@ -640,8 +644,19 @@ class Controls
                     }
                     else if ( boxClicked !== this.boxInFocus )
                     {
+                        // If we have pressed on a box, but it is not the one that is in focus, we need
+                        // to make the clicked box the box in focus.
                         this.boxInFocus.setInactive();
                         this.boxInFocus = boxClicked;
+                        this.boxInFocus.setActive();
+                    }
+                }
+                else
+                {
+                    // If we don't have a box in focus, we check if we click on a box, and if so, make it the one in focus.
+                    this.boxInFocus = this.getBoxClicked3D();
+                    if ( this.boxInFocus !== undefined )
+                    {
                         this.boxInFocus.setActive();
                     }
                 }
@@ -655,15 +670,6 @@ class Controls
                     // Don't want to rotate the camera if we are moving a device. This is only relevant
                     // if we have a 3D model.
                     this.deviceInFocus && app.disableEnableOrbitControls( false );
-                }
-                else
-                {
-                    // check if we click on a box
-                    this.boxInFocus = this.getBoxClicked3D();
-                    if ( this.boxInFocus !== undefined )
-                    {
-                        this.boxInFocus.setActive();
-                    }
                 }
             }
             else

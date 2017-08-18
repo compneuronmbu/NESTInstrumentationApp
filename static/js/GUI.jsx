@@ -54,7 +54,9 @@ class GuiButtons extends React.Component{
                 <SelectionsButton button_class ='selectionsButton'
                 button_id='rectangleButton' text="&#x25FC;" function={function () {app.makeRectangularShape();}} />
                 <SelectionsButton button_class ='selectionsButton'
-                button_id='ellipticalButton' text="&#x2b2c;" function={function () {app.makeEllipticalShape();}} />
+                button_id='ellipticalButton' text="&#x2b2c;" 
+                    disabled={app.is3DLayer+1}
+                    function={function () {app.makeEllipticalShape();}} />
                 <br/>
                 <SelectionsButton text='Make mask box'
                     disabled={app.is3DLayer}
