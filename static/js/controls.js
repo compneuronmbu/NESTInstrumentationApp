@@ -113,10 +113,7 @@ class Controls
                 info: this.boxInFocus.getSelectionInfo()
             } ),
             success: function( data )
-            {
-                console.log( data.title );
-                console.log( data.article );
-            },
+            {},
             dataType: "json"
         } );
     }
