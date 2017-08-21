@@ -110,6 +110,7 @@ var Brain = function( camera, scene )
         camera.position.set(  0, 0, no_rows + 1.5  );
 
         makeModelNameLists();
+        makeBorderLines();
 
         // if undefined, make a requestAnimationFrame function (mostly for testsuite)
         if (window.requestAnimationFrame === undefined) {
@@ -133,6 +134,7 @@ var Brain = function( camera, scene )
 
         var positions = new Float32Array( neurons.length * 3 );
         var colors = new Float32Array( neurons.length * 3 );
+        var visible = new Float32Array( neurons.length );
 
         var i = 0;
         for ( var neuron in neurons )
@@ -163,8 +165,13 @@ var Brain = function( camera, scene )
             i += 3;
         }
 
+        for (var i = 0; i < visible.length; ++i) {
+            visible[i] = 1.0;
+        }
+
         geometry.addAttribute( 'position', new app.THREE.BufferAttribute( positions, 3 ) );
         geometry.addAttribute( 'customColor', new app.THREE.BufferAttribute( colors, 3 ) );
+        geometry.addAttribute( 'visible', new app.THREE.BufferAttribute( visible, 1 ) );
 
         geometry.computeBoundingBox();
         geometry.computeBoundingSphere();
@@ -172,8 +179,6 @@ var Brain = function( camera, scene )
         var texture = new app.THREE.TextureLoader().load( "static/js/textures/sharp_circle_white.png" );
         var material = new app.THREE.ShaderMaterial(
         {
-            transparent: true,
-            depthTest: false,
             uniforms:
             {
                 color:
@@ -187,10 +192,13 @@ var Brain = function( camera, scene )
             },
             vertexShader: [
                 "attribute float size;",
+                "attribute float visible;",
                 "attribute vec3 customColor;",
                 "varying vec3 vColor;",
+                "varying float vVisible;",
                 "void main() {",
                 "vColor = customColor;",
+                "vVisible = visible;",
                 "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
                 "gl_Position = projectionMatrix * mvPosition;",
                 "gl_PointSize = 0.04 * ( 300.0 / -mvPosition.z );",
@@ -200,9 +208,13 @@ var Brain = function( camera, scene )
                 "uniform vec3 color;",
                 "uniform sampler2D texture;",
                 "varying vec3 vColor;",
+                "varying float vVisible;",
                 "void main() {",
+                "vec4 loadedTexture = texture2D( texture, gl_PointCoord );",
+                "if (loadedTexture.a < 0.5) discard;",
+                "if (vVisible < 0.5) discard;",
                 "gl_FragColor = vec4( color * vColor, 1.0 );",
-                "gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );",
+                "gl_FragColor = gl_FragColor * loadedTexture;",
                 "}"
             ].join( "\n" )
         } );
@@ -311,6 +323,28 @@ var Brain = function( camera, scene )
 
         console.log("makeModelNameLists")
         app.synapseNeuronModelCallback([app.neuronModels, app.synModels]);
+    }
+
+    function makeBorderLines()
+    {
+        for ( var layer in app.layer_points )
+        {
+            var borderBox = new app.THREE.BoxHelper( );
+            borderBox.material.depthTest = false;
+            borderBox.material.transparent = true;
+
+            app.scene.add( borderBox );
+
+            borderBox.setFromObject( app.layer_points[ layer ].points );
+            for (var i = 0; i < borderBox.geometry.attributes.position.array; ++i )
+            {
+                borderBox.geometry.attributes.position.array[ i ] *= 1.5;
+            }
+            borderBox.geometry.attributes.position.needsUpdate = true;
+            var borderColor = new app.THREE.Color();
+            borderColor.setRGB( 0.5, 0.5, 0.5 );
+            borderBox.material.color = borderColor;
+        }
     }
 
     initLayers();
