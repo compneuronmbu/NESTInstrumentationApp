@@ -613,6 +613,7 @@ class Controls
                     }
                 }
 
+                // NB! Remember to remove. This will lead to console errors when no box is defined.
                 this.serverPrintGids();
 
                 if ( event.shiftKey )

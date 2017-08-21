@@ -26,7 +26,7 @@ def index():
 
 
 @app.route('/selector', methods=['POST', 'GET'])
-def print_GIS():
+def print_GIDs():
     if flask.request.method == 'POST':
         global interface
         pp = pprint.PrettyPrinter(indent=4)

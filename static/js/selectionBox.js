@@ -518,6 +518,7 @@ class SelectionBox
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
+        var noNeurons = { [this.layerName]: app.layer_points[this.layerName]['noElements'] };
 
         var selectionInfo = {
             name: [this.layerName],
@@ -526,9 +527,9 @@ class SelectionBox
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
-            noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
+            noOfNeuronTypesInLayer: noNeurons
         };
-
+        console.log(selectionInfo)
         return selectionInfo;
     }
 
@@ -1051,14 +1052,15 @@ class SelectionBox3D
 
         // We need to send down all the layers in some way....
         var nameArray = [];
+        var noNeuronPointsDict = {}
 
         for ( var layerName in app.layer_points )
         {
             nameArray.push(layerName);
+            noNeuronPointsDict[layerName] = app.layer_points[layerName]['noElements']
         }
 
         var selectionInfo = {
-            //name: this.layerName,
             name: nameArray,
             selection: { "ll": this.ll, "ur": this.ur },
             //angle: this.angle,
@@ -1066,7 +1068,7 @@ class SelectionBox3D
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
-            //noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
+            noOfNeuronTypesInLayer: noNeuronPointsDict
         };
 
         console.log(selectionInfo)

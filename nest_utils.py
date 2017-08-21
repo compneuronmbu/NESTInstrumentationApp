@@ -147,16 +147,20 @@ class NESTInterface(object):
         mask = self.make_mask(ll, ur, mask_type, angle, cntr)
 
         collected_gids = []
+        # TODO: Think we might be able to use only one of these for-loops, the last one. And then check if layer['name'] is in layer_names
+        # In case of a 3D layer, we have to go through all the layer names in the selection_dict, because we only have one dict
+        # for the selection, but the area might encompass several layers.
         for name in layer_names:
             gids = tp.SelectNodesByMask(self.layers[name],
                                         cntr, mask)
 
             # If we have chosen neuron_type All, we return all the GIDs.
             if neuron_type == "All":
-                #return gids
                 collected_gids += gids
+                continue
 
-            # If we have chosen a spesific neuron_type, we have to find the correct GIDs.
+            # If we have chosen a spesific neuron_type, we have to find the correct GIDs. To do this, we have to go through
+            # all the layers and compare to the type we have chosen.
             for layer in self.networkSpecs['layers']:
                 if name == layer['name']:
                     # All the elements in the selected layer
@@ -165,27 +169,23 @@ class NESTInterface(object):
                     # If neuron_type is in models, the layer contains the chosen neuron_type,
                     # and we must find the correct GIDs. 
                     if neuron_type in models:
-                        print(models)
                         # If models is not a list, the layer contains only one element type, we have chosen
                         # this type and the found GIDs are the GIDs of the chosen element type.
                         if not isinstance(models, list):
-                            #return gids
                             collected_gids += gids
+                            continue
 
                         # If models is a list, we need to find how many positions we have chosen in the mask, how many nodes the
                         # neuron_type have at each position and how many nodes there are before the neuron_type.
                         # That is, we need to find the indices for the neuron_type in the GID list found above.
 
-                        totalNoOfEl = selection_dict['noOfNeuronTypesInLayer']
+                        print(selection_dict['noOfNeuronTypesInLayer'])
+                        totalNoOfEl = selection_dict['noOfNeuronTypesInLayer'][name]
                         numberOfPositions = len(gids) / totalNoOfEl
 
-                        start_index, end_index = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
-                        #return gids[start_index:end_index]
-                        collected_gids += gids[start_index:end_index]
-                    #else:
-                        # If neuron_type is not in models, we have chosen a neuron_type that belongs to a different
-                        # layer, and we return an empty list.
-                    #    return []
+                        start_idx, end_idx = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
+                        collected_gids += gids[start_idx:end_idx]
+
         return collected_gids
 
     def getIndicesOfNeuronType(self, neuron_type, models, numberOfPositions):
@@ -196,6 +196,9 @@ class NESTInterface(object):
         # We count number of elements. So Relay will set counter to 1, while L23pyr will set counter to 2.
         counter = 0
         list_counter = 0
+        start_index = 0
+        end_index = 0
+        print(models)
         for mod in models:
             # If mod is a string, we add the element, unless we have hit apon the neuron type, in which we need to
             # find the indices.
