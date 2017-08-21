@@ -844,9 +844,13 @@ class SelectionBox3D
         // this.uniqueID = -1;
         // this.layerName = "";
 
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
+        this.originalWidth = width;
+        this.originalHeight = height;
+        this.originalDepth = depth;
+
+        this.width = this.originalWidth;
+        this.height = this.originalHeight;
+        this.depth = this.originalDepth;
         this.center = center;
 
         // ll and ur use object coordinates in 3D
@@ -945,9 +949,9 @@ class SelectionBox3D
 
     updateWidthHeightDeptCenter()
     {
-        this.width = this.width * this.box.scale.x;
-        this.height = this.height * this.box.scale.y;
-        this.dept = this.depth * this.box.scale.z;
+        this.width = this.originalWidth * this.box.scale.x;
+        this.height = this.originalHeight * this.box.scale.y;
+        this.depth = this.originalDepth * this.box.scale.z;
         this.center = this.box.position;
     }
 
