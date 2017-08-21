@@ -957,6 +957,10 @@ class App
         var box = new SelectionBox3D( dim, dim, dim, pos, shape );
         this.controls.boxInFocus = box;
         this.selectionBoxArray.push( box );
+
+        console.log( "Selection box: ", box )
+
+        this.controls.serverPrintGids();
     }
     /*
      * Returns the boxes of all the SelectionBox3D objects in selectionBoxArray.

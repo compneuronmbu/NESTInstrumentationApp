@@ -40,8 +40,12 @@ class NESTInterface(object):
 
             for layer in self.networkSpecs['layers']:
                 neurons = layer['neurons']
-                pos = [[float(neuron['x']), float(neuron['y'])]
+                if self.networkSpecs['is3DLayer']:
+                    pos = [[float(neuron['x']), float(neuron['y']), float(neuron['z'])]
                        for neuron in neurons]
+                else:
+                    pos = [[float(neuron['x']), float(neuron['y'])]
+                           for neuron in neurons]
                 model = layer['elements']
                 if isinstance(model, list):
                     elem = []
@@ -90,6 +94,13 @@ class NESTInterface(object):
                                    lower_left[1] - cntr[1]],
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1]]}
+        elif mask_type == 'box':
+            spec = {'lower_left': [lower_left[0] - cntr[0],
+                                   lower_left[1] - cntr[1],
+                                   lower_left[2]],
+                    'upper_right': [upper_right[0] - cntr[0],
+                                    upper_right[1] - cntr[1],
+                                    upper_right[2]]}
         elif mask_type == 'elliptical':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -118,52 +129,64 @@ class NESTInterface(object):
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
-        name = selection_dict['name']
+        layer_names = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
         neuron_type = selection_dict['neuronType']
         angle = float(selection_dict['angle']) * 180 / math.pi
 
-        ll = [selection['ll']['x'], selection['ll']['y']]
-        ur = [selection['ur']['x'], selection['ur']['y']]
+        ll = [selection['ll']['x'], selection['ll']['y'], selection['ll']['z']]
+        ur = [selection['ur']['x'], selection['ur']['y'], selection['ur']['z']]
 
-        cntr = [0.0, 0.0]
+        # TODO: There must be a better way to do this. Also, center in origo is not always correct. Also, does SelectNodesByMask
+        # really need to be sent cntr? Could it work if we said that it start in origo at c++ level? What happens if layer is outside origo?
+        if ( ll[2] == ur[2] ):
+            cntr = [0.0, 0.0]
+        else:
+            cntr = [0.0, 0.0, 0.0]
         mask = self.make_mask(ll, ur, mask_type, angle, cntr)
-        gids = tp.SelectNodesByMask(self.layers[name],
-                                    cntr, mask)
 
-        # If we have chosen neuron_type All, we return all the GIDs.
-        if neuron_type == "All":
-            return gids
+        collected_gids = []
+        for name in layer_names:
+            gids = tp.SelectNodesByMask(self.layers[name],
+                                        cntr, mask)
 
-        # If we have chosen a spesific neuron_type, we have to find the correct GIDs.
-        for layer in self.networkSpecs['layers']:
-            if name == layer['name']:
-                # All the elements in the selected layer
-                models = layer['elements']
+            # If we have chosen neuron_type All, we return all the GIDs.
+            if neuron_type == "All":
+                #return gids
+                collected_gids += gids
 
-                # If neuron_type is in models, the layer contains the chosen neuron_type,
-                # and we must find the correct GIDs. 
-                if neuron_type in models:
-                    print(models)
-                    # If models is not a list, the layer contains only one element type, we have chosen
-                    # this type and the found GIDs are the GIDs of the chosen element type.
-                    if not isinstance(models, list):
-                        return gids
+            # If we have chosen a spesific neuron_type, we have to find the correct GIDs.
+            for layer in self.networkSpecs['layers']:
+                if name == layer['name']:
+                    # All the elements in the selected layer
+                    models = layer['elements']
 
-                    # If models is a list, we need to find how many positions we have chosen in the mask, how many nodes the
-                    # neuron_type have at each position and how many nodes there are before the neuron_type.
-                    # That is, we need to find the indices for the neuron_type in the GID list found above.
+                    # If neuron_type is in models, the layer contains the chosen neuron_type,
+                    # and we must find the correct GIDs. 
+                    if neuron_type in models:
+                        print(models)
+                        # If models is not a list, the layer contains only one element type, we have chosen
+                        # this type and the found GIDs are the GIDs of the chosen element type.
+                        if not isinstance(models, list):
+                            #return gids
+                            collected_gids += gids
 
-                    totalNoOfEl = selection_dict['noOfNeuronTypesInLayer']
-                    numberOfPositions = len(gids) / totalNoOfEl
+                        # If models is a list, we need to find how many positions we have chosen in the mask, how many nodes the
+                        # neuron_type have at each position and how many nodes there are before the neuron_type.
+                        # That is, we need to find the indices for the neuron_type in the GID list found above.
 
-                    start_index, end_index = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
-                    return gids[start_index:end_index]
-                else:
-                    # If neuron_type is not in models, we have chosen a neuron_type that belongs to a different
-                    # layer, and we return an empty list.
-                    return []
+                        totalNoOfEl = selection_dict['noOfNeuronTypesInLayer']
+                        numberOfPositions = len(gids) / totalNoOfEl
+
+                        start_index, end_index = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
+                        #return gids[start_index:end_index]
+                        collected_gids += gids[start_index:end_index]
+                    #else:
+                        # If neuron_type is not in models, we have chosen a neuron_type that belongs to a different
+                        # layer, and we return an empty list.
+                    #    return []
+        return collected_gids
 
     def getIndicesOfNeuronType(self, neuron_type, models, numberOfPositions):
         # models can for instance be of the form

@@ -26,7 +26,7 @@ def index():
 
 
 @app.route('/selector', methods=['POST', 'GET'])
-def add_blog_ajax():
+def print_GIS():
     if flask.request.method == 'POST':
         global interface
         pp = pprint.PrettyPrinter(indent=4)
@@ -38,9 +38,8 @@ def add_blog_ajax():
         gids, positions = interface.printGIDs(data['info'])
         print(gids)
         pp.pprint(positions)
-        name = data['info']['name']
 
-        return name
+        return flask.Response(status=204)
 
 
 @app.route('/connect', methods=['POST'])

@@ -520,7 +520,7 @@ class SelectionBox
 
 
         var selectionInfo = {
-            name: this.layerName,
+            name: [this.layerName],
             selection: selectionBox,
             angle: this.angle,
             neuronType: selectedNeuronType,
@@ -839,18 +839,20 @@ class SelectionBox
 
 class SelectionBox3D
 {
-    constructor( width, height, depth, position, shape )
+    constructor( width, height, depth, center, shape )
     {
         // this.uniqueID = -1;
         // this.layerName = "";
-        // ll and ur use screen coordinates
-        // this.ll = ll;
-        // this.ur = ur;
 
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.position = position;
+        this.center = center;
+
+        // ll and ur use object coordinates in 3D
+        // TODO: Should we have same in 2D and 3D? Different because they are defined completely different.
+        this.ll = { x: center.x - width / 2, y: center.y - height / 2, z: center.z - depth / 2 };
+        this.ur = { x: center.x + width / 2, y: center.y + height / 2, z: center.z + depth / 2 };
 
         // this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
         // this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
@@ -861,7 +863,6 @@ class SelectionBox3D
         this.selectedShape = shape;
 
         this.box;
-        this.resizePoints = [];
         this.borderBox;
         this.activeColor = new app.THREE.Color();
         this.activeColor.setRGB( 1.0, 1.0, 0.0 );
@@ -892,56 +893,12 @@ class SelectionBox3D
         material.transparent = true;
         material.opacity = 0.3;
         this.box = new app.THREE.Mesh( geometry, material );
-        this.box.position.copy( this.position );
+        this.box.position.copy( this.center );
         app.scene.add( this.box );
         // this.makeResizePoints();
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
-    }
-
-    makeResizePoints()
-    {
-        /*
-            width = x
-            height = y
-            depth = z
-        */
-        var widthHalf = this.width / 2.0;
-        var heightHalf = this.height / 2.0;
-        var depthHalf = this.depth / 2.0;
-        var xPos = this.position.x;
-        var yPos = this.position.y;
-        var zPos = this.position.z;
-        var pointPositions = [{x: xPos - widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos - heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos - depthHalf},
-                              {x: xPos + widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos + heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos + depthHalf},
-                             ];
-        var pointNames = ['width_1',
-                          'height_1',
-                          'depth_1',
-                          'width_2',
-                          'height_2',
-                          'depth_2'
-                          ]
-        for ( var i in pointPositions )
-        {
-            var geometry = new app.THREE.SphereBufferGeometry( 0.01, 32, 32 );
-            var material = new app.THREE.MeshBasicMaterial(
-            {
-                color: 0x66bb6a  // green
-            } );
-            var point = new app.THREE.Mesh( geometry, material );
-            // point.name = name;
-            point.position.copy( pointPositions[ i ] );
-            point.name = pointNames[ i ];
-
-            app.scene.add( point );
-            this.resizePoints.push( point );
-        }
     }
 
     makeBorderLines()
@@ -973,28 +930,6 @@ class SelectionBox3D
         this.transformControls.attach( this.box );
     }
 
-    removePoints()
-    {
-        for ( var i = 0; i < this.resizePoints.length; ++i )
-        {
-            app.scene.remove( this.resizePoints[ i ] );
-        }
-        this.resizePoints = [];
-    }
-
-    updateBox()
-    {
-        this.box.geometry.dispose();
-        this.box.geometry = new app.THREE.BoxBufferGeometry( this.width, this.height, this.depth );
-        this.updatePoints();
-    }
-
-    updatePosition()
-    {
-        this.box.position.copy( this.position );
-        this.updatePoints();
-    }
-
     setActive()
     {
         this.transformControls.attach( this.box );
@@ -1006,6 +941,20 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+    }
+
+    updateWidthHeightDeptCenter()
+    {
+        this.width = this.width * this.box.scale.x;
+        this.height = this.height * this.box.scale.y;
+        this.dept = this.depth * this.box.scale.z;
+        this.center = this.box.position;
+    }
+
+    updateLLAndUR()
+    {
+        this.ll = { x: this.center.x - this.width / 2, y: this.center.y - this.height / 2, z: this.center.z - this.depth / 2 };
+        this.ur = { x: this.center.x + this.width / 2, y: this.center.y + this.height / 2, z: this.center.z + this.depth / 2 };
     }
 
     /*
@@ -1074,12 +1023,54 @@ class SelectionBox3D
 
     containsPoint( pos )
     {
-        var xHalf = ( this.width * this.box.scale.x ) / 2.0;
+        /*var xHalf = ( this.width * this.box.scale.x ) / 2.0;
         var yHalf = ( this.height * this.box.scale.y ) / 2.0;
         var zHalf = ( this.depth * this.box.scale.z ) / 2.0;
         return pos.x > ( this.box.position.x - xHalf ) && pos.x < ( this.box.position.x + xHalf )
              && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
-             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );
+             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );*/
+
+        this.updateWidthHeightDeptCenter();
+        this.updateLLAndUR();
+
+        return pos.x > this.ll.x && pos.x < this.ur.x
+            && pos.y > this.ll.y && pos.y < this.ur.y
+            && pos.z > this.ll.z && pos.z < this.ur.z;
+    }
+
+    /*
+     * Returns data of this selection box to be sent to the server for
+     * connecting.
+     */
+    getSelectionInfo()
+    {
+        var selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
+        var selectedShape = this.selectedShape;
+
+
+        // We need to send down all the layers in some way....
+        var nameArray = [];
+
+        for ( var layerName in app.layer_points )
+        {
+            nameArray.push(layerName);
+        }
+
+        var selectionInfo = {
+            //name: this.layerName,
+            name: nameArray,
+            selection: { "ll": this.ll, "ur": this.ur },
+            //angle: this.angle,
+            angle: 0.0,
+            neuronType: selectedNeuronType,
+            synModel: selectedSynModel,
+            maskShape: selectedShape,
+            //noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
+        };
+
+        console.log(selectionInfo)
+        return selectionInfo;
     }
 }
 

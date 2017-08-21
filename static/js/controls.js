@@ -113,10 +113,7 @@ class Controls
                 info: this.boxInFocus.getSelectionInfo()
             } ),
             success: function( data )
-            {
-                console.log( data.title );
-                console.log( data.article );
-            },
+            {},
             dataType: "json"
         } );
     }
@@ -343,53 +340,6 @@ class Controls
         this.boxInFocus.makeSelectionPoints();
         this.boxInFocus.updateColors();
         this.boxInFocus.updateLineStart();
-    }
-
-    resizeBox3D( mouseX, mouseY )
-    {
-        var speed = 0.01;
-        switch ( this.resizeSideInFocus )
-        {
-            case "width_1":
-            case "width_2":
-                this.boxInFocus.width += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "depth_1":
-            case "depth_2":
-                this.boxInFocus.depth += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "height_1":
-            case "height_2":
-                this.boxInFocus.height += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-        }
-        this.boxInFocus.updateBox();
-    }
-
-    moveBox( mouseX, mouseY )
-    {
-        console.log("moving box")
-        /*
-        Bevege på aksen i henhold til punkt man trykket på?
-        Bevege i xy-planet parallelt med kamera?
-        */
-        var speed = 0.01;
-        switch ( this.resizeSideInFocus )
-        {
-            case "width_1":
-            case "width_2":
-                this.boxInFocus.position.x += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "depth_1":
-            case "depth_2":
-                this.boxInFocus.position.z += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "height_1":
-            case "height_2":
-                this.boxInFocus.position.y += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-        }
-        this.boxInFocus.updatePosition();
     }
 
     /*
@@ -663,6 +613,8 @@ class Controls
                     }
                 }
 
+                this.serverPrintGids();
+
                 if ( event.shiftKey )
                 {
                     console.log( "Select device" )
@@ -784,6 +736,16 @@ class Controls
             // Must enable orbit controls again
             app.is3DLayer && app.disableEnableOrbitControls( true );
         }
+        else if ( app.is3DLayer && this.boxInFocus != undefined )
+        {
+            console.log(this.boxInFocus)
+            // Update lower left and upper right as well as center position of 3D selected box here as a quick-fix.
+            // We are going to call the functions below more time than necessary, because just because we have
+            // clicked a box does not mean that we have changed it.
+            this.boxInFocus.updateWidthHeightDeptCenter();
+            this.boxInFocus.updateLLAndUR();
+
+        }
         this.resetButtons();
     }
 
@@ -795,11 +757,11 @@ class Controls
                 console.log("shift down");
                 this.shiftDown = true;
                 break;
-            case 82:  // R key
+            /*case 82:  // R key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "rotate" );
-                break;
+            */    break;
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
@@ -828,7 +790,7 @@ class Controls
                 console.log("shift up");
                 this.shiftDown = false;
                 break;
-            case 82:  // R key
+            //case 82:  // R key
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
