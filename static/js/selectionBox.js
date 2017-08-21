@@ -863,7 +863,6 @@ class SelectionBox3D
         this.selectedShape = shape;
 
         this.box;
-        this.resizePoints = [];
         this.borderBox;
         this.activeColor = new app.THREE.Color();
         this.activeColor.setRGB( 1.0, 1.0, 0.0 );
@@ -902,50 +901,6 @@ class SelectionBox3D
         this.updateColors();
     }
 
-    makeResizePoints()
-    {
-        /*
-            width = x
-            height = y
-            depth = z
-        */
-        var widthHalf = this.width / 2.0;
-        var heightHalf = this.height / 2.0;
-        var depthHalf = this.depth / 2.0;
-        var xPos = this.center.x;
-        var yPos = this.center.y;
-        var zPos = this.center.z;
-        var pointPositions = [{x: xPos - widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos - heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos - depthHalf},
-                              {x: xPos + widthHalf, y: yPos, z: zPos},
-                              {x: xPos, y: yPos + heightHalf, z: zPos},
-                              {x: xPos, y: yPos, z: zPos + depthHalf},
-                             ];
-        var pointNames = ['width_1',
-                          'height_1',
-                          'depth_1',
-                          'width_2',
-                          'height_2',
-                          'depth_2'
-                          ]
-        for ( var i in pointPositions )
-        {
-            var geometry = new app.THREE.SphereBufferGeometry( 0.01, 32, 32 );
-            var material = new app.THREE.MeshBasicMaterial(
-            {
-                color: 0x66bb6a  // green
-            } );
-            var point = new app.THREE.Mesh( geometry, material );
-            // point.name = name;
-            point.position.copy( pointPositions[ i ] );
-            point.name = pointNames[ i ];
-
-            app.scene.add( point );
-            this.resizePoints.push( point );
-        }
-    }
-
     makeBorderLines()
     {
         this.borderBox = new app.THREE.BoxHelper( );
@@ -973,28 +928,6 @@ class SelectionBox3D
         this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
         app.scene.add( this.transformControls );
         this.transformControls.attach( this.box );
-    }
-
-    removePoints()
-    {
-        for ( var i = 0; i < this.resizePoints.length; ++i )
-        {
-            app.scene.remove( this.resizePoints[ i ] );
-        }
-        this.resizePoints = [];
-    }
-
-    updateBox()
-    {
-        this.box.geometry.dispose();
-        this.box.geometry = new app.THREE.BoxBufferGeometry( this.width, this.height, this.depth );
-        this.updatePoints();
-    }
-
-    updatePosition()
-    {
-        this.box.position.copy( this.center );
-        this.updatePoints();
     }
 
     setActive()

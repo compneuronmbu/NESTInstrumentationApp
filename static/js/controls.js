@@ -342,53 +342,6 @@ class Controls
         this.boxInFocus.updateLineStart();
     }
 
-    resizeBox3D( mouseX, mouseY )
-    {
-        var speed = 0.01;
-        switch ( this.resizeSideInFocus )
-        {
-            case "width_1":
-            case "width_2":
-                this.boxInFocus.width += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "depth_1":
-            case "depth_2":
-                this.boxInFocus.depth += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "height_1":
-            case "height_2":
-                this.boxInFocus.height += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-        }
-        this.boxInFocus.updateBox();
-    }
-
-    moveBox( mouseX, mouseY )
-    {
-        console.log("moving box")
-        /*
-        Bevege på aksen i henhold til punkt man trykket på?
-        Bevege i xy-planet parallelt med kamera?
-        */
-        var speed = 0.01;
-        switch ( this.resizeSideInFocus )
-        {
-            case "width_1":
-            case "width_2":
-                this.boxInFocus.position.x += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "depth_1":
-            case "depth_2":
-                this.boxInFocus.position.z += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-            case "height_1":
-            case "height_2":
-                this.boxInFocus.position.y += speed * ( mouseX - this.prevMouseCoords.x );
-                break;
-        }
-        this.boxInFocus.updatePosition();
-    }
-
     /*
     * Finds the angle of rotation above the x-axis, and updates the ellipse to be tilted with the angle.
     */
@@ -660,6 +613,8 @@ class Controls
                     }
                 }
 
+                this.serverPrintGids();
+
                 if ( event.shiftKey )
                 {
                     console.log( "Select device" )
@@ -792,11 +747,11 @@ class Controls
                 console.log("shift down");
                 this.shiftDown = true;
                 break;
-            case 82:  // R key
+            /*case 82:  // R key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "rotate" );
-                break;
+            */    break;
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
@@ -825,7 +780,7 @@ class Controls
                 console.log("shift up");
                 this.shiftDown = false;
                 break;
-            case 82:  // R key
+            //case 82:  // R key
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
