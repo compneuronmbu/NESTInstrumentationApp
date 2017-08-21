@@ -82,7 +82,7 @@ def convert(specs, conn_specs, file_name):
 
     json_dict["is3DLayer"] = is3DLayer
     json_dict["projections"] = conn_specs
-    print("##############################")
-    pprint.pprint(json_dict)
+    # print("##############################")
+    # pprint.pprint(json_dict)
     with open(file_name + '.json', 'w') as fp:
         json.dump(json_dict, fp)

@@ -157,6 +157,13 @@ class App
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
         }
+        else if ( target.id === "brunel3Dqr" )
+        {
+            console.log("Brunel 3D quasi random!");
+            JSONstring = "/static/examples/brunel_3D_converted_quasi_random.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+        }
         else if ( target.id === 'loadOwn' )
         {
             console.log("Custom made model!");
