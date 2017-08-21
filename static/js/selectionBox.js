@@ -852,7 +852,7 @@ class SelectionBox3D
         // ll and ur use object coordinates in 3D
         // TODO: Should we have same in 2D and 3D? Different because they are defined completely different.
         this.ll = { x: center.x - width / 2, y: center.y - height / 2, z: center.z - depth / 2 };
-        this.ur = { x: center.x + width / 2, y: center.y + height / 2, z: center.z + depth / 2 }
+        this.ur = { x: center.x + width / 2, y: center.y + height / 2, z: center.z + depth / 2 };
 
         // this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
         // this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
@@ -943,6 +943,20 @@ class SelectionBox3D
         this.setBorderLinesColor(this.inactiveColor);
     }
 
+    updateWidthHeightDeptCenter()
+    {
+        this.width = this.width * this.box.scale.x;
+        this.height = this.height * this.box.scale.y;
+        this.dept = this.depth * this.box.scale.z;
+        this.center = this.box.position;
+    }
+
+    updateLLAndUR()
+    {
+        this.ll = { x: this.center.x - this.width / 2, y: this.center.y - this.height / 2, z: this.center.z - this.depth / 2 };
+        this.ur = { x: this.center.x + this.width / 2, y: this.center.y + this.height / 2, z: this.center.z + this.depth / 2 };
+    }
+
     /*
      * Finds which points lie within the box, and colors them.
      */
@@ -1009,12 +1023,19 @@ class SelectionBox3D
 
     containsPoint( pos )
     {
-        var xHalf = ( this.width * this.box.scale.x ) / 2.0;
+        /*var xHalf = ( this.width * this.box.scale.x ) / 2.0;
         var yHalf = ( this.height * this.box.scale.y ) / 2.0;
         var zHalf = ( this.depth * this.box.scale.z ) / 2.0;
         return pos.x > ( this.box.position.x - xHalf ) && pos.x < ( this.box.position.x + xHalf )
              && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
-             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );
+             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );*/
+
+        this.updateWidthHeightDeptCenter();
+        this.updateLLAndUR();
+
+        return pos.x > this.ll.x && pos.x < this.ur.x
+            && pos.y > this.ll.y && pos.y < this.ur.y
+            && pos.z > this.ll.z && pos.z < this.ur.z;
     }
 
     /*
