@@ -178,13 +178,12 @@ class NESTInterface(object):
                         # If models is a list, we need to find how many positions we have chosen in the mask, how many nodes the
                         # neuron_type have at each position and how many nodes there are before the neuron_type.
                         # That is, we need to find the indices for the neuron_type in the GID list found above.
-
-                        print(selection_dict['noOfNeuronTypesInLayer'])
                         totalNoOfEl = selection_dict['noOfNeuronTypesInLayer'][name]
                         numberOfPositions = len(gids) / totalNoOfEl
 
                         start_idx, end_idx = self.getIndicesOfNeuronType( neuron_type, models, numberOfPositions )
-                        collected_gids += gids[start_idx:end_idx]
+                        sorted_gids = sorted(gids)
+                        collected_gids += sorted_gids[start_idx:end_idx]
 
         return collected_gids
 
@@ -198,7 +197,6 @@ class NESTInterface(object):
         list_counter = 0
         start_index = 0
         end_index = 0
-        print(models)
         for mod in models:
             # If mod is a string, we add the element, unless we have hit apon the neuron type, in which we need to
             # find the indices.
