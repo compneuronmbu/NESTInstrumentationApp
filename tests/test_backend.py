@@ -10,7 +10,12 @@ class TestBackend(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # TODO: This is not a smart way to do this. We have to use the files we actually use, not just generate
+        # our own. This will lead to mistakes that the tests does not pick up if we change our JSON files or if
+        # we change the python script to need something that is not in the JSON file, but which is in our actual
+        # JSON files.
         with open('tests/network.json', 'r') as net_file:
+        #with open('./static/examples/brunel_converted.json', 'r') as net_file:
             net = ""
             for line in net_file:
                 net += line
