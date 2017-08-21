@@ -967,7 +967,8 @@ class SelectionBox3D
         var positions;
         var visibility;
         var newPoints = [];
-        var oldPointIDs = this.selectedPoints;
+        var oldColor;
+        var oldPoints = this.selectedPoints;
 
         for ( var layer in app.layer_points )
         {
@@ -976,14 +977,13 @@ class SelectionBox3D
             positions = points.geometry.getAttribute( "position" ).array;
             visibility = points.geometry.getAttribute( "visible" ).array;
 
-            for ( var i = 0; i < oldPointIDs.length; ++i )
+            for ( var i = 0; i < oldPoints.length; ++i )
             {
-                var colorID = oldPointIDs[ i ];
+                var colorID = oldPoints[ i ].index;
 
-                // TODO: need to check if excitatory or inhibitory
-                colors[ colorID ] = app.colorEx.r;
-                colors[ colorID + 1 ] = app.colorEx.g;
-                colors[ colorID + 2 ] = app.colorEx.b;
+                colors[ colorID ] = oldPoints[ i ].color.r;
+                colors[ colorID + 1 ] = oldPoints[ i ].color.g;
+                colors[ colorID + 2 ] = oldPoints[ i ].color.b;
             }
 
             for ( var i = 0; i < positions.length; i += 3 )
@@ -994,12 +994,13 @@ class SelectionBox3D
                 p.z = positions[ i + 2 ];
                 if ( this.containsPoint( p ) )
                 {
+                    oldColor = { r: colors[ i ], g: colors[ i + 1 ], b:colors[ i + 2 ] };
                     colors[ i ] = 0.0;
                     colors[ i + 1 ] = 1.0;
                     colors[ i + 2 ] = 0.0;
                     visibility[i / 3] = 1.0;
                     points.geometry.attributes.customColor.needsUpdate = true;
-                    newPoints.push( i );
+                    newPoints.push( {index: i, color: oldColor} );
                 }
                 else
                 {
