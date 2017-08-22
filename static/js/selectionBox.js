@@ -873,7 +873,9 @@ class SelectionBox3D
         this.activeColor.setRGB( 1.0, 1.0, 0.0 );
         this.inactiveColor = new app.THREE.Color();
         this.inactiveColor.setRGB( 0.7, 0.7, 0.7 );
-        // this.rotationPoints = [];
+        
+        //this.resizePoints = undefined;
+        //this.rotationPoints = undefined;
 
         // SelectedFirstTime is used to turn the elliptical masks. If we press on an
         // elliptical mask two times, we should get point that let us turn the mask the
@@ -1054,11 +1056,8 @@ class SelectionBox3D
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
-
-        // We need to send down all the layers in some way....
         var nameArray = [];
         var noNeuronPointsDict = {}
-
         for ( var layerName in app.layer_points )
         {
             nameArray.push(layerName);

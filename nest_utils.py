@@ -215,7 +215,6 @@ class NESTInterface(object):
                 # If mod is not a string, we have a number telling us how many elements of the last type
                 # there is, so we add the number and subtract the element count from above.
                 counter += mod - 1
-                #            elem.append(self.networkSpecs['models'][mod])
             list_counter += 1
 
         return int(start_index), int(end_index)
