@@ -836,6 +836,13 @@ class SelectionBox
         //return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
         return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
     }
+
+    deleteBox()
+    {
+        this.removePoints();
+        this.removeBox();
+        this.removeLines();
+    }
 }
 
 class SelectionBox3D
@@ -948,6 +955,35 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+    }
+
+    removeBox()
+    {
+        app.scene.remove( this.box );
+        this.setInactive();
+        app.scene.remove( this.borderBox );
+
+        var colorID;
+        var colors;
+        var oldPoints = this.selectedPoints;
+
+        for ( var layer in app.layer_points )
+        {
+            points = app.layer_points[ layer ].points;
+            colors = points.geometry.getAttribute( "customColor" ).array;
+
+            for ( var i = 0; i < oldPoints.length; ++i )
+            {
+                var colorID = oldPoints[ i ].index;
+
+                colors[ colorID ] = oldPoints[ i ].color.r;
+                colors[ colorID + 1 ] = oldPoints[ i ].color.g;
+                colors[ colorID + 2 ] = oldPoints[ i ].color.b;
+            }
+            points.geometry.attributes.customColor.needsUpdate = true;
+        }
+
+        app.resetVisibility();
     }
 
     updateWidthHeightDeptCenter()
@@ -1077,6 +1113,12 @@ class SelectionBox3D
 
         console.log(selectionInfo)
         return selectionInfo;
+    }
+
+    deleteBox()
+    {
+        this.removeBox();
+        //this.removeLines();
     }
 }
 

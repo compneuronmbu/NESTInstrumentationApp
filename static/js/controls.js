@@ -569,9 +569,7 @@ class Controls
      */
     deleteBox()
     {
-        this.boxInFocus.removePoints();
-        this.boxInFocus.removeBox();
-        this.boxInFocus.removeLines();
+        this.boxInFocus.deleteBox();
 
         var index = app.selectionBoxArray.indexOf( this.boxInFocus );
         if ( index > -1 )
