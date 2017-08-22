@@ -49,7 +49,7 @@ $ nosetests
 To generate the documentation, run
 
 ```
-yarn doc
+$ yarn doc
 ```
 
 Documentation on the JavaScript part can then be found in `documentation/javascript/index.html`, while documentation on the Python backend can be found in `documentation/python/build/html/index.html`.
