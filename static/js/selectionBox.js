@@ -918,15 +918,15 @@ class SelectionBox3D
         // second time.
         // this.selectedFirstTime = false;
 
-        // this.currentCurve;
-        // this.currentCurveObject;
-        // this.curves = [];
+        this.currentCurve;
+        this.currentCurveObject;
+        this.curves = [];
 
         this.selectedPoints = {};
         // this.nSelected = 0;
 
         this.makeBox();
-        // this.CURVE_SEGMENTS = 100;
+        this.CURVE_SEGMENTS = 100;
     }
 
     /**
@@ -945,6 +945,8 @@ class SelectionBox3D
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
+
+        //this.box.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
     /**
@@ -988,6 +990,8 @@ class SelectionBox3D
         this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
         app.scene.add( this.transformControls );
         this.transformControls.attach( this.box );
+
+        this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
     /**
@@ -1008,7 +1012,26 @@ class SelectionBox3D
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
     }
+    
+    /*
+    * Callback function for transformation controls that is used when we have change because of the controls.
+    */
+    updateAfterTransformations()
+    {
+        console.log("Vi tranformerer!")
+        this.updateWidthHeightDeptCenter();
+        this.updateLLAndUR();
+        
+        if ( this.curves !== undefined )
+        {
+            this.updateLineStart();
+        }
 
+    }
+
+    /*
+     * Removes the box from the scene and resets the colours of the points.
+     */
     removeBox()
     {
         app.scene.remove( this.box );
@@ -1099,7 +1122,7 @@ class SelectionBox3D
                 p.z = positions[ i + 2 ];
                 if ( this.containsPoint( p ) )
                 {
-                    oldColor = { r: colors[ i ], g: colors[ i + 1 ], b:colors[ i + 2 ] };
+                    oldColor = { r: colors[ i ], g: colors[ i + 1 ], b: colors[ i + 2 ] };
                     colors[ i ] = 0.0;
                     colors[ i + 1 ] = 1.0;
                     colors[ i + 2 ] = 0.0;
@@ -1143,12 +1166,178 @@ class SelectionBox3D
              && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
              && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );*/
 
-        this.updateWidthHeightDeptCenter();
-        this.updateLLAndUR();
+        //this.updateWidthHeightDeptCenter();
+        //this.updateLLAndUR();
 
         return pos.x > this.ll.x && pos.x < this.ur.x
             && pos.y > this.ll.y && pos.y < this.ur.y
             && pos.z > this.ll.z && pos.z < this.ur.z;
+    }
+
+    /*
+     * Creates a line representing a connection, that is to be connected to a
+     * device.
+     */
+    makeLine()
+    {
+        console.log("makeLine")
+        this.currentCurve = new app.THREE.CatmullRomCurve3( [
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 )
+        ] );
+        this.currentCurve.type = 'chordal';
+        var curveGeometry = new app.THREE.Geometry();
+        curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
+        var curveMaterial = new app.THREE.LineBasicMaterial(
+        {
+            color: 0x809980 * 1.1,
+            linewidth: 2
+        } );
+        this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
+        app.scene.add( this.currentCurveObject );
+
+        this.curves.push(
+        {
+            curveObject: this.currentCurveObject,
+            curve: this.currentCurve,
+            target: ""
+        } );
+
+        app.disableEnableOrbitControls( false );
+    }
+
+    /*
+     * Updates the endpoint of a line.
+     */
+    updateLine( newEndPos, curveIndex, radius )
+    {
+        var curveObject = this.curves[ curveIndex ].curveObject;
+        var curve = this.curves[ curveIndex ].curve;
+
+        var centreX = ( this.ll.x + this.ur.x ) / 2;
+        var direction = 1;
+        var endLength = 0.015;
+
+        var endPos = ( newEndPos === undefined ) ? curve.points[ 3 ] : newEndPos;
+        if ( endPos.x < centreX )
+        {
+            curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ll.x : this.ur.x;
+        }
+        else
+        {
+            curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ur.x : this.ll.x;
+            direction = -1;
+        }
+
+        curve.points[ 0 ].y = ( this.ll.y + this.ur.y ) / 2;
+        curve.points[ 1 ].x = curve.points[ 0 ].x + direction * -endLength;
+        curve.points[ 1 ].y = curve.points[ 0 ].y;
+
+        if ( newEndPos !== undefined )
+        {
+            curve.points[ 3 ].x = newEndPos.x + direction * radius;
+            curve.points[ 3 ].y = newEndPos.y;
+            curve.points[ 2 ].x = curve.points[ 3 ].x + direction * endLength;
+            curve.points[ 2 ].y = curve.points[ 3 ].y;
+        }
+        for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
+        {
+            curveObject.geometry.vertices[ i ].copy( curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
+        }
+        curveObject.geometry.verticesNeedUpdate = true;
+    }
+
+    /*
+     * Updates the start position of all lines of this selection box.
+     */
+    updateLineStart()
+    {
+        for ( var i in this.curves )
+        {
+            this.updateLine( undefined, i, 0 );
+        }
+    }
+
+    /*
+     * Updates the end positions of lines connecting to a specific target device.
+     */
+    updateLineEnd( newPos, target, radius = 0 )
+    {
+        for ( var i in this.curves )
+        {
+            if ( this.curves[ i ].target === target )
+            {
+                this.updateLine( newPos, i, radius );
+            }
+        }
+    }
+
+    /*
+     * Removes the line that was created last.
+     */
+    removeLine()
+    {
+        app.scene.remove( this.currentCurveObject );
+        this.curves.pop();
+    }
+
+    /*
+     * Removes all lines, or optionally a line connected to a specific target
+     * device.
+     */
+    removeLines( target = "" )
+    {
+        for ( var i = 0; i < this.curves.length; ++i )
+        {
+            if ( target === "" )
+            {
+                app.scene.remove( this.curves[ i ].curveObject );
+            }
+            else if ( target === this.curves[ i ].target )
+            {
+                app.scene.remove( this.curves[ i ].curveObject );
+                this.curves.splice( i, 1 );
+                break;
+            }
+        }
+        if ( target === "" )
+        {
+            this.curves = [];
+        }
+    }
+
+    /*
+     * Sets a target for the line that was created last.
+     */
+    setLineTarget( device )
+    {
+        this.curves[ this.curves.length - 1 ].target = device;
+    }
+
+    /*
+     * Connects a line to a target device.
+     */
+    lineToDevice( targetPos, radius, target )
+    {
+        var centreX = ( this.ll.x + this.ur.x ) / 2;
+        if ( ( targetPos.x - radius ) < centreX )
+        {
+            this.updateLineEnd(
+            {
+                x: targetPos.x + radius,
+                y: targetPos.y
+            }, target );
+        }
+        else
+        {
+            this.updateLineEnd(
+            {
+                x: targetPos.x - radius,
+                y: targetPos.y
+            }, target );
+        }
     }
 
     /**
@@ -1186,10 +1375,13 @@ class SelectionBox3D
         return selectionInfo;
     }
 
+    /*
+     * Removes the box and corresponding lines. 
+     */
     deleteBox()
     {
         this.removeBox();
-        //this.removeLines();
+        this.removeLines();
     }
 }
 

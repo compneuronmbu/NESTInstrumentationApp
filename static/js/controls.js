@@ -303,6 +303,9 @@ class Controls
                 // For debugging
                 this.serverPrintGids();
             }
+            // Make conectee line
+            this.boxInFocus.makeLine();
+            this.make_connection = true;
         }
         else
         {
@@ -314,6 +317,10 @@ class Controls
 
                 // For debugging
                 this.serverPrintGids();
+
+                // Make conectee line
+                this.boxInFocus.makeLine();
+                this.make_connection = true;
             }
         }
     }
@@ -748,6 +755,7 @@ class Controls
         else if ( this.make_connection )
         {
             this.makeConnection( event.clientX, event.clientY );
+            app.disableEnableOrbitControls( true );
         }
         else if ( this.deviceInFocus != undefined )
         {
