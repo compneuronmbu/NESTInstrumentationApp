@@ -138,6 +138,11 @@ class Controls
         mouse.y = -( ( mouseY - rect.top ) / rect.height ) * 2 + 1;
 
         this.raycaster.setFromCamera( mouse, app.camera );
+
+        if ( objects === undefined )
+        {
+            return [];
+        }
         
         return this.raycaster.intersectObjects( objects );
     }
@@ -167,23 +172,11 @@ class Controls
             this.rotationPoint = rotatePointIntersects[ 0 ].object;
             return;
         }
-        else
+        else if ( !app.is3DLayer )
         {
+            // This is done by select3DBox if we have a 3D model.
             this.boxInFocus.removePoints();
             this.boxInFocus = undefined;
-        }
-    }
-
-    select3DResizePoint()
-    {
-        var pointIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
-            app.mouseDownCoords.y,
-            this.boxInFocus.resizePoints );
-        if ( pointIntersects.length > 0 )
-        {
-            this.resizeSideInFocus = pointIntersects[ 0 ].object.name;
-            console.log( "intersects", this.resizeSideInFocus );
-            return;
         }
     }
 
@@ -209,10 +202,26 @@ class Controls
     }
 
     /**
-     * Checks if the mouse clicks on a selection box. If so, sets the selection
-     * box as selected. If not, indicates that we should create a selection box.
+     * Checks if we have a 3D or 2D model and redistribute to correct function to check
+     * if the mouse clicks on a selection box.
      */
     selectBox()
+    {
+        if ( app.is3DLayer )
+        {
+            this.select3DBox();
+        }
+        else
+        {
+            this.select2DBox();
+        }
+    }
+
+    /**
+     * Checks if the mouse clicks on a 2D selection box. If so, sets the selection
+     * box as selected. If not, indicates that we should create a selection box.
+     */
+    select2DBox()
     {
         var mouseDownCorrected = {
             x: app.mouseDownCoords.x,
@@ -259,6 +268,56 @@ class Controls
 
         this.make_selection_box = true;
     }
+
+    /*
+     * Checks if the mouse clicks on a selection 3D box. If so, sets the selection
+     * box as selected.
+     */
+    select3DBox()
+    {
+        var boxClicked = this.getBoxClicked3D();
+        if ( this.boxInFocus !== undefined )
+        {
+            if ( boxClicked === undefined )
+            {
+                // If we have not pressed a box, but we have a box in focus, we need to inactivate the
+                // box in focus, because we have pressed somewhere else. 
+                if ( this.boxInFocus.transformControls.axis === null )
+                {
+                    this.boxInFocus.setInactive();
+                    this.boxInFocus = undefined;
+                    app.resetVisibility();
+                    return;
+                }
+                this.translatingBox = true;
+                return;
+            }
+            else if ( boxClicked !== this.boxInFocus )
+            {
+                // If we have pressed on a box, but it is not the one that is in focus, we need
+                // to make the clicked box the box in focus.
+                this.boxInFocus.setInactive();
+                this.boxInFocus = boxClicked;
+                this.boxInFocus.setActive();
+
+                // For debugging
+                this.serverPrintGids();
+            }
+        }
+        else
+        {
+            // If we don't have a box in focus, we check if we click on a box, and if so, make it the one in focus.
+            this.boxInFocus = boxClicked;
+            if ( this.boxInFocus !== undefined )
+            {
+                this.boxInFocus.setActive();
+
+                // For debugging
+                this.serverPrintGids();
+            }
+        }
+    }
+
 
     /**
      * In 3D space, gets the box clicked.
@@ -524,9 +583,7 @@ class Controls
      */
     deleteBox()
     {
-        this.boxInFocus.removePoints();
-        this.boxInFocus.removeBox();
-        this.boxInFocus.removeLines();
+        this.boxInFocus.deleteBox();
 
         var index = app.selectionBoxArray.indexOf( this.boxInFocus );
         if ( index > -1 )
@@ -578,8 +635,6 @@ class Controls
     {
         if ( event.target.localName === "canvas" )
         {
-            // TODO: onMouseDown is long. Should be cleaned up. We do basically the same
-            // things in 3D and 2D, but call different functions. Should be distributed somewhere else?
             this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
@@ -587,84 +642,31 @@ class Controls
             this.deviceInFocus = undefined;
             this.removeOutline();
 
-            if ( app.is3DLayer )
+            if ( this.boxInFocus !== undefined )
             {
-                // In 3D we don't actually need to make a selectionBox, because it is done by pressing
-                // the button. We therefore don't need a make_selection_box boolean, and we only need to 
-                // check if we have pressed a selection box or a device when the mouse button is pressed.
-                if ( this.boxInFocus !== undefined )
+                console.log( "Select resize points" )
+                // If a box is selected, check if we click on a resize or rotation point.
+                this.selectResizeOrRotationPoints( event.clientX, event.clientY );
+                if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
                 {
-                    var boxClicked = this.getBoxClicked3D();
-                    if ( boxClicked === undefined )
-                    {
-                        // If we have not pressed a box, but we have a box in focus, we need to inactivate the
-                        // box in focus, because we have pressed somewhere else. 
-                        if ( this.boxInFocus.transformControls.axis === null )
-                        {
-                            this.boxInFocus.setInactive();
-                            this.boxInFocus = undefined;
-                            app.resetVisibility();
-                            return;
-                        }
-                        this.translatingBox = true;
-                        return;
-                    }
-                    else if ( boxClicked !== this.boxInFocus )
-                    {
-                        // If we have pressed on a box, but it is not the one that is in focus, we need
-                        // to make the clicked box the box in focus.
-                        this.boxInFocus.setInactive();
-                        this.boxInFocus = boxClicked;
-                        this.boxInFocus.setActive();
-                    }
+                    return;
                 }
-                else
-                {
-                    // If we don't have a box in focus, we check if we click on a box, and if so, make it the one in focus.
-                    this.boxInFocus = this.getBoxClicked3D();
-                    if ( this.boxInFocus !== undefined )
-                    {
-                        this.boxInFocus.setActive();
-                    }
-                }
+            }
+            if ( event.shiftKey )
+            {
+                console.log( "Select device" )
+                // If the shift key is down, check if we click on a device.
+                this.selectDevice( event.clientX, event.clientY );
 
-                this.serverPrintGids();
-
-                if ( event.shiftKey )
-                {
-                    console.log( "Select device" )
-                    // If the shift key is down, check if we click on a device.
-                    this.selectDevice( event.clientX, event.clientY );
-
-                    // Don't want to rotate the camera if we are moving a device. This is only relevant
-                    // if we have a 3D model.
-                    this.deviceInFocus && app.disableEnableOrbitControls( false );
-                }
+                // Don't want to rotate the camera if we are moving a device. This is only relevant
+                // if we have a 3D model.
+                app.is3DLayer && this.deviceInFocus && app.disableEnableOrbitControls( false );
             }
             else
             {
-                if ( this.boxInFocus !== undefined )
-                {
-                    console.log( "Select resize points" )
-                    // If a box is selected, check if we click on a resize or rotation point.
-                    this.selectResizeOrRotationPoints( event.clientX, event.clientY );
-                    if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
-                    {
-                        return;
-                    }
-                }
-                if ( event.shiftKey )
-                {
-                    console.log( "Select device" )
-                    // If the shift key is down, check if we click on a device.
-                    this.selectDevice( event.clientX, event.clientY );
-                }
-                else
-                {
-                    console.log( "Select box" )
-                    // If neither of the above, check if we click on a box.
-                    this.selectBox()
-                }
+                console.log( "Select box" )
+                // If neither of the above, check if we click on a box.
+                this.selectBox()
             }
         }
     }
@@ -785,7 +787,7 @@ class Controls
                 this.boxInFocus
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "rotate" );
-            */    break;
+                break; */
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls

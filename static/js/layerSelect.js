@@ -1017,6 +1017,14 @@ class App  // TODO: rename App -> ???
         var shape = 'box';
 
         var box = new SelectionBox3D( dim, dim, dim, pos, shape );
+
+        if ( this.controls.boxInFocus !== undefined )
+        {
+            // If we have made a box, but we have another one in focus, we need
+            // to inactivate the old box.
+            this.controls.boxInFocus.setInactive();
+        }
+
         this.controls.boxInFocus = box;
         this.selectionBoxArray.push( box );
 

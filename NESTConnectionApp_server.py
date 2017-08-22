@@ -32,7 +32,7 @@ def index():
 
 
 @app.route('/selector', methods=['POST', 'GET'])
-def print_GIS():
+def print_GIDs():
     """
     Receives the network and selected areas, and prints the GIDs in the
     selected areas to the terminal.

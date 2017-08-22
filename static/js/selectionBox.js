@@ -519,6 +519,7 @@ class SelectionBox
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
+        var noNeurons = { [this.layerName]: app.layer_points[this.layerName]['noElements'] };
 
         var selectionInfo = {
             name: [this.layerName],
@@ -527,9 +528,9 @@ class SelectionBox
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
-            noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
+            noOfNeuronTypesInLayer: noNeurons
         };
-
+        console.log(selectionInfo)
         return selectionInfo;
     }
 
@@ -855,6 +856,13 @@ class SelectionBox
         //return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
         return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
     }
+
+    deleteBox()
+    {
+        this.removePoints();
+        this.removeBox();
+        this.removeLines();
+    }
 }
 
 /**
@@ -901,7 +909,9 @@ class SelectionBox3D
         this.activeColor.setRGB( 1.0, 1.0, 0.0 );
         this.inactiveColor = new app.THREE.Color();
         this.inactiveColor.setRGB( 0.7, 0.7, 0.7 );
-        // this.rotationPoints = [];
+        
+        //this.resizePoints = undefined;
+        //this.rotationPoints = undefined;
 
         // SelectedFirstTime is used to turn the elliptical masks. If we press on an
         // elliptical mask two times, we should get point that let us turn the mask the
@@ -997,6 +1007,35 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+    }
+
+    removeBox()
+    {
+        app.scene.remove( this.box );
+        this.setInactive();
+        app.scene.remove( this.borderBox );
+
+        var colorID;
+        var colors;
+        var oldPoints = this.selectedPoints;
+
+        for ( var layer in app.layer_points )
+        {
+            points = app.layer_points[ layer ].points;
+            colors = points.geometry.getAttribute( "customColor" ).array;
+
+            for ( var i = 0; i < oldPoints.length; ++i )
+            {
+                var colorID = oldPoints[ i ].index;
+
+                colors[ colorID ] = oldPoints[ i ].color.r;
+                colors[ colorID + 1 ] = oldPoints[ i ].color.g;
+                colors[ colorID + 2 ] = oldPoints[ i ].color.b;
+            }
+            points.geometry.attributes.customColor.needsUpdate = true;
+        }
+
+        app.resetVisibility();
     }
 
     /**
@@ -1120,17 +1159,15 @@ class SelectionBox3D
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
-
-        // We need to send down all the layers in some way....
         var nameArray = [];
-
+        var noNeuronPointsDict = {}
         for ( var layerName in app.layer_points )
         {
             nameArray.push(layerName);
+            noNeuronPointsDict[layerName] = app.layer_points[layerName]['noElements']
         }
 
         var selectionInfo = {
-            //name: this.layerName,
             name: nameArray,
             selection: { "ll": this.ll, "ur": this.ur },
             //angle: this.angle,
@@ -1138,11 +1175,17 @@ class SelectionBox3D
             neuronType: selectedNeuronType,
             synModel: selectedSynModel,
             maskShape: selectedShape,
-            //noOfNeuronTypesInLayer: app.layer_points[this.layerName]['noElements']
+            noOfNeuronTypesInLayer: noNeuronPointsDict
         };
 
         console.log(selectionInfo)
         return selectionInfo;
+    }
+
+    deleteBox()
+    {
+        this.removeBox();
+        //this.removeLines();
     }
 }
 
