@@ -1,10 +1,7 @@
 /**
- * Script
- *
+ * NESTConnection app.
  */
-
-// TODO: rename App -> ???
-class App
+class App  // TODO: rename App -> ???
 {
     constructor()
     {
@@ -58,7 +55,7 @@ class App
 
     }
 
-    /*
+    /**
      * Initializes the app.
      */
     init()
@@ -91,6 +88,9 @@ class App
         this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
     }
 
+    /**
+     * Initializes the scene.
+     */
     initTHREEScene()
     {
         // CAMERA
@@ -108,6 +108,9 @@ class App
         this.colorIn.setRGB( 0.7, 0.4, 0.4 );
     }
 
+    /**
+     * Initializes the renderer.
+     */
     initTHREERenderer()
     {
         // RENDERER
@@ -120,15 +123,20 @@ class App
         this.renderer.autoClear = false;
     }
 
+    /**
+     * Inserts the renderer into the Document Object Model.
+     */
     initContainer()
     {
         document.body.appendChild( this.container );
         this.container.appendChild( this.renderer.domElement );
     }
 
-    /*
+    /**
     * Finds out which of the model buttons we chose, and sends infomation to Brain, which
     * then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
+    *
+    * @event
     */
     onLayerModelClicked(evt) {
         var target = evt.target;
@@ -197,8 +205,11 @@ class App
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
     }
 
-    /*
+    /**
     * Function to handle file upload if user has chosen its own model.
+    *
+    * @event
+    * @returns {Bool} <code>false</code> if the file is empty.
     */
     handleModelFileUpload (event) {
         var file = event.target.files;
@@ -227,6 +238,9 @@ class App
         fr.readAsText(file.item(0));
     }
 
+    /**
+     * Initializes the buttons.
+     */
     initGUI()
     {
         // make GUI when finished compiling the jsx file (TODO: this should be changed when precompiling)
@@ -242,8 +256,10 @@ class App
             }, 100);
     }
 
-    /*
+    /**
     * Enables or disables the orbit controls.
+    *
+    * @param {Bool} booleanValue OrbitControls enabled
     */
     disableEnableOrbitControls( booleanValue )
     {
@@ -251,8 +267,10 @@ class App
     }
 
 
-    /*
+    /**
      * Handles response from Server-Sent Events.
+     *
+     * @event
      */
     handleMessage( e )
     {
@@ -296,8 +314,11 @@ class App
         }
     }
 
-    /*
+    /**
      * Converts coordinates of a point in space to coordinates on screen.
+     *
+     * @param {Object} point_pos xyz values for position
+     * @returns {Object} Object conaining xy values.
      */
     toScreenXY( point_pos )
     {
@@ -313,8 +334,11 @@ class App
         };
     }
 
-    /*
+    /**
      * Converts coordinates on the screen to coordinates in space.
+     *
+     * @param {Object} screenPos xy values for position
+     * @returns {Object} Object conaining xyz values.
      */
     toObjectCoordinates( screenPos )
     {
@@ -335,8 +359,13 @@ class App
         return pos
     }
 
-    /*
-     * Finds the ll and ur coordinates of the selected square
+    /**
+     * Finds the lower left and upper right coordinates of the selected square.
+     *
+     * @param {Object} pos1 xy values for the first coordinates
+     * @param {Object} pos2 xy values for the second coordinates
+     * @returns {Object} Object containing ll (lower left) and ur (upper right)
+     * coordinates.
      */
     findBounds( pos1, pos2 )
     {
@@ -353,7 +382,7 @@ class App
         } );
     }
 
-    /*
+    /**
      * Callback for the rectangular shape button.
      */
     makeRectangularShape()
@@ -374,7 +403,7 @@ class App
         this.selectedShape = 'rectangular';
     }
 
-    /*
+    /**
      * Callback for the elliptical shape button.
      */
     makeEllipticalShape()
@@ -395,8 +424,11 @@ class App
         this.selectedShape = 'elliptical';
     }
 
-    /*
+    /**
      * Gets the selected value of a drop-down menu.
+     *
+     * @param {String} id DOM id of the drop-down menu
+     * @returns {String} Currently selected value.
      */
     getSelectedDropDown( id )
     {
@@ -404,7 +436,7 @@ class App
         return dd.options[ dd.selectedIndex ].value;
     }
 
-    /*
+    /**
      * Returns the currently selected selection shape.
      */
     getSelectedShape()
@@ -412,8 +444,11 @@ class App
         return this.selectedShape;
     }
 
-    /*
+    /**
      * Gets layer and point index for a specified GID.
+     *
+     * @param {Number} gid GID to be found.
+     * @returns {Object} Object containing indices of the layer and point of the GID.
      */
     getGIDPoint( gid )
     {
@@ -437,9 +472,12 @@ class App
         }
     }
 
-    /*
+    /**
      * Colours node points given their membrane potential, skipping nodes that
      * just spiked.
+     *
+     * @param {Object} response Containing device data from the server
+     * @param {Object} spiked Array of GIDs that have spiked
      */
     colorFromVm( response, spiked )
     {
@@ -473,8 +511,11 @@ class App
         }
     }
 
-    /*
+    /**
      * Colours spiking node points.
+     *
+     * @param {Object} response Containing device data from the server.
+     * @returns {Array} The GIDs that spiked.
      */
     colorFromSpike( response )
     {
@@ -506,8 +547,13 @@ class App
         return spikedGIDs;
     }
 
-    /*
+    /**
      * Maps the membrane potential to a colour.
+     *
+     * @param {Number} Vm Membrane potential
+     * @param {Number} minVm Minimum membrane potential of the neuron
+     * @param {Number} maxVm Maximum membrane potential of the neuron
+     * @returns {Array} RGB values.
      */
     mapVmToColor( Vm, minVm, maxVm )
     {
@@ -525,7 +571,7 @@ class App
         return [ colorRG, colorRG, 1.0 ];
     }
 
-    /*
+    /**
      * Resets colours in the box.
      */
     resetBoxColors()
@@ -539,7 +585,7 @@ class App
         }
     }
 
-    /*
+    /**
      * Resets buttons at the end of the simulation.
      */
     onSimulationEnd()
@@ -554,8 +600,10 @@ class App
         abortButton.addEventListener("transitionend", hideButton, false);
     }
 
-    /*
+    /**
      * Creates an object with specs and connectees for each device.
+     *
+     * @returns {Object} Projections created.
      */
     makeProjections()
     {
@@ -576,7 +624,7 @@ class App
         return projections;
     }
 
-    /*
+    /**
      * Sends data to the server, creating the connections.
      */
     makeConnections()
@@ -604,7 +652,7 @@ class App
         this.getConnections();
     }
 
-    /*
+    /**
      * Gets the number of connections from the server.
      */
     getConnections()
@@ -618,7 +666,7 @@ class App
         }.bind(this) );
     }
 
-    /*
+    /**
      * Runs a simulation.
      */
     runSimulation()
@@ -650,7 +698,7 @@ class App
 
     }
 
-    /*
+    /**
      * Runs a simulation.
      */
     streamSimulate()
@@ -681,7 +729,7 @@ class App
         document.documentElement.style.setProperty('--stream_button_width', 'calc(0.5*var(--gui_width) - 14px)');
     }
 
-    /*
+    /**
      * Aborts the current simulation.
      */
     abortSimulation()
@@ -696,7 +744,7 @@ class App
         }.bind(this) );
     }
 
-    /*
+    /**
      * Saves selections to file.
      */
     saveSelection()
@@ -741,7 +789,7 @@ class App
         dlAnchorElem.click();
     }
 
-    /*
+    /**
      * Loads selections from a file.
      */
     loadSelection()
@@ -749,7 +797,7 @@ class App
         document.getElementById( 'uploadAnchorElem' ).click();
     }
 
-    /*
+    /**
      * Creates the devices, selections, and connections, given a JSON with
      * connection data.
      */
@@ -816,8 +864,10 @@ class App
         }
     }
 
-    /*
-     * Callback function for file upload when loading a JSON file.
+    /**
+     * Event handler for file upload when loading a JSON file.
+     *
+     * @event
      */
     handleFileUpload( event )
     {
@@ -832,8 +882,13 @@ class App
         fr.readAsText( event.target.files[ 0 ] );
     }
 
-    /*
+    /**
      * Creates a device, with given colour, texture map, and optional parameters.
+     *
+     * @param {string} device Name of the device
+     * @param {Object} col Colour of the device
+     * @param {Object} map Texture of the device
+     * @param {Object=} params Optional parameters of the device
      */
     makeDevice( device, col, map, params = {} )
     {
@@ -897,8 +952,10 @@ class App
         };
     }
 
-    /*
+    /**
      * Creates a stimulation device.
+     *
+     * @param {string} device Name of the device
      */
     makeStimulationDevice( device )
     {
@@ -923,8 +980,10 @@ class App
         this.makeDevice( device, col, map, params );
     }
 
-    /*
+    /**
      * Creates a recording device.
+     *
+     * @param {string} device Name of the device
      */
     makeRecordingDevice( device )
     {
@@ -948,6 +1007,9 @@ class App
         this.makeDevice( device, col, map );
     }
 
+    /**
+     * Creates a selection box.
+     */
     makeMaskBox()
     {
         var dim = 0.2;
@@ -970,8 +1032,11 @@ class App
 
         this.controls.serverPrintGids();
     }
-    /*
-     * Returns the boxes of all the SelectionBox3D objects in selectionBoxArray.
+
+    /**
+     * Gets the boxes of all the SelectionBox3D objects in selectionBoxArray.
+     *
+     * @returns {Array} SelectionBox objects.
      */
     getMaskBoxes()
     {
@@ -983,6 +1048,9 @@ class App
         return boxes;
     }
 
+    /**
+     * Makes all points visible.
+     */
     resetVisibility()
     {
         for ( var layer in app.layer_points )
@@ -998,6 +1066,9 @@ class App
         }
     }
 
+    /**
+     * Renders the scene.
+     */
     render()
     {
         requestAnimationFrame( this.render.bind(this) );

@@ -1,12 +1,9 @@
-/*
- *
- * Make layers
- *
+/**
+ * Makes neuron layers
  */
-
 var Brain = function( camera, scene )
 {
-    /*
+    /**
      * Creates the layers.
      */
     function initLayers()
@@ -125,7 +122,7 @@ var Brain = function( camera, scene )
         requestAnimationFrame( app.render.bind(app) );
     }
 
-    /*
+    /**
      * Creates the points representing nodes.
      */
     function initPoints( neurons, offsett_x, offsett_y, extent, center, neuronType )
@@ -226,7 +223,7 @@ var Brain = function( camera, scene )
         return points;
     }
 
-    /*
+    /**
      * Creates legends for the layers.
      */
     make_layer_names = function()
@@ -270,7 +267,7 @@ var Brain = function( camera, scene )
         }
     }
 
-    /*
+    /**
     * Finds the number of elements in a layer.
     * 
     * elements is an array or string. If it is a string, number of elements equals 1. If we have
@@ -304,7 +301,7 @@ var Brain = function( camera, scene )
         return noElem;
     }
 
-    /*
+    /**
      * Fills a list with names of models and synapse models.
      */
     function makeModelNameLists()

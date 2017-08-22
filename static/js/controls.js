@@ -1,6 +1,7 @@
-/*
- * Controls
- *
+/**
+ * This class holds the data and methods used when controlling the app.
+* @param {Array} drag_objects Devices.
+* @param {Object} domElement The DOM element of the renderer.
  */
 class Controls
 {
@@ -42,7 +43,7 @@ class Controls
         window.addEventListener( 'resize', this.onWindowResize.bind( this ), false );
     }
 
-    /*
+    /**
      * Resets all the controls.
      */
     resetButtons()
@@ -70,8 +71,10 @@ class Controls
         app.layerSelected = "";
     }
 
-    /*
+    /**
      * Creates an outline of a device icon, to show that it is selected.
+     *
+     * @param focusObject The THREE.Mesh of the device to be highlighted.
      */
     makeOutline( focusObject )
     {
@@ -85,7 +88,7 @@ class Controls
         app.outlineScene.add( this.outlineMesh );
     }
 
-    /*
+    /**
      * Removes a device outline.
      */
     removeOutline()
@@ -93,7 +96,7 @@ class Controls
         app.outlineScene.remove( this.outlineMesh );
     }
 
-    /*
+    /**
      * Sends the specifications and selection to the server which prints the
      * GIDs.
      * For debugging purposes.
@@ -118,8 +121,13 @@ class Controls
         } );
     }
 
-    /*
+    /**
      * Finds objects intersecting with the mouse, given a list of objects.
+     *
+     * @param {Object} mouseX x coordinates of the mouse.
+     * @param {Object} mouseY y coordinates of the mouse.
+     * @param {Array} objects Objects in the scene to be checked for intersection.
+     * @returns {Array} Objects intersected.
      */
     getMouseIntersecting( mouseX, mouseY, objects )
     {
@@ -139,7 +147,7 @@ class Controls
         return this.raycaster.intersectObjects( objects );
     }
 
-    /*
+    /**
      * Checks if the mouse clicks on a resize or rotation point. If so, sets the point to be
      * selected. If not, removes the points.
      */
@@ -172,7 +180,7 @@ class Controls
         }
     }
 
-    /*
+    /**
      * Checks if the mouse clicks on a device. If so, sets the device as
      * selected, and creates an outline around the device icon.
      */
@@ -193,7 +201,7 @@ class Controls
         }
     }
 
-    /*
+    /**
      * Checks if we have a 3D or 2D model and redistribute to correct function to check
      * if the mouse clicks on a selection box.
      */
@@ -209,7 +217,7 @@ class Controls
         }
     }
 
-    /*
+    /**
      * Checks if the mouse clicks on a 2D selection box. If so, sets the selection
      * box as selected. If not, indicates that we should create a selection box.
      */
@@ -317,6 +325,12 @@ class Controls
         }
     }
 
+
+    /**
+     * In 3D space, gets the box clicked.
+     *
+     * @returns {SelectionBox3D|undefined} Box clicked, if we click on a box.
+     */
     getBoxClicked3D()
     {
         var selectedBox = undefined;
@@ -337,7 +351,7 @@ class Controls
         return selectedBox;
     }
 
-    /*
+    /**
      * Given the mouse position, updates the marquee dimensions.
      */
     updateMarquee( mouseX, mouseY )
@@ -363,7 +377,7 @@ class Controls
         } );
     }
 
-    /*
+    /**
      * Given the mouse position, resizes the selected box according to which
      * resize point has been clicked.
      */
@@ -433,7 +447,7 @@ class Controls
         this.boxInFocus.updateColors();
     }
 
-    /*
+    /**
      * Given the mouse position, updates the connection line.
      */
     updateLine( mouseX, mouseY )
@@ -450,7 +464,7 @@ class Controls
         }, "" )
     }
 
-    /*
+    /**
      * Given the mouse position, updates the position of the device selected,
      * and its connected lines.
      */
@@ -479,7 +493,7 @@ class Controls
         }
     }
 
-    /*
+    /**
      * Makes a selection box from coordinates from clicking and dragging the
      * mouse.
      */
@@ -521,7 +535,7 @@ class Controls
         this.boxInFocus.selectedFirstTime = true;
     }
 
-    /*
+    /**
      * Checks if the selection box is flipped, and updates accordingly.
      */
     checkFlipBox()
@@ -544,7 +558,7 @@ class Controls
         this.serverPrintGids();
     }
 
-    /*
+    /**
      * Checks if the mouse is over a device, if so creates a connection between
      * the device and the selected selection box.
      */
@@ -571,7 +585,7 @@ class Controls
         }
     }
 
-    /*
+    /**
      * Delete the selected selection box.
      */
     deleteBox()
@@ -594,7 +608,7 @@ class Controls
         this.boxInFocus = undefined;
     }
 
-    /*
+    /**
      * Delete the selected device.
      */
     deleteDevice()
@@ -619,8 +633,10 @@ class Controls
         this.deviceInFocus = undefined;
     }
 
-    /*
-     * Callback function for mouse click down.
+    /**
+     * Event handler for mouse click down.
+     *
+     * @event
      */
     onMouseDown( event )
     {
@@ -662,8 +678,10 @@ class Controls
         }
     }
 
-    /*
-     * Callback function for mouse movement.
+    /**
+     * Event handler for mouse movement.
+     *
+     * @event
      */
     onMouseMove( event )
     {
@@ -703,8 +721,10 @@ class Controls
         }
     }
 
-    /*
-     * Callback function for mouse click up.
+    /**
+     * Event handler for mouse click up.
+     *
+     * @event
      */
     onMouseUp( event )
     {
@@ -758,6 +778,11 @@ class Controls
         this.resetButtons();
     }
 
+    /**
+     * Event handler for key down.
+     *
+     * @event
+     */
     onKeyDown( event )
     {
         switch ( event.keyCode )
@@ -778,8 +803,10 @@ class Controls
         }
     }
 
-    /*
-     * Callback function for key up.
+    /**
+     * Event handler for key up.
+     *
+     * @event
      */
     onKeyUp( event )
     {
@@ -807,8 +834,10 @@ class Controls
         }
     }
 
-    /*
-     * Callback function for window resize.
+    /**
+     * Event handler for window resize.
+     *
+     * @event
      */
     onWindowResize()
     {

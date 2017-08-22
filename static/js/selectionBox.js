@@ -1,9 +1,10 @@
-/*
+/**
+ * Represents a selection of neurons in 2D space.
  *
- * SELECTIONBOX
- *
+ * @param {Object} ll Lower left coordinates.
+ * @param {Object} ur Upper right coordinates.
+ * @param {String} shape Shape of the selection.
  */
-
 class SelectionBox
 {
     constructor( ll, ur, shape )
@@ -42,7 +43,7 @@ class SelectionBox
         this.CURVE_SEGMENTS = 100;
     }
 
-    /*
+    /**
      * Finds which points lie within the box, and colors them.
      */
     selectPoints()
@@ -90,7 +91,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Finds the name of the layer in which the selection box is located.
      */
     getLayerName()
@@ -124,7 +125,7 @@ class SelectionBox
         console.log(this.layerName)
     }
 
-    /*
+    /**
      * Updates the colors of the points within the box.
      */
     updateColors()
@@ -183,7 +184,7 @@ class SelectionBox
         this.selectedPointIDs = newPoints;
     }
 
-    /*
+    /**
      * Makes a box in space and adds it to the scene.
      */
     makeBox()
@@ -232,7 +233,7 @@ class SelectionBox
         app.scene.add( this.box );
     }
 
-    /*
+    /**
      * Updates the dimensions of the box.
      */
     updateBox()
@@ -265,7 +266,7 @@ class SelectionBox
         this.box.position.copy( boxPosition );
     }
 
-    /*
+    /**
      * Removes the box from the scene and resets the colours of the points.
      */
     removeBox()
@@ -299,7 +300,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Creates a line representing a connection, that is to be connected to a
      * device.
      */
@@ -332,7 +333,7 @@ class SelectionBox
         } );
     }
 
-    /*
+    /**
      * Sets a target for the line that was created last.
      */
     setLineTarget( device )
@@ -340,7 +341,7 @@ class SelectionBox
         this.curves[ this.curves.length - 1 ].target = device;
     }
 
-    /*
+    /**
      * Updates the endpoint of a line.
      */
     updateLine( newEndPos, curveIndex, radius )
@@ -382,7 +383,7 @@ class SelectionBox
         curveObject.geometry.verticesNeedUpdate = true;
     }
 
-    /*
+    /**
      * Updates the start position of all lines of this selection box.
      */
     updateLineStart()
@@ -393,7 +394,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Updates the end positions of lines connecting to a specific target device.
      */
     updateLineEnd( newPos, target, radius = 0 )
@@ -407,7 +408,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Connects a line to a target device.
      */
     lineToDevice( targetPos, radius, target )
@@ -432,7 +433,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Removes the line that was created last.
      */
     removeLine()
@@ -441,7 +442,7 @@ class SelectionBox
         this.curves.pop();
     }
 
-    /*
+    /**
      * Removes all lines, or optionally a line connected to a specific target
      * device.
      */
@@ -466,7 +467,7 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Gets lower left and upper right coordinates in scene coordinates.
      */
     getSelectionBounds()
@@ -487,7 +488,7 @@ class SelectionBox
         };
     }
 
-    /*
+    /**
      * Returns data of this selection box to be sent to the server for
      * connecting. Coordinates here has to be converted to room coordinates.
      */
@@ -533,8 +534,10 @@ class SelectionBox
         return selectionInfo;
     }
 
-    /*
-     * Returns data of this selection box to be saved.
+    /**
+     * Gets data of this selection box to be saved.
+     *
+     * @returns {Object} Information to be saved.
      */
     getInfoForSaving()
     {
@@ -552,7 +555,7 @@ class SelectionBox
         return selectionInfo;
     }
 
-    /*
+    /**
      * Create points that can be used to resize the box.
      */
     makeSelectionPoints()
@@ -706,8 +709,13 @@ class SelectionBox
         }*/
     }
 
-    /*
+    /**
      * Make a single resize or rotation point and add it to the scene.
+     *
+     * @param {Object} pos Coordinates of the new point.
+     * @param {String} name Name of the new point.
+     * @param {Object} col Colour of the new point.
+     * @returns {THREE.Mesh} THREE representation of the point.
      */
     makePoint( pos, name, col )
     {
@@ -725,7 +733,7 @@ class SelectionBox
         return point;
     }
 
-    /*
+    /**
      * Remove all resize and rotation points.
      */
     removePoints()
@@ -743,7 +751,7 @@ class SelectionBox
         this.rotationPoints = [];
     }
 
-    /*
+    /**
      * Create points that can be used to rotate the elliptical box.
      */
     makeRotationPoints()
@@ -791,14 +799,20 @@ class SelectionBox
         }
     }
 
+    /**
+     * Update the major and minor axis of an ellipse mask.
+     */
     updateMajorAndMinorAxis()
     {
         this.majorAxis = Math.max( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
         this.minorAxis = Math.min( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
     }
 
-    /*
-     * Takes a position and detect if it is within the boundary box
+    /**
+     * Takes a position and detects if it is within the boundary box.
+     *
+     * @param {Object} pos Position to be checked.
+     * @returns {Bool} True if the position is inside the mask, else false.
      */
     withinBounds( pos )
     {
@@ -812,16 +826,22 @@ class SelectionBox
         }
     }
 
-    /*
+    /**
      * Checks if a position is within the selection box. Rectangle version.
+     *
+     * @param {Object} pos Position to be checked.
+     * @returns {Bool} True if the position is inside the box, else false.
      */
     withinRectangleBounds( pos )
     {
         return ( ( pos.x >= this.ll.x ) && ( pos.x <= this.ur.x ) && ( pos.y >= this.ll.y ) && ( pos.y <= this.ur.y ) );
     }
 
-    /*
+    /**
      * Checks if a position is within the selection box. Ellipse version.
+     *
+     * @param {Object} pos Position to be checked.
+     * @returns {Bool} True if the position is inside the ellipse, else false.
      */
     withinEllipticalBounds( pos )
     {
@@ -845,6 +865,15 @@ class SelectionBox
     }
 }
 
+/**
+ * Represents a selection of neurons in 3D space.
+ *
+ * @param {Number} width Width of the selection.
+ * @param {Number} height Height of the selection.
+ * @param {Number} depth Depth of the selection.
+ * @param {Object} center Center coordinates of the selection.
+ * @param {String} shape Shape of the selection.
+ */
 class SelectionBox3D
 {
     constructor( width, height, depth, center, shape )
@@ -900,6 +929,9 @@ class SelectionBox3D
         this.CURVE_SEGMENTS = 100;
     }
 
+    /**
+     * Creates a box, adds it to the scene, and sets it active in {@link Controls}.
+     */
     makeBox()
     {
         var geometry = new app.THREE.BoxBufferGeometry(this.width, this.height, this.depth);
@@ -917,6 +949,9 @@ class SelectionBox3D
         //this.box.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
+    /**
+     * Creates lines around the borders of the selection.
+     */
     makeBorderLines()
     {
         this.borderBox = new app.THREE.BoxHelper( );
@@ -929,16 +964,27 @@ class SelectionBox3D
         this.setBorderLinesColor(this.activeColor);
     }
 
+    /**
+     * Updates the border lines.
+     */
     updateBorderLines()
     {
         this.borderBox.setFromObject( this.box );
     }
 
+    /**
+     * Sets the colour of the border lines.
+     *
+     * @param {Object} color New colour of the lines.
+     */
     setBorderLinesColor( color)
     {
         this.borderBox.material.color = color;
     }
 
+    /**
+     * Makes transform controls for the selection box.
+     */
     makeTransformControls()
     {
         this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
@@ -948,6 +994,9 @@ class SelectionBox3D
         this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
+    /**
+     * Makes the selection box active by showing transformation controls and updating border lines colour.
+     */
     setActive()
     {
         this.transformControls.attach( this.box );
@@ -955,6 +1004,9 @@ class SelectionBox3D
         this.updateColors();
     }
 
+    /**
+     * Makes the selection box inactive by hiding transformation controls and updating border lines colour.
+     */
     setInactive()
     {
         this.transformControls.detach();
@@ -1009,6 +1061,9 @@ class SelectionBox3D
         app.resetVisibility();
     }
 
+    /**
+     * Updates the width, height, depth from the scale of the box, and center from the position of the box. 
+     */
     updateWidthHeightDeptCenter()
     {
         this.width = this.originalWidth * this.box.scale.x;
@@ -1017,13 +1072,16 @@ class SelectionBox3D
         this.center = this.box.position;
     }
 
+    /**
+     * Updates lower left and upper right of the selection box.
+     */
     updateLLAndUR()
     {
         this.ll = { x: this.center.x - this.width / 2, y: this.center.y - this.height / 2, z: this.center.z - this.depth / 2 };
         this.ur = { x: this.center.x + this.width / 2, y: this.center.y + this.height / 2, z: this.center.z + this.depth / 2 };
     }
 
-    /*
+    /**
      * Finds which points lie within the box, and colors them.
      */
     updateColors()
@@ -1088,6 +1146,13 @@ class SelectionBox3D
         }
     }
 
+    /*
+     * Checks if position is inside the box.
+     *
+     * @param {Object} pos Position to check.
+     *
+     * @returns {Bool} True if point is inside the box, false otherwise.
+     */
     containsPoint( pos )
     {
         /*var xHalf = ( this.width * this.box.scale.x ) / 2.0;
@@ -1271,9 +1336,11 @@ class SelectionBox3D
         }
     }
 
-    /*
-     * Returns data of this selection box to be sent to the server for
+    /**
+     * Gets data of this selection box to be sent to the server for
      * connecting.
+     *
+     * @returns {Object} Information to be sent to the server.
      */
     getSelectionInfo()
     {
