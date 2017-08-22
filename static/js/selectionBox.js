@@ -913,6 +913,8 @@ class SelectionBox3D
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
+
+        //this.box.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
     makeBorderLines()
@@ -942,6 +944,8 @@ class SelectionBox3D
         this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
         app.scene.add( this.transformControls );
         this.transformControls.attach( this.box );
+
+        this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
     setActive()
@@ -955,6 +959,22 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+    }
+    
+    /*
+    * Callback function for transformation controls that is used when we have change because of the controls.
+    */
+    updateAfterTransformations()
+    {
+        console.log("Vi tranformerer!")
+        this.updateWidthHeightDeptCenter();
+        this.updateLLAndUR();
+        
+        if ( this.curves !== undefined )
+        {
+            this.updateLineStart();
+        }
+
     }
 
     /*
@@ -1040,7 +1060,7 @@ class SelectionBox3D
                 p.z = positions[ i + 2 ];
                 if ( this.containsPoint( p ) )
                 {
-                    oldColor = { r: colors[ i ], g: colors[ i + 1 ], b:colors[ i + 2 ] };
+                    oldColor = { r: colors[ i ], g: colors[ i + 1 ], b: colors[ i + 2 ] };
                     colors[ i ] = 0.0;
                     colors[ i + 1 ] = 1.0;
                     colors[ i + 2 ] = 0.0;
@@ -1077,8 +1097,8 @@ class SelectionBox3D
              && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
              && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );*/
 
-        this.updateWidthHeightDeptCenter();
-        this.updateLLAndUR();
+        //this.updateWidthHeightDeptCenter();
+        //this.updateLLAndUR();
 
         return pos.x > this.ll.x && pos.x < this.ur.x
             && pos.y > this.ll.y && pos.y < this.ur.y
@@ -1158,6 +1178,17 @@ class SelectionBox3D
             curveObject.geometry.vertices[ i ].copy( curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
         }
         curveObject.geometry.verticesNeedUpdate = true;
+    }
+
+    /*
+     * Updates the start position of all lines of this selection box.
+     */
+    updateLineStart()
+    {
+        for ( var i in this.curves )
+        {
+            this.updateLine( undefined, i, 0 );
+        }
     }
 
     /*
