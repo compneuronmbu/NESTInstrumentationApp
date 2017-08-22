@@ -1,8 +1,6 @@
-/*
-* DEVICE PLOTS
-*
+/**
+* Class for creating graphs from the results of devices. 
 */
-
 class DevicePlots {
     constructor()
     {
@@ -29,6 +27,9 @@ class DevicePlots {
         this.Vm = [];
     }
 
+    /**
+    * Make graph plots of the device output.
+    */
     makeDevicePlot()
     {
         var width = app.container.clientWidth / 2;
@@ -130,6 +131,11 @@ class DevicePlots {
         }
     }
 
+    /**
+    * Make the x-axis in the plot.
+    *
+    * @param {Number} timestamp The time of the device data.
+    */
     makeXAxis(timestamp)
     {
         // Make the shared x-axis for both plots.
@@ -145,6 +151,12 @@ class DevicePlots {
         this.spikeTrain.select(".x.axis").transition().duration(0).call(xAxis);
     }
 
+    /**
+    * Make spike train plot.
+    *
+    * @param {Object} spikeEvents Contains times and senders of the spike events.
+    * @param {Number} timestamp The time of the device data.
+    */
     makeSpikeTrain(spikeEvents, timestamp)
     {
         //var time = spikeEvents.times;
@@ -228,6 +240,12 @@ class DevicePlots {
 
     }
 
+    /**
+    * Make membrane potential plot.
+    *
+    * @param {Object} events Contains events of the voltmeter.
+    * @param {Number} timestamp The time of the device data.
+    */
     makeVoltmeterPlot(events, timestamp)
     {
         this.makeXAxis(timestamp);

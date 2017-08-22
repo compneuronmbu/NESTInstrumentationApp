@@ -8,6 +8,12 @@ import numbers
 class NESTInterface(object):
     """
     Class for interacting with NEST.
+
+    :param networkSpecs: Dictionary of network specifications
+    :param synapses: Optional list of synapse specifications
+    :param internal_projections: Optional list of projections between layers
+    :param device_projections: Optional list of projections between layers and
+                               devices
     """
 
     def __init__(self, networkSpecs,
@@ -32,9 +38,15 @@ class NESTInterface(object):
         nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
 
     def reset_kernel(self):
+        """
+        Resets the NEST kernel.
+        """
         nest.ResetKernel()
 
     def make_nodes(self):
+        """
+        Creates the layers of nodes.
+        """
         # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
         if nest.GetKernelStatus()['network_size'] == 1:
 
@@ -72,6 +84,9 @@ class NESTInterface(object):
             return self.layers
 
     def make_models(self):
+        """
+        Creates custom models.
+        """
         # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
         models = self.networkSpecs['models']
         for new_mod, old_mod in models.items():
@@ -125,10 +140,20 @@ class NESTInterface(object):
         return mask
 
     def make_synapse_models(self):
+        """
+        Makes custom synapse models.
+        """
         for syn_name, model_name, syn_specs in self.synapses:
             nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
+        """
+        Gets a list of the selected GIDs.
+
+        :param selection_dict: Dictionary containing specifications of the
+                               selected areas.
+        :returns: List of the selected GIDs
+        """
         layer_names = selection_dict['name']
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
@@ -189,6 +214,15 @@ class NESTInterface(object):
         return collected_gids
 
     def getIndicesOfNeuronType(self, neuron_type, models, numberOfPositions):
+        """
+        Given a neuron type and number of selected neuron positions, finds the
+        start and end indices in the list of selected neurons.
+
+        :param neuron_type: type of neurons to find
+        :param models: list of neuron models, on the form
+            ``['L23pyr', 2, 'L23in', 1]`` or ``['Relay', 'Inter']``
+        :param numberOfPositions: number of selected neuron positions
+        """
         # models can for instance be of the form
         # ['L23pyr', 2, 'L23in', 1, 'L4pyr', 2, 'L4in', 1, 'L56pyr', 2, 'L56in', 1] or
         # ['Relay', 'Inter']
@@ -221,10 +255,22 @@ class NESTInterface(object):
 
 
     def printGIDs(self, selection):
+        """
+        Prints the selected GIDs to terminal.
+
+        :param selection: dictionary containing specifications of the
+            selected areas
+        :returns: two-element touple with a list of GIDs and positions of the
+            GIDs
+        """
         gids = self.get_gids(selection)
         return (gids, tp.GetPosition(gids))
 
     def connect_all(self):
+        """
+        Connects both projections between layers and projections between layers
+        and devices.
+        """
         self.connect_internal_projections()
         self.connect_to_devices()
 
@@ -284,7 +330,11 @@ class NESTInterface(object):
 
     def floatify_dictionary(self, dict_to_floatify):
         """
-        Helper function to go through dictionary with dictionaries and floatify integers.
+        Function that goes through a (possibly nested) dictionary and
+        floatifies integers.
+
+        :param dict_to_floatify: dictionary to go through
+        :returns: dictionary where integers are floats
         """
         for d in dict_to_floatify:
             if isinstance(dict_to_floatify[d], dict):
@@ -294,25 +344,52 @@ class NESTInterface(object):
         return dict_to_floatify
 
     def get_connections(self):
+        """
+        Gets all connections from NEST.
+
+        :returns: list of connections
+        """
         return nest.GetConnections()
 
     def get_num_connections(self):
+        """
+        Gets the number of connections.
+
+        :returns: number of connections
+        """
         return nest.GetKernelStatus()['num_connections']
 
     def prepare_simulation(self):
+        """
+        Prepares NEST to run a simulation.
+        """
         print("Preparing simulation")
         nest.Prepare()
 
-    def run(self, t, return_events=False):
+    def run(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: time to simulate
+        """
         # nest.SetKernelStatus({'print_time': True})
 
         nest.Run(t)
 
     def cleanup_simulation(self):
+        """
+        Make NEST cleanup after a finished simulation.
+        """
         print("Cleaning up after simulation")
         nest.Cleanup()
 
     def get_device_results(self):
+        """
+        Gets results from devices.
+
+        :returns: if there are new results from the devices, returns a
+            dictionary with these, else returns `None`
+        """
 
         results = {}
         # TODO: Set up on the fly
