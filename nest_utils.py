@@ -109,13 +109,6 @@ class NESTInterface(object):
                                    lower_left[1] - cntr[1]],
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1]]}
-        elif mask_type == 'box':
-            spec = {'lower_left': [lower_left[0] - cntr[0],
-                                   lower_left[1] - cntr[1],
-                                   lower_left[2]],
-                    'upper_right': [upper_right[0] - cntr[0],
-                                    upper_right[1] - cntr[1],
-                                    upper_right[2]]}
         elif mask_type == 'elliptical':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -131,6 +124,32 @@ class NESTInterface(object):
                 minor = x_side
             spec = {'major_axis': major, 'minor_axis': minor,
                     'anchor': [xpos - cntr[0], ypos - cntr[1]],
+                    'azimuth_angle': angle}
+        elif mask_type == 'box':
+            spec = {'lower_left': [lower_left[0] - cntr[0],
+                                   lower_left[1] - cntr[1],
+                                   lower_left[2]],
+                    'upper_right': [upper_right[0] - cntr[0],
+                                    upper_right[1] - cntr[1],
+                                    upper_right[2]]}
+        elif mask_type == 'ellipsoidal':
+            # Calculate center of ellipse
+            xpos = (upper_right[0] + lower_left[0]) / 2.0
+            ypos = (upper_right[1] + lower_left[1]) / 2.0
+            zpos = (upper_right[2] + lower_left[2]) / 2.0
+            # Find major and minor axis
+            x_side = upper_right[0] - lower_left[0]
+            y_side = upper_right[1] - lower_left[1]
+            z_side = upper_right[2] - lower_left[2]
+            if x_side >= y_side:
+                major = x_side
+                minor = y_side
+            else:
+                major = y_side
+                minor = x_side
+            spec = {'major_axis': major, 'minor_axis': minor,
+                    'polar_axis': z_side,
+                    'anchor': [xpos - cntr[0], ypos - cntr[1], zpos],
                     'azimuth_angle': angle}
         else:
             raise ValueError('Invalid mask type: %s' % mask_type)

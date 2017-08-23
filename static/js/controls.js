@@ -667,7 +667,7 @@ class Controls
 
                 // Don't want to rotate the camera if we are moving a device. This is only relevant
                 // if we have a 3D model.
-                app.is3DLayer && this.deviceInFocus && app.disableEnableOrbitControls( false );
+                app.is3DLayer && this.deviceInFocus && app.enableOrbitControls( false );
             }
             else
             {
@@ -755,7 +755,7 @@ class Controls
         else if ( this.make_connection )
         {
             this.makeConnection( event.clientX, event.clientY );
-            app.disableEnableOrbitControls( true );
+            app.enableOrbitControls( true );
         }
         else if ( this.deviceInFocus != undefined )
         {
@@ -763,7 +763,7 @@ class Controls
             this.domElement.style.cursor = 'auto';
 
             // Must enable orbit controls again
-            app.is3DLayer && app.disableEnableOrbitControls( true );
+            app.is3DLayer && app.enableOrbitControls( true );
         }
         else if ( app.is3DLayer && this.boxInFocus != undefined )
         {

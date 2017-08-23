@@ -876,7 +876,7 @@ class SelectionBox
  */
 class SelectionBox3D
 {
-    constructor( width, height, depth, center, shape )
+    constructor( width, height, depth, center, shape, scale={x: 1.0, y: 1.0, z: 1.0} )
     {
         this.uniqueID = -1;
         // this.layerName = "";
@@ -885,15 +885,14 @@ class SelectionBox3D
         this.originalHeight = height;
         this.originalDepth = depth;
 
-        this.width = this.originalWidth;
-        this.height = this.originalHeight;
-        this.depth = this.originalDepth;
+        this.width = this.originalWidth * scale.x;
+        this.height = this.originalHeight * scale.y;
+        this.depth = this.originalDepth * scale.z;
         this.center = center;
 
         // ll and ur use object coordinates in 3D
         // TODO: Should we have same in 2D and 3D? Different because they are defined completely different.
-        this.ll = { x: center.x - width / 2, y: center.y - height / 2, z: center.z - depth / 2 };
-        this.ur = { x: center.x + width / 2, y: center.y + height / 2, z: center.z + depth / 2 };
+        this.updateLLAndUR();
 
         // this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
         // this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
@@ -925,8 +924,10 @@ class SelectionBox3D
         this.selectedPoints = {};
         // this.nSelected = 0;
 
-        this.makeBox();
         this.CURVE_SEGMENTS = 100;
+
+        this.makeBox();
+        this.box.scale.set( scale.x, scale.y, scale.z );
     }
 
     /**
@@ -934,7 +935,18 @@ class SelectionBox3D
      */
     makeBox()
     {
-        var geometry = new app.THREE.BoxBufferGeometry(this.width, this.height, this.depth);
+        if ( this.selectedShape === "box" )
+        {
+            var geometry = new app.THREE.BoxBufferGeometry(this.originalWidth, this.originalHeight, this.originalDepth);
+        }
+        else if ( this.selectedShape === "ellipsoidal" )
+        {
+            // for now we set the radius to be the largest of the dimensions
+            var radius = Math.max( this.originalWidth, this.originalHeight, this.originalDepth );
+            console.log(radius);
+            var geometry = new app.THREE.SphereBufferGeometry( radius / 2, 32, 32 );
+        }
+        console.log(geometry);
         var material = new app.THREE.MeshBasicMaterial();
         material.transparent = true;
         material.opacity = 0.3;
@@ -1112,7 +1124,6 @@ class SelectionBox3D
                     colors[ colorID + 2 ] = oldPoints[ layer ][ i ].color.b;
                 }
             }
-            else { console.log("No old points in ", layer) }
 
             for ( var i = 0; i < positions.length; i += 3 )
             {
@@ -1150,14 +1161,36 @@ class SelectionBox3D
         }
     }
 
-    /*
-     * Checks if position is inside the box.
+    /**
+     * Checks if a position is within the selection box. Ellipsoid version.
      *
-     * @param {Object} pos Position to check.
-     *
-     * @returns {Bool} True if point is inside the box, false otherwise.
+     * @param {Object} pos Position to be checked.
+     * @returns {Bool} True if the position is inside, else false.
      */
-    containsPoint( pos )
+    withinEllipsoidBounds( pos )
+    {
+        var x_side = ( this.ur.x - this.ll.x ) / 2;
+        var y_side = ( this.ur.y - this.ll.y ) / 2;
+        var z_side = ( this.ur.z - this.ll.z ) / 2;
+        // var center = {
+        //     x: ( this.ur.x + this.ll.x ) / 2.0,
+        //     y: ( this.ur.y + this.ll.y ) / 2.0
+        // };
+
+        // TODO: I think using major and minor axis might have been a bad idea on my side.
+        return ( ( Math.pow( pos.x - this.center.x, 2 ) ) / ( x_side * x_side ) +
+                 ( Math.pow( pos.y - this.center.y, 2 ) ) / ( y_side * y_side ) +
+                 ( Math.pow( pos.z - this.center.z, 2 ) ) / ( z_side * z_side ) <= 1 );
+        // return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
+    }
+
+    /**
+     * Checks if a position is within the selection box. Box version.
+     *
+     * @param {Object} pos Position to be checked.
+     * @returns {Bool} True if the position is inside, else false.
+     */
+    withinBoxBounds( pos )
     {
         /*var xHalf = ( this.width * this.box.scale.x ) / 2.0;
         var yHalf = ( this.height * this.box.scale.y ) / 2.0;
@@ -1175,12 +1208,30 @@ class SelectionBox3D
     }
 
     /*
+     * Checks if position is inside the selection box.
+     *
+     * @param {Object} pos Position to check.
+     * @returns {Bool} True if point is inside the box, false otherwise.
+     */
+    containsPoint( pos )
+    {
+        if ( this.selectedShape === "box" )
+        {
+            return this.withinBoxBounds( pos );
+        }
+        else if ( this.selectedShape === "ellipsoidal" )
+        {
+            return this.withinEllipsoidBounds( pos );
+        }
+    }
+
+    /*
      * Creates a line representing a connection, that is to be connected to a
      * device.
      */
     makeLine()
     {
-        console.log("makeLine")
+        console.log("makeLine");
         this.currentCurve = new app.THREE.CatmullRomCurve3( [
             new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
             new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
@@ -1205,7 +1256,7 @@ class SelectionBox3D
             target: ""
         } );
 
-        app.disableEnableOrbitControls( false );
+        app.enableOrbitControls( false );
     }
 
     /*
@@ -1385,9 +1436,10 @@ class SelectionBox3D
     {
         var selectionInfo = {
             name: this.layerName,
-            width: this.width,
-            height: this.height,
-            depth: this.depth,
+            width: this.originalWidth,
+            height: this.originalHeight,
+            depth: this.originalDepth,
+            scale: this.box.scale,
             center: this.center,
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,

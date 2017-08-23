@@ -262,7 +262,7 @@ class App  // TODO: rename App -> ???
     *
     * @param {Bool} booleanValue OrbitControls enabled
     */
-    disableEnableOrbitControls( booleanValue )
+    enableOrbitControls( booleanValue )
     {
         this.orbitControls.enabled = booleanValue;
     }
@@ -442,7 +442,22 @@ class App  // TODO: rename App -> ???
      */
     getSelectedShape()
     {
-        return this.selectedShape;
+        if ( this.is3DLayer )
+        {
+            // rename shape to the 3D equivalent
+            if ( this.selectedShape === "rectangular" )
+            {
+                return "box";
+            }
+            else if ( this.selectedShape === "elliptical" )
+            {
+                return "ellipsoidal";
+            }
+        }
+        else
+        {
+            return this.selectedShape;
+        }
     }
 
     /**
@@ -833,6 +848,7 @@ class App  // TODO: rename App -> ???
                 // if not created yet, the box must be created
                 if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
                 {
+                    console.log("Creating ", boxSpecs.maskShape);
                     IDsCreated.push( boxSpecs.uniqueID );
                     if ( this.is3DLayer )
                     {
@@ -840,7 +856,8 @@ class App  // TODO: rename App -> ???
                                                            boxSpecs.height,
                                                            boxSpecs.depth,
                                                            boxSpecs.center,
-                                                           boxSpecs.maskShape);
+                                                           boxSpecs.maskShape,
+                                                           boxSpecs.scale);
                     }
                     else
                     {
@@ -856,7 +873,7 @@ class App  // TODO: rename App -> ???
                     box.selectedSynModel = boxSpecs.synModel;
 
                     this.selectionBoxArray.push( box );
-                    box.makeBox();
+                    //box.makeBox();
                 }
                 // if the box is already created, it must be found
                 else
@@ -881,6 +898,7 @@ class App  // TODO: rename App -> ???
                 this.controls.boxInFocus = box;
             }
             this.controls.boxInFocus.setActive();
+            this.enableOrbitControls( true );
         }
     }
 
@@ -1034,7 +1052,7 @@ class App  // TODO: rename App -> ???
     {
         var dim = 0.2;
         var pos = {x: 0, y: 0, z: 0};
-        var shape = 'box';
+        var shape = this.getSelectedShape();
 
         var box = new this.SelectionBox3D( dim, dim, dim, pos, shape );
         box.uniqueID = app.uniqueID++;
