@@ -460,7 +460,8 @@ class Controls
         this.boxInFocus.updateLineEnd(
         {
             x: relScreenPos.x,
-            y: relScreenPos.y
+            y: relScreenPos.y,
+            z: 0.0
         }, "" )
     }
 
@@ -487,7 +488,8 @@ class Controls
                 app.deviceBoxMap[ deviceName ].connectees[ i ].updateLineEnd(
                 {
                     x: this.deviceInFocus.position.x,
-                    y: this.deviceInFocus.position.y
+                    y: this.deviceInFocus.position.y,
+                    z: this.deviceInFocus.position.z
                 }, deviceName, radius );
             }
         }
@@ -755,7 +757,7 @@ class Controls
         else if ( this.make_connection )
         {
             this.makeConnection( event.clientX, event.clientY );
-            app.disableEnableOrbitControls( true );
+            app.is3DLayer && app.disableEnableOrbitControls( true );
         }
         else if ( this.deviceInFocus != undefined )
         {
@@ -764,16 +766,6 @@ class Controls
 
             // Must enable orbit controls again
             app.is3DLayer && app.disableEnableOrbitControls( true );
-        }
-        else if ( app.is3DLayer && this.boxInFocus != undefined )
-        {
-            console.log(this.boxInFocus)
-            // Update lower left and upper right as well as center position of 3D selected box here as a quick-fix.
-            // We are going to call the functions below more time than necessary, because just because we have
-            // clicked a box does not mean that we have changed it.
-            this.boxInFocus.updateWidthHeightDeptCenter();
-            this.boxInFocus.updateLLAndUR();
-
         }
         this.resetButtons();
     }
