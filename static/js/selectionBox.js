@@ -73,8 +73,8 @@ class SelectionBox
             {
                 this.selectedPointIDs.push( i );
                 colors[ i ] = 1.0;
-                colors[ i + 1 ] = 0.0;
-                colors[ i + 2 ] = 1.0;
+                colors[ i + 1 ] = 0.92;
+                colors[ i + 2 ] = 0.0;
 
                 points.geometry.attributes.customColor.needsUpdate = true;
                 count += 1;
@@ -166,9 +166,9 @@ class SelectionBox
             if ( this.withinBounds( xypos ) )
             {
                 newPoints.push( i );
-                colors[ i ] = 1.0;
-                colors[ i + 1 ] = 0.0;
-                colors[ i + 2 ] = 1.0;
+                colors[ i ] = 1.;
+                colors[ i + 1 ] = 0.96;
+                colors[ i + 2 ] = 0.00;
 
                 this.nSelected += 1;
             }
@@ -211,7 +211,7 @@ class SelectionBox
 
         var material = new app.THREE.MeshBasicMaterial(
         {
-            color: 0xFF00FF,
+            color: 0xFFEA00,
             transparent: true,
             opacity: 0.2
         } );
@@ -319,7 +319,7 @@ class SelectionBox
         curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
         var curveMaterial = new app.THREE.LineBasicMaterial(
         {
-            color: 0xffb300,
+            color: 0xffca28,
             linewidth: 3
         } );
         this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
@@ -1121,8 +1121,8 @@ class SelectionBox3D
                 if ( this.containsPoint( p ) )
                 {
                     oldColor = { r: colors[ i ], g: colors[ i + 1 ], b: colors[ i + 2 ] };
-                    colors[ i ] = 0.0;
-                    colors[ i + 1 ] = 1.0;
+                    colors[ i ] = 1.0;
+                    colors[ i + 1 ] = 0.92;
                     colors[ i + 2 ] = 0.0;
                     visibility[i / 3] = 1.0;
                     points.geometry.attributes.customColor.needsUpdate = true;
@@ -1180,7 +1180,7 @@ class SelectionBox3D
         curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
         var curveMaterial = new app.THREE.LineBasicMaterial(
         {
-            color: 0xffb300,
+            color: 0xffca28,
             linewidth: 3
         } );
         this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
