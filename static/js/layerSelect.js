@@ -897,8 +897,8 @@ class App  // TODO: rename App -> ???
                 this.deviceBoxMap[ device ].connectees.push( box );
                 this.controls.boxInFocus = box;
             }
-            this.controls.boxInFocus.setActive();
-            this.enableOrbitControls( true );
+            this.is3DLayer && this.controls.boxInFocus.setActive();
+            this.is3DLayer && this.enableOrbitControls( true );
         }
     }
 

@@ -88,6 +88,7 @@ test('Test main init', () => {
     $ = jest.fn();
     THREE = jest.fn();
     SelectionBox = jest.fn();
+    SelectionBox3D = jest.fn();
     app.initTHREEScene = jest.fn();
     app.initTHREERenderer = jest.fn();
     app.initContainer = jest.fn();
