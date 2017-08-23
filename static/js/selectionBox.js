@@ -73,8 +73,8 @@ class SelectionBox
             {
                 this.selectedPointIDs.push( i );
                 colors[ i ] = 1.0;
-                colors[ i + 1 ] = 0.0;
-                colors[ i + 2 ] = 1.0;
+                colors[ i + 1 ] = 0.92;
+                colors[ i + 2 ] = 0.0;
 
                 points.geometry.attributes.customColor.needsUpdate = true;
                 count += 1;
@@ -166,9 +166,9 @@ class SelectionBox
             if ( this.withinBounds( xypos ) )
             {
                 newPoints.push( i );
-                colors[ i ] = 1.0;
-                colors[ i + 1 ] = 0.0;
-                colors[ i + 2 ] = 1.0;
+                colors[ i ] = 1.;
+                colors[ i + 1 ] = 0.96;
+                colors[ i + 2 ] = 0.00;
 
                 this.nSelected += 1;
             }
@@ -211,7 +211,7 @@ class SelectionBox
 
         var material = new app.THREE.MeshBasicMaterial(
         {
-            color: 0xFF00FF,
+            color: 0xFFEA00,
             transparent: true,
             opacity: 0.2
         } );
@@ -319,8 +319,8 @@ class SelectionBox
         curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
         var curveMaterial = new app.THREE.LineBasicMaterial(
         {
-            color: 0x809980 * 1.1,
-            linewidth: 2
+            color: 0xffca28,
+            linewidth: 3
         } );
         this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
         app.scene.add( this.currentCurveObject );
@@ -865,6 +865,7 @@ class SelectionBox
     }
 }
 
+
 /**
  * Represents a selection of neurons in 3D space.
  *
@@ -953,12 +954,9 @@ class SelectionBox3D
         this.box = new app.THREE.Mesh( geometry, material );
         this.box.position.copy( this.center );
         app.scene.add( this.box );
-        // this.makeResizePoints();
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
-
-        //this.box.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
     /**
@@ -1134,8 +1132,8 @@ class SelectionBox3D
                 if ( this.containsPoint( p ) )
                 {
                     oldColor = { r: colors[ i ], g: colors[ i + 1 ], b: colors[ i + 2 ] };
-                    colors[ i ] = 0.0;
-                    colors[ i + 1 ] = 1.0;
+                    colors[ i ] = 1.0;
+                    colors[ i + 1 ] = 0.92;
                     colors[ i + 2 ] = 0.0;
                     visibility[i / 3] = 1.0;
                     points.geometry.attributes.customColor.needsUpdate = true;
@@ -1192,16 +1190,6 @@ class SelectionBox3D
      */
     withinBoxBounds( pos )
     {
-        /*var xHalf = ( this.width * this.box.scale.x ) / 2.0;
-        var yHalf = ( this.height * this.box.scale.y ) / 2.0;
-        var zHalf = ( this.depth * this.box.scale.z ) / 2.0;
-        return pos.x > ( this.box.position.x - xHalf ) && pos.x < ( this.box.position.x + xHalf )
-             && pos.y > ( this.box.position.y - yHalf ) && pos.y < ( this.box.position.y + yHalf)
-             && pos.z > ( this.box.position.z - zHalf ) && pos.z < ( this.box.position.z + zHalf );*/
-
-        //this.updateWidthHeightDeptCenter();
-        //this.updateLLAndUR();
-
         return pos.x > this.ll.x && pos.x < this.ur.x
             && pos.y > this.ll.y && pos.y < this.ur.y
             && pos.z > this.ll.z && pos.z < this.ur.z;
@@ -1243,8 +1231,8 @@ class SelectionBox3D
         curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
         var curveMaterial = new app.THREE.LineBasicMaterial(
         {
-            color: 0x809980 * 1.1,
-            linewidth: 2
+            color: 0xffca28,
+            linewidth: 3
         } );
         this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
         app.scene.add( this.currentCurveObject );
@@ -1283,15 +1271,19 @@ class SelectionBox3D
         }
 
         curve.points[ 0 ].y = ( this.ll.y + this.ur.y ) / 2;
+        curve.points[ 0 ].z = ( this.ll.z + this.ur.z ) / 2;
         curve.points[ 1 ].x = curve.points[ 0 ].x + direction * -endLength;
         curve.points[ 1 ].y = curve.points[ 0 ].y;
+        curve.points[ 1 ].z = curve.points[ 0 ].z;
 
         if ( newEndPos !== undefined )
         {
             curve.points[ 3 ].x = newEndPos.x + direction * radius;
             curve.points[ 3 ].y = newEndPos.y;
+            curve.points[ 3 ].z = newEndPos.z;
             curve.points[ 2 ].x = curve.points[ 3 ].x + direction * endLength;
             curve.points[ 2 ].y = curve.points[ 3 ].y;
+            curve.points[ 2 ].z = curve.points[ 3 ].z;
         }
         for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
         {
@@ -1372,13 +1364,15 @@ class SelectionBox3D
      */
     lineToDevice( targetPos, radius, target )
     {
+        console.log(targetPos)
         var centreX = ( this.ll.x + this.ur.x ) / 2;
         if ( ( targetPos.x - radius ) < centreX )
         {
             this.updateLineEnd(
             {
                 x: targetPos.x + radius,
-                y: targetPos.y
+                y: targetPos.y,
+                z: targetPos.z
             }, target );
         }
         else
@@ -1386,7 +1380,8 @@ class SelectionBox3D
             this.updateLineEnd(
             {
                 x: targetPos.x - radius,
-                y: targetPos.y
+                y: targetPos.y,
+                z: targetPos.z
             }, target );
         }
     }
