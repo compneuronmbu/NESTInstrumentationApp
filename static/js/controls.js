@@ -14,6 +14,7 @@ class Controls
 
         this.mouseDown = false;
         this.mouseDownFirstTime = false;
+        this.mouseMoved = false;
         this.shiftDown = false;
         this.translatingBox = false;
         this.make_selection_box = false;
@@ -51,6 +52,8 @@ class Controls
         this.mouseDown = false;
         this.shiftDown = false;
         this.translatingBox = false;
+        this.nothingClicked = false;
+        this.mouseMoved = false;
         this.make_selection_box = false;
         this.make_connection = false;
         this.marquee.fadeOut();
@@ -280,13 +283,11 @@ class Controls
         {
             if ( boxClicked === undefined )
             {
-                // If we have not pressed a box, but we have a box in focus, we need to inactivate the
+                // If we have not pressed a box, but we have a box in focus, we need to deactivate the
                 // box in focus, because we have pressed somewhere else. 
                 if ( this.boxInFocus.transformControls.axis === null )
                 {
-                    this.boxInFocus.setInactive();
-                    this.boxInFocus = undefined;
-                    app.resetVisibility();
+                    this.nothingClicked = true;
                     return;
                 }
                 this.translatingBox = true;
@@ -642,6 +643,7 @@ class Controls
      */
     onMouseDown( event )
     {
+        this.mouseMoved = false;
         if ( event.target.localName === "canvas" )
         {
             this.mouseDown = true;
@@ -691,6 +693,7 @@ class Controls
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
+            this.mouseMoved = true;
         }
         if ( this.make_selection_box )
         {
@@ -766,6 +769,12 @@ class Controls
 
             // Must enable orbit controls again
             app.is3DLayer && app.enableOrbitControls( true );
+        }
+        else if ( this.nothingClicked && !this.mouseMoved )
+        {
+            this.boxInFocus.setInactive();
+            this.boxInFocus = undefined;
+            app.resetVisibility();
         }
         this.resetButtons();
     }
