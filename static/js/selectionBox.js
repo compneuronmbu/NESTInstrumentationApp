@@ -923,7 +923,7 @@ class SelectionBox3D
         this.currentCurveObject;
         this.curves = [];
 
-        this.selectedPoints = [];
+        this.selectedPoints = {};
         // this.nSelected = 0;
 
         this.makeBox();
@@ -1045,13 +1045,13 @@ class SelectionBox3D
             points = app.layer_points[ layer ].points;
             colors = points.geometry.getAttribute( "customColor" ).array;
 
-            for ( var i = 0; i < oldPoints.length; ++i )
+            for ( var i = 0; i < oldPoints[ layer ].length; ++i )
             {
-                var colorID = oldPoints[ i ].index;
+                var colorID = oldPoints[ layer ][ i ].index;
 
-                colors[ colorID ] = oldPoints[ i ].color.r;
-                colors[ colorID + 1 ] = oldPoints[ i ].color.g;
-                colors[ colorID + 2 ] = oldPoints[ i ].color.b;
+                colors[ colorID ] = oldPoints[ layer ][ i ].color.r;
+                colors[ colorID + 1 ] = oldPoints[ layer ][ i ].color.g;
+                colors[ colorID + 2 ] = oldPoints[ layer ][ i ].color.b;
             }
             points.geometry.attributes.customColor.needsUpdate = true;
         }
@@ -1088,25 +1088,29 @@ class SelectionBox3D
         var colors;
         var positions;
         var visibility;
-        var newPoints = [];
         var oldColor;
         var oldPoints = this.selectedPoints;
 
         for ( var layer in app.layer_points )
         {
+            var newPoints = [];
             points = app.layer_points[ layer ].points;
             colors = points.geometry.getAttribute( "customColor" ).array;
             positions = points.geometry.getAttribute( "position" ).array;
             visibility = points.geometry.getAttribute( "visible" ).array;
 
-            for ( var i = 0; i < oldPoints.length; ++i )
+            if ( oldPoints[ layer ] )
             {
-                var colorID = oldPoints[ i ].index;
+                for ( var i = 0; i < oldPoints[ layer ].length; ++i )
+                {
+                    var colorID = oldPoints[ layer ][ i ].index;
 
-                colors[ colorID ] = oldPoints[ i ].color.r;
-                colors[ colorID + 1 ] = oldPoints[ i ].color.g;
-                colors[ colorID + 2 ] = oldPoints[ i ].color.b;
+                    colors[ colorID ] = oldPoints[ layer ][ i ].color.r;
+                    colors[ colorID + 1 ] = oldPoints[ layer ][ i ].color.g;
+                    colors[ colorID + 2 ] = oldPoints[ layer ][ i ].color.b;
+                }
             }
+            else { console.log("No old points in ", layer) }
 
             for ( var i = 0; i < positions.length; i += 3 )
             {
@@ -1140,7 +1144,7 @@ class SelectionBox3D
                 }
                 points.geometry.attributes.visible.needsUpdate = true;
             }
-            this.selectedPoints = newPoints;
+            this.selectedPoints[ layer ] = newPoints;
         }
     }
 
