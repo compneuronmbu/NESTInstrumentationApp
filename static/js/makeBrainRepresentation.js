@@ -107,7 +107,7 @@ var Brain = function( camera, scene )
         camera.position.set(  0, 0, no_rows + 1.5  );
 
         makeModelNameLists();
-        makeBorderLines();
+        app.is3DLayer && makeBorderLines();
 
         // if undefined, make a requestAnimationFrame function (mostly for testsuite)
         if (window.requestAnimationFrame === undefined) {
