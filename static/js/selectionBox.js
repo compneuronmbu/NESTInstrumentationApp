@@ -878,7 +878,7 @@ class SelectionBox3D
 {
     constructor( width, height, depth, center, shape )
     {
-        // this.uniqueID = -1;
+        this.uniqueID = -1;
         // this.layerName = "";
 
         this.originalWidth = width;
@@ -961,7 +961,7 @@ class SelectionBox3D
         app.scene.add( this.borderBox );
 
         this.borderBox.setFromObject( this.box );
-        this.setBorderLinesColor(this.activeColor);
+        this.setBorderLinesColor(this.inactiveColor);
     }
 
     /**
@@ -989,7 +989,7 @@ class SelectionBox3D
     {
         this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
         app.scene.add( this.transformControls );
-        this.transformControls.attach( this.box );
+        //this.transformControls.attach( this.box );
 
         this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
@@ -1375,7 +1375,29 @@ class SelectionBox3D
         return selectionInfo;
     }
 
-    /*
+
+    /**
+     * Gets data of this selection box to be saved.
+     *
+     * @returns {Object} Information to be saved.
+     */
+    getInfoForSaving()
+    {
+        var selectionInfo = {
+            name: this.layerName,
+            width: this.width,
+            height: this.height,
+            depth: this.depth,
+            center: this.center,
+            neuronType: this.selectedNeuronType,
+            synModel: this.selectedSynModel,
+            maskShape: this.selectedShape,
+            uniqueID: this.uniqueID
+        };
+        return selectionInfo;
+    }
+
+    /**
      * Removes the box and corresponding lines. 
      */
     deleteBox()

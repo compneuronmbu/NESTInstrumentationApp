@@ -65,6 +65,7 @@ class App  // TODO: rename App -> ???
         this.$ = $;
         this.THREE = THREE;
         this.SelectionBox = SelectionBox;
+        this.SelectionBox3D = SelectionBox3D;
 
         this.container = document.getElementById( 'main_body' );
 
@@ -779,6 +780,12 @@ class App  // TODO: rename App -> ???
         }
         console.log( "projections", projections );
 
+        // abort if there is nothing to save
+        if ( Object.keys(projections).length === 0 )
+        {
+            alert("Warning: The saved file is empty. Try making some connections.");
+        }
+
         var dlObject = {
             projections: projections
         };
@@ -808,7 +815,7 @@ class App  // TODO: rename App -> ???
         for ( var device in inputObj.projections )
         {
             var deviceModel = inputObj.projections[ device ].specs.model;
-            if ( deviceModel === "poisson_generator" )
+            if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
             {
                 this.makeStimulationDevice( deviceModel );
             }
@@ -827,7 +834,18 @@ class App  // TODO: rename App -> ???
                 if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
                 {
                     IDsCreated.push( boxSpecs.uniqueID );
-                    var box = new this.SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                    if ( this.is3DLayer )
+                    {
+                        var box = new this.SelectionBox3D( boxSpecs.width,
+                                                           boxSpecs.height,
+                                                           boxSpecs.depth,
+                                                           boxSpecs.center,
+                                                           boxSpecs.maskShape);
+                    }
+                    else
+                    {
+                        var box = new this.SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                    }
                     box.uniqueID = boxSpecs.uniqueID;
 
                     // update our uniqueID count only if box.uniqueID is greater
@@ -843,11 +861,11 @@ class App  // TODO: rename App -> ???
                 // if the box is already created, it must be found
                 else
                 {
-                    for ( var i in this.selectionBoxArray )
+                    for ( var j in this.selectionBoxArray )
                     {
-                        if ( this.selectionBoxArray[ i ].uniqueID === boxSpecs.uniqueID )
+                        if ( this.selectionBoxArray[ j ].uniqueID === boxSpecs.uniqueID )
                         {
-                            var box = this.selectionBoxArray[ i ];
+                            var box = this.selectionBoxArray[ j ];
                             break;
                         }
                     }
@@ -860,7 +878,9 @@ class App  // TODO: rename App -> ???
 
                 box.updateColors();
                 this.deviceBoxMap[ device ].connectees.push( box );
+                this.controls.boxInFocus = box;
             }
+            this.controls.boxInFocus.setActive();
         }
     }
 
@@ -1016,17 +1036,19 @@ class App  // TODO: rename App -> ???
         var pos = {x: 0, y: 0, z: 0};
         var shape = 'box';
 
-        var box = new SelectionBox3D( dim, dim, dim, pos, shape );
+        var box = new this.SelectionBox3D( dim, dim, dim, pos, shape );
+        box.uniqueID = app.uniqueID++;
 
         if ( this.controls.boxInFocus !== undefined )
         {
             // If we have made a box, but we have another one in focus, we need
-            // to inactivate the old box.
+            // to deactivate the old box.
             this.controls.boxInFocus.setInactive();
         }
 
         this.controls.boxInFocus = box;
         this.selectionBoxArray.push( box );
+        this.controls.boxInFocus.setActive();
 
         console.log( "Selection box: ", box )
 
