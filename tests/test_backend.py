@@ -22,7 +22,7 @@ class TestBackend(unittest.TestCase):
         # use the actual app. We therefore use this json file that simulate what we would have gotten. This is not the best
         # way to solve the problem, because we will forget to update this file when updating the overal scripts and things will
         # be lost.
-        with open('tests/network2.json', 'r') as net_file:
+        with open('tests/network.json', 'r') as net_file:
             net = ""
             for line in net_file:
                 net += line
