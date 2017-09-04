@@ -92,7 +92,7 @@ class NESTInterface(object):
         for new_mod, old_mod in models.items():
             nest.CopyModel(old_mod, new_mod)
 
-    def make_mask(self, lower_left, upper_right, mask_type, angle, cntr):
+    def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
         """
         Makes a mask from the specifications.
 
@@ -100,6 +100,8 @@ class NESTInterface(object):
         :param upper_right: Coordinates for upper right of the selection.
         :param mask_type: Shape of the mask. Either ``rectangle`` or
                           ``ellipse``.
+        :param azimuth_angle: Rotation angle in degrees from x-axis.
+        :param polar_angle: Rotation angle in degrees from z-axis.
         :param cntr: Coordinates for the center of the layer.
         :returns: A NEST ``Mask`` object.
         """
@@ -108,7 +110,8 @@ class NESTInterface(object):
             spec = {'lower_left': [lower_left[0] - cntr[0],
                                    lower_left[1] - cntr[1]],
                     'upper_right': [upper_right[0] - cntr[0],
-                                    upper_right[1] - cntr[1]]}
+                                    upper_right[1] - cntr[1]],
+                    'azimuth_angle': azimuth_angle}
         elif mask_type == 'elliptical':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -124,14 +127,16 @@ class NESTInterface(object):
                 minor = x_side
             spec = {'major_axis': major, 'minor_axis': minor,
                     'anchor': [xpos - cntr[0], ypos - cntr[1]],
-                    'azimuth_angle': angle}
+                    'azimuth_angle': azimuth_angle}
         elif mask_type == 'box':
             spec = {'lower_left': [lower_left[0] - cntr[0],
                                    lower_left[1] - cntr[1],
                                    lower_left[2]],
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1],
-                                    upper_right[2]]}
+                                    upper_right[2]],
+                    'azimuth_angle': azimuth_angle,
+                    'polar_angle': polar_angle}
         elif mask_type == 'ellipsoidal':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -150,7 +155,8 @@ class NESTInterface(object):
             spec = {'major_axis': major, 'minor_axis': minor,
                     'polar_axis': z_side,
                     'anchor': [xpos - cntr[0], ypos - cntr[1], zpos],
-                    'azimuth_angle': angle}
+                    'azimuth_angle': azimuth_angle,
+                    'polar_angle': polar_angle}
         else:
             raise ValueError('Invalid mask type: %s' % mask_type)
 
@@ -177,7 +183,8 @@ class NESTInterface(object):
         selection = selection_dict['selection']
         mask_type = selection_dict['maskShape']
         neuron_type = selection_dict['neuronType']
-        angle = float(selection_dict['angle']) * 180 / math.pi
+        azimuth_angle = float(selection_dict['azimuthAngle']) * 180 / math.pi
+        polar_angle = float(selection_dict['polarAngle']) * 180 / math.pi
 
         ll = [selection['ll']['x'], selection['ll']['y'], selection['ll']['z']]
         ur = [selection['ur']['x'], selection['ur']['y'], selection['ur']['z']]
@@ -188,7 +195,7 @@ class NESTInterface(object):
             cntr = [0.0, 0.0]
         else:
             cntr = [0.0, 0.0, 0.0]
-        mask = self.make_mask(ll, ur, mask_type, angle, cntr)
+        mask = self.make_mask(ll, ur, mask_type, azimuth_angle, polar_angle, cntr)
 
         collected_gids = []
         # TODO: Think we might be able to use only one of these for-loops, the last one. And then check if layer['name'] is in layer_names

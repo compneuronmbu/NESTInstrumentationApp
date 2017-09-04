@@ -16,6 +16,7 @@ class Controls
         this.mouseDownFirstTime = false;
         this.mouseMoved = false;
         this.shiftDown = false;
+        this.rDown = false;
         this.translatingBox = false;
         this.make_selection_box = false;
         this.make_connection = false;
@@ -51,6 +52,7 @@ class Controls
     {
         this.mouseDown = false;
         this.shiftDown = false;
+        this.rDown = false;
         this.translatingBox = false;
         this.nothingClicked = false;
         this.mouseMoved = false;
@@ -692,8 +694,11 @@ class Controls
         if ( app.is3DLayer )
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
+            this.boxInFocus && this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
             this.mouseMoved = true;
+
+            //this.rDown
         }
         if ( this.make_selection_box )
         {
@@ -792,11 +797,19 @@ class Controls
                 console.log("shift down");
                 this.shiftDown = true;
                 break;
-            /*case 82:  // R key
+            case 82:  // R key
+                //this.boxInFocus.transformControls.axis = "X";
+                //this.boxInFocus.transformControls.children[ 1 ].setActivePlane( "YZ" );
+                //this.boxInFocus.transformControls.children[ 1 ].axis = "YZ";
                 this.boxInFocus
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "rotate" );
-                break; */
+                this.rDown = true;
+
+                //this.boxInFocus.transformControls.setRotationSnap("YZ")
+                //this.boxInFocus.transformControls.axis = "X";
+                //this.boxInFocus.transformControls.update();
+                break;
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
@@ -827,7 +840,14 @@ class Controls
                 console.log("shift up");
                 this.shiftDown = false;
                 break;
-            //case 82:  // R key
+            case 82:  // R key
+                this.boxInFocus
+                    && this.boxInFocus.transformControls
+                    && this.boxInFocus.transformControls.setMode( "translate" );
+                this.rDown = false;
+                //this.boxInFocus.updateAzimuthAndPolarAngle();
+                console.log(this.boxInFocus)
+                break;
             case 83:  // S key
                 this.boxInFocus
                     && this.boxInFocus.transformControls
