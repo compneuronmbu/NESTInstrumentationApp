@@ -25,6 +25,19 @@ body {
   font-weight: bold;
 }
 
+#coordinateHelper {
+  width: 200px;
+  height: 200px;
+  background-color: #000000; /* or transparent; will show through only if renderer alpha: true */
+  border: 1px solid black; /* or none; */
+  margin: 10px;
+  padding: 0px;
+  position: absolute;
+  right: calc(var(--gui_width));
+  top: 0px;
+  z-index: 100;
+}
+
 #startButtons {
   position: absolute;
   top: 30vh;
@@ -36,6 +49,18 @@ body {
   padding:0px;
   text-align: center;
   color: #ffffff
+}
+
+#transformInfo{
+  position: absolute;
+  top: 0px;
+  right: calc(200px + var(--gui_width));
+  margin: 10px;
+  width: 100px;
+  padding:0px;
+  text-align: left;
+  color: #ffffff;
+  display: none
 }
 
 #gui_body {

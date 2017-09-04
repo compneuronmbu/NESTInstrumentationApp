@@ -6,6 +6,10 @@ class App  // TODO: rename App -> ???
     constructor()
     {
         this.controls;
+
+        this.renderer2;
+        this.scene2;
+        this.camera2;
      
         this.outlineScene;
         this.outlineMaterial;
@@ -83,6 +87,7 @@ class App  // TODO: rename App -> ???
         this.devicePlots = new DevicePlots();
 
         this.initGUI();
+        this.initSecondCamera();
 
         // Server-Sent Events
         this.serverUpdateEvent = new EventSource( "/simulationData" );
@@ -131,6 +136,37 @@ class App  // TODO: rename App -> ???
     {
         document.body.appendChild( this.container );
         this.container.appendChild( this.renderer.domElement );
+    }
+
+    /**
+    * Sets up a second canvas that contains a coordinate system that mirrors the system of
+    * the brain model. When we rotate the model, the coordinate systems rotates as well, so
+    * that we always know which direction is x, y and z in the brain model.
+    */
+    initSecondCamera()
+    {
+        // Insert canvas
+        var container2 = document.getElementById('coordinateHelper');
+
+        // Renderer
+        this.renderer2 = new this.THREE.WebGLRenderer();
+        this.renderer2.setSize( 200, 200 );
+        container2.appendChild( this.renderer2.domElement );
+
+        // Scene
+        this.scene2 = new this.THREE.Scene();
+
+        // Camera
+        this.camera2 = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
+        this.camera2.up = this.camera.up; // Important!
+
+        // Axes
+        var axes = new this.THREE.AxisHelper( 100 );
+        this.scene2.add(axes);
+
+        // Explains the coordinate system
+        //$("#transformInfo").css( { display: "block" } );
+        //$("#transformInfo").html( "x-axis: red axis, <br> y-axis: green axis, <br> z-axis: blue axis." );
     }
 
     /**
@@ -195,7 +231,8 @@ class App  // TODO: rename App -> ???
             Brain( this.camera, this.scene );
         }.bind(this) );
 
-        // Define orbit controls here, because we need to know if we have a 2D or 3D model before defining the controls
+        // Define orbit controls system here, because we need to know if we have
+        // a 2D or 3D model before defining the controls
         // as we do not want to define them if we have a 2D model.
         if ( this.is3DLayer )
         {
@@ -204,6 +241,7 @@ class App  // TODO: rename App -> ???
 
         $("#startButtons").html( "Reload page to display model buttons again." );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
+        $("#transformInfo").css( { display: "block" } );
     }
 
     /**
@@ -1121,6 +1159,10 @@ class App  // TODO: rename App -> ???
         this.renderer.clear();
         this.renderer.render( this.outlineScene, this.camera );
         this.renderer.render( this.scene, this.camera );
+
+        this.renderer2.render( this.scene2, this.camera2 );
+        this.camera2.position.copy( this.camera.position );
+        this.camera2.lookAt( this.scene2.position );
 
         if ( !this.layerNamesMade && !this.is3DLayer )
         {
