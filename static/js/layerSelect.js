@@ -238,6 +238,7 @@ class App  // TODO: rename App -> ???
         $("#startButtons").html( "Reload page to display model buttons again." );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
         $("#transformInfo").css( { display: "block" } );
+        this.initHelp();
     }
 
     /**
@@ -265,6 +266,7 @@ class App  // TODO: rename App -> ???
                 // Hide buttons after clicking on it.
                 this.$("#modelButtons").css( { display: "none" } );
                 this.$("#startButtons").html( "Reload page to display model buttons again." );
+                this.initHelp();
             } catch(e) {
                 window.alert("Please upload a correct JSON file");
             }
@@ -290,6 +292,69 @@ class App  // TODO: rename App -> ???
                 {}
             }, 100);
     }
+
+    /**
+     * Initializes helpful text.
+     */
+     initHelp()
+     {
+        var element = document.getElementById( 'main_body' );
+        var fragment = document.createDocumentFragment();
+        if ( this.is3DLayer )
+        {
+            var helpPoints = [ [ 'R:', 'rotate' ],
+                               [ 'S:', 'scale' ],
+                               [ 'Delete:', 'delete selected box/device' ],
+                               [ 'Click + drag:', 'rotate camera' ],
+                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Shift + click:', 'select device' ],
+                               [ 'Shift + drag:', 'move device' ],
+                             ];
+        }
+        else
+        {
+            var helpPoints = [ [ 'Click + drag:', 'make box' ],
+                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Delete:', 'delete selected box/device' ],
+                               [ 'Shift + click:', 'select device' ],
+                               [ 'Shift + drag:', 'move device' ]
+                             ];
+        }
+        
+        var helpBox = document.createElement( 'div' );
+        helpBox.className = "helpBox";
+        helpBox.onclick = function() {
+            var collapsed = document.getElementById('collapse-1');
+            collapsed.checked = !collapsed.checked;
+            console.log(collapsed.checked)
+        };
+
+        var checkbox = document.createElement( 'input' );
+        checkbox.className = "collapse-open";
+        checkbox.type = "checkbox";
+        checkbox.id = "collapse-1";
+
+        var heading = document.createElement( 'label' );
+        heading.className = "collapse-btn";
+        heading.htmlFor = "collapse-1";
+        heading.innerText = 'Controls';
+        var list = document.createElement( 'ul' );
+        list.className = "helpList";
+        var linebreak = document.createElement( 'br' );
+        list.appendChild( linebreak );
+        helpPoints.forEach(function( point ) {
+            var li = document.createElement( 'li' );
+            li.innerHTML = '<strong>' + point[0] + '</strong> ' + point[1];
+            list.appendChild( li );
+        });
+
+        helpBox.appendChild( checkbox );
+        helpBox.appendChild( heading );
+        helpBox.appendChild( list );
+        fragment.appendChild( helpBox );
+        element.appendChild( fragment );
+
+     }
 
     /**
     * Enables or disables the orbit controls.

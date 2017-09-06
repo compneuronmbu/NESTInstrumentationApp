@@ -307,12 +307,13 @@ class NESTInterface(object):
         if self.internal_projections is None:
             return
 
+        print("Connecting internal projections...")
         for proj in self.internal_projections:
             pre = proj[0]
             post = proj[1]
             conndict = self.floatify_dictionary(proj[2])
             tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
-            print("Success")
+            print("Connected {} and {}".format(pre, post))
 
     def connect_to_devices(self):
         """
@@ -321,6 +322,7 @@ class NESTInterface(object):
         if self.device_projections is None:
             return
 
+        print("Connecting to devices...")
         params_to_floatify = ['rate', 'amplitude', 'frequency']
         reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator', 'ac_generator']
 
