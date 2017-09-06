@@ -163,10 +163,6 @@ class App  // TODO: rename App -> ???
         // Axes
         var axes = new this.THREE.AxisHelper( 100 );
         this.scene2.add(axes);
-
-        // Explains the coordinate system
-        //$("#transformInfo").css( { display: "block" } );
-        //$("#transformInfo").html( "x-axis: red axis, <br> y-axis: green axis, <br> z-axis: blue axis." );
     }
 
     /**

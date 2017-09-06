@@ -992,9 +992,6 @@ class SelectionBox3D
         //this.transformControls.attach( this.box );
 
         this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
-
-        //$("#transformInfo").html( "x-axis: red axis, <br> y-axis: green axis, <br> z-axis: blue axis." );
-        //$("#transformInfo").css( { display: "block" } );
     }
 
     /**
@@ -1005,8 +1002,6 @@ class SelectionBox3D
         this.transformControls.attach( this.box );
         this.setBorderLinesColor(this.activeColor);
         this.updateColors();
-
-        //$("#transformInfo").css( { display: "block" } );
     }
 
     /**
@@ -1016,8 +1011,6 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
-
-        //$("#transformInfo").css( { display: "none" } );
     }
     
     /*
@@ -1090,26 +1083,47 @@ class SelectionBox3D
 
     updateAzimuthAndPolarAngle()
     {
-        this.azimuthAngle = this.box.rotation.z;
-        this.polarAngle = this.box.rotation.y;
+        //console.log(this.transformControls.axis)
+        //console.log(this.transformControls)
 
-        var at2 = Math.atan2(this.box.rotation.y, this.box.rotation.x)
+        if( this.transformControls.axis == "Z")
+        {
+            this.azimuthAngle = this.box.rotation.z;
 
-        if ( at2 > Math.PI / 2 && at2 <= Math.PI )
-        {
-            // Second quadrant
-            this.polarAngle = Math.PI - this.polarAngle;
+            if ( this.azimuthAngle < 0 )
+            {
+                this.azimuthAngle += 2 * Math.PI;
+            }
         }
-        else if ( at2 > -Math.PI && at2 < -Math.PI / 2 )
+        else if ( this.transformControls.axis == "Y" )
         {
-            // Third quadrant
-            this.polarAngle = Math.PI - this.polarAngle;
+            this.polarAngle = this.box.rotation.y;
+
+            //var at2 = Math.atan2( this.box.rotation.y, this.box.rotation.x );
+            var at2 = Math.atan2( -this.box.matrix.elements[2], this.box.matrix.elements[0] );
+
+            if ( at2 > Math.PI / 2 && at2 <= Math.PI )
+            {
+                // Second quadrant
+                console.log("second")
+                this.polarAngle = Math.PI - this.polarAngle;
+            }
+            else if ( at2 > -Math.PI && at2 < -Math.PI / 2 )
+            {
+                // Third quadrant
+                console.log("third")
+                this.polarAngle = Math.PI - this.polarAngle;
+            }
+            else if ( at2 >= -Math.PI / 2 && at2 < 0 )
+            {
+                // Fourth quadrant
+                console.log("fourth")
+                this.polarAngle += 2 * Math.PI;
+            }
+            console.log(at2)
         }
-        else if ( at2 >= -Math.PI / 2 && at2 < 0 )
-        {
-            // Fourth quadrant
-            this.polarAngle += 2 * Math.PI;
-        }
+        console.log("azimuthAngle:", this.azimuthAngle * 180 / Math.PI)
+        console.log("polarAngle:", this.polarAngle * 180 / Math.PI)
     }
 
     /**
@@ -1191,10 +1205,6 @@ class SelectionBox3D
         var x_side = ( this.ur.x - this.ll.x ) / 2;
         var y_side = ( this.ur.y - this.ll.y ) / 2;
         var z_side = ( this.ur.z - this.ll.z ) / 2;
-        // var center = {
-        //     x: ( this.ur.x + this.ll.x ) / 2.0,
-        //     y: ( this.ur.y + this.ll.y ) / 2.0
-        // };
 
         var new_x = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) +
                       ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.cos( this.polarAngle ) -
@@ -1207,7 +1217,7 @@ class SelectionBox3D
                       ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.sin( this.polarAngle ) +
                     ( pos. z - this.center.z ) * Math.cos( this.polarAngle );
 
-        /*// Problemet er at polar går fra 0 til 180 tror jeg.
+        /*
         var new_x = ( pos.x - this.center.x ) * Math.cos( this.polarAngle ) - ( pos. z - this.center.z ) * Math.sin( this.polarAngle );
 
         var new_y = ( pos.y - this.center.y );
@@ -1221,7 +1231,6 @@ class SelectionBox3D
         return ( ( Math.pow( new_x, 2 ) ) / ( x_side * x_side ) +
                  ( Math.pow( new_y, 2 ) ) / ( y_side * y_side ) +
                  ( Math.pow( new_z, 2 ) ) / ( z_side * z_side ) <= 1 );
-        // return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
     }
 
     /**
@@ -1232,9 +1241,17 @@ class SelectionBox3D
      */
     withinBoxBounds( pos )
     {
-        return pos.x > this.ll.x && pos.x < this.ur.x
-            && pos.y > this.ll.y && pos.y < this.ur.y
-            && pos.z > this.ll.z && pos.z < this.ur.z;
+        var new_x = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) + ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.cos( this.polarAngle ) - ( pos.z - this.center.z ) * Math.sin( this.polarAngle ) + this.center.x;
+        var new_y = -( pos.x - this.center.x ) * Math.sin( this.azimuthAngle ) + ( pos.y - this.center.y ) * Math.cos( this.azimuthAngle ) + this.center.y;
+        var new_z = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) + ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.sin( this.polarAngle ) + ( pos.z - this.center.z ) * Math.cos( this.polarAngle ) + this.center.z;        
+
+        return new_x > this.ll.x && new_x < this.ur.x
+            && new_y > this.ll.y && new_y < this.ur.y
+            && new_z > this.ll.z && new_z < this.ur.z;
+
+        /*return pos.x >= this.ll.x && pos.x <= this.ur.x
+            && pos.y >= this.ll.y && pos.y <= this.ur.y
+            && pos.z >= this.ll.z && pos.z <= this.ur.z;*/
     }
 
     /*
