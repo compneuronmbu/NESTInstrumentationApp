@@ -252,6 +252,7 @@ var Brain = function( camera, scene )
                 screenCenter.y = app.container.clientHeight - screenCenter.y;
 
                 var text = document.createElement( 'div' );
+                text.className = 'unselectable';
                 text.id = layer_name + '_label';
                 text.style.position = 'absolute';
                 text.style.width = 100;

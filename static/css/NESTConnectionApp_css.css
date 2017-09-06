@@ -13,6 +13,16 @@ body {
   margin: 0px; /* A margin larger than zero here will mess up selection. */
 }
 
+.unselectable {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
+    user-select: none; /* Non-prefixed version, supported by Chrome and Opera */
+    cursor: default;
+}
+
 #main_body {
   background-color: #000000;
   margin: 0px;
