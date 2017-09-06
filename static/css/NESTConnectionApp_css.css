@@ -317,6 +317,65 @@ hr {
   visibility: hidden;
 }
 
+.helpBox {
+  color: #fff;
+  background: rgba(128, 128, 128, 0.5);
+  position: absolute;
+  top: 40px;
+  left: 10px;
+  width: auto;
+  padding: 10px;
+  z-index: 100;
+  border-radius: 5px;
+  font-size: 10px;
+  text-align: left;
+}
+
+.helpBox:hover {
+  background: rgba(140, 140, 140, 0.5);
+}
+
+.collapse-open{
+  display: none;
+}
+
+.collapse-btn {
+  font-size: 12px;
+}
+
+.collapse-open ~ .collapse-btn:before{
+  content: "+";
+  color: #999999;
+  float: right;
+}
+
+.helpBox:hover .collapse-btn:before{
+  color: #ffffff;
+}
+
+.collapse-open:checked ~ .collapse-btn:before{
+  content: "−";
+}
+
+.helpList {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  font-weight: normal;
+  visibility: hidden;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.2s,
+              visibility 0.3s,
+              opacity 0.3s;
+}
+
+.collapse-open:checked ~ .helpList {
+  max-height: 100px;
+  opacity: 100;
+  visibility: visible;
+}
 
 /* ------------------------------------------
  * CSS3 GITHUB BUTTONS (Nicolas Gallagher)
