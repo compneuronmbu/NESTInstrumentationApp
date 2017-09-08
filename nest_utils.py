@@ -184,7 +184,10 @@ class NESTInterface(object):
         mask_type = selection_dict['maskShape']
         neuron_type = selection_dict['neuronType']
         azimuth_angle = float(selection_dict['azimuthAngle']) * 180 / math.pi
-        polar_angle = float(selection_dict['polarAngle']) * 180 / math.pi
+        if 'polarAngle' in selection_dict:
+            polar_angle = float(selection_dict['polarAngle']) * 180 / math.pi
+        else:
+            polar_angle = 0.0
 
         ll = [selection['ll']['x'], selection['ll']['y'], selection['ll']['z']]
         ur = [selection['ur']['x'], selection['ur']['y'], selection['ur']['z']]
