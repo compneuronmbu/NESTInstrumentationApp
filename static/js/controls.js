@@ -692,7 +692,7 @@ class Controls
         if ( app.is3DLayer )
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
-            //this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
+            this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
             this.mouseMoved = true;
         }
@@ -794,9 +794,9 @@ class Controls
                 this.shiftDown = true;
                 break;
             case 82:
-                /*this.boxInFocus
+                this.boxInFocus
                     && this.boxInFocus.transformControls
-                    && this.boxInFocus.transformControls.setMode( "rotate" );*/
+                    && this.boxInFocus.transformControls.setMode( "rotate" );
                 break;
             case 83:  // S key
                 this.boxInFocus
@@ -829,10 +829,10 @@ class Controls
                 this.shiftDown = false;
                 break;
             case 82:  // R key
-                /*this.boxInFocus
+                this.boxInFocus
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "translate" );
-                console.log(this.boxInFocus)*/
+                console.log(this.boxInFocus)
                 break;
             case 83:  // S key
                 this.boxInFocus

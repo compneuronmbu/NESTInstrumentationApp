@@ -97,7 +97,6 @@ class GuiButtons extends React.Component{
 
             <div id="gui-box">
                 <div id="gui-box-title">
-                    Buttons!
                 </div>
                 <div className="button-group">
                     <SelectionsButton text='Connect'

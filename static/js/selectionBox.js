@@ -987,7 +987,8 @@ class SelectionBox3D
      */
     makeTransformControls()
     {
-        this.transformControls = new app.THREE.TransformControls( app.camera, app.renderer.domElement );
+        //this.transformControls = new THREE.TransformControls( app.camera, app.renderer.domElement );
+        this.transformControls = new TransformControls( app.camera, app.renderer.domElement );
         app.scene.add( this.transformControls );
         //this.transformControls.attach( this.box );
 

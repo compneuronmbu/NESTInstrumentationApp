@@ -337,7 +337,7 @@ class App  // TODO: rename App -> ???
         var heading = document.createElement( 'label' );
         heading.className = "collapse-btn";
         heading.htmlFor = "collapse-1";
-        heading.innerText = 'Controls';
+        heading.innerText = 'Help';
         var list = document.createElement( 'ul' );
         list.className = "helpList";
         var linebreak = document.createElement( 'br' );
