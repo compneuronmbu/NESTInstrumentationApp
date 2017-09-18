@@ -111,7 +111,8 @@ class NESTInterface(object):
                                    lower_left[1] - cntr[1]],
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1]],
-                    'azimuth_angle': azimuth_angle}
+                    #'azimuth_angle': azimuth_angle
+                    }
         elif mask_type == 'elliptical':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
@@ -127,7 +128,8 @@ class NESTInterface(object):
                 minor = x_side
             spec = {'major_axis': major, 'minor_axis': minor,
                     'anchor': [xpos - cntr[0], ypos - cntr[1]],
-                    'azimuth_angle': azimuth_angle}
+                    'azimuth_angle': azimuth_angle
+                    }
         elif mask_type == 'box':
             spec = {'lower_left': [lower_left[0] - cntr[0],
                                    lower_left[1] - cntr[1],
@@ -135,8 +137,9 @@ class NESTInterface(object):
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1],
                                     upper_right[2]],
-                    'azimuth_angle': azimuth_angle,
-                    'polar_angle': polar_angle}
+                    # 'azimuth_angle': azimuth_angle,
+                    # 'polar_angle': polar_angle
+                    }
         elif mask_type == 'ellipsoidal':
             # Calculate center of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
