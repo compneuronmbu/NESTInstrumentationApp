@@ -249,7 +249,7 @@ if __name__ == '__main__':
     # app.run()
 
     #print('Serving on https://127.0.0.1:8443/NESTConnectionApp')
-    #server = pywsgi.WSGIServer(('', 8443), app, keyfile='server.key', certfile='server.crt')
+    #server = gevent.pywsgi.WSGIServer(('', 8443), app, keyfile='server.key', certfile='server.crt')
     #print('Serving on http://127.0.0.1:5000/NESTConnectionApp')
     server = gevent.pywsgi.WSGIServer(("", 5000), app)
     server.serve_forever()
