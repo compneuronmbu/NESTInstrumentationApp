@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
+import time
 import math
-import nest
-import nest.topology as tp
+import sys
+# import nest
+# import nest.topology as tp
 import numbers
+import nett_python as nett
+import float_message_pb2 as fm
+import string_message_pb2 as sm
+
+if sys.version_info[0] == 2:
+    # A backport of the subprocess module from Python 3.2/3.3 for Python 2.x
+    import subprocess32 as sp
+else:
+    import subprocess as sp
+
+nett.initialize('tcp://127.0.0.1:2001')
 
 
 class NESTInterface(object):
@@ -28,20 +41,38 @@ class NESTInterface(object):
         self.layers = {}
         self.rec_devices = []
 
+        self.slot_out_greet = nett.slot_out_float_message('greet')
+        self.slot_out_reset = nett.slot_out_float_message('reset')
+
+        self.greet()
+        time.sleep(0.1)
         self.reset_kernel()
-        self.make_models()
-        self.make_nodes()
+        # self.make_models()
+        # self.make_nodes()
         if synapses:
             self.make_synapse_models()
 
         # nest.set_verbosity("M_ERROR")
-        nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+        # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
+    def greet(self):
+        """
+        Needed to open connection to nest client.
+        """
+        msg = fm.float_message()
+        msg.value = 1.
+        self.slot_out_greet.send(msg.SerializeToString())
+        print('Sent greet')
 
     def reset_kernel(self):
         """
         Resets the NEST kernel.
         """
-        nest.ResetKernel()
+        # nest.ResetKernel()
+        msg = fm.float_message()
+        msg.value = 1.
+        self.slot_out_reset.send(msg.SerializeToString())
+        print('Sent reset')
 
     def make_nodes(self):
         """
