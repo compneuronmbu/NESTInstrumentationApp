@@ -7,6 +7,7 @@ import gevent
 import gevent.wsgi
 import gevent.queue
 import flask
+import json
 import nest_utils as nu
 
 app = flask.Flask(__name__)
@@ -74,7 +75,7 @@ def connect_ajax():
             print("Cannot connect, NEST is busy!")
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
-        network = data['network']
+        network = json.dumps(data['network'])
         synapses = data['synapses']
         internal_projections = data['internalProjections']
         projections = data['projections']
