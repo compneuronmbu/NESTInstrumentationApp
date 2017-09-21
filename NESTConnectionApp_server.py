@@ -131,10 +131,8 @@ def simulate_ajax():
                                  projections)
     interface.connect_all()
 
-    interface.prepare_simulation()
     print("Simulating for ", t, "ms ...")
-    interface.run(t, return_events=True)
-    interface.cleanup_simulation()
+    interface.simulate(t)
     busy = False
 
     return flask.Response(status=204)

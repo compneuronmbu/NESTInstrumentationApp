@@ -86,6 +86,7 @@ class NESTInterface(object):
         self.slot_out_reset = nett.slot_out_float_message('reset')
         self.slot_out_network = nett.slot_out_string_message('network')
         self.slot_out_synapses = nett.slot_out_string_message('synapses')
+        self.slot_out_simulate = nett.slot_out_float_message('simulate')
 
         self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
@@ -450,6 +451,19 @@ class NESTInterface(object):
         """
         return nest.GetKernelStatus()['num_connections']
 
+    def simulate(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: time to simulate
+        """
+
+        msg = fm.float_message()
+        msg.value = t
+        self.slot_out_reset.send(msg.SerializeToString())
+        print('Sent simulate')
+
+    '''
     def prepare_simulation(self):
         """
         Prepares NEST to run a simulation.
@@ -473,6 +487,7 @@ class NESTInterface(object):
         """
         print("Cleaning up after simulation")
         nest.Cleanup()
+    '''
 
     def get_device_results(self):
         """

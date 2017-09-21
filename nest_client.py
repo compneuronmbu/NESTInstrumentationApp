@@ -51,10 +51,12 @@ class NESTClient(object):
         self.slot_in_reset = nett.slot_in_float_message()
         self.slot_in_network = nett.slot_in_string_message()
         self.slot_in_synapses = nett.slot_in_string_message()
+        self.slot_in_simulate = nett.slot_in_float_message()
 
         self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
         self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
         self.slot_in_synapses.connect('tcp://127.0.0.1:2001', 'synapses')
+        self.slot_in_simulate.connect('tcp://127.0.0.1:2001', 'simulate')
 
         observe_slot_reset = observe_slot(self.slot_in_reset,
                                           fm.float_message(),
@@ -65,10 +67,14 @@ class NESTClient(object):
         observe_slot_synapses = observe_slot(self.slot_in_synapses,
                                             sm.string_message(),
                                             self.handle_synapse_models)
+        observe_slot_simulate = observe_slot(self.slot_in_synapses,
+                                            fm.float_message(),
+                                            self.handle_simulate)
         print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
         observe_slot_synapses.start()
+        observe_slot_simulate.start()
         self.send_complete_signal()  # let the server know the client is ready
 
         self.networkSpecs = {}
@@ -148,6 +154,39 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
         print("layers: ", self.layers)
+
+    def handle_simulate(self, msg):
+        print("HANDLE SIMULATION")
+        
+        t = msg.value
+        self.prepare_simulation()
+        self.run(t)
+        self.cleanup_simulation()
+
+
+    def prepare_simulation(self):
+        """
+        Prepares NEST to run a simulation.
+        """
+        print("Preparing simulation")
+        nest.Prepare()
+
+    def run(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: time to simulate
+        """
+        # nest.SetKernelStatus({'print_time': True})
+
+        nest.Run(t)
+
+    def cleanup_simulation(self):
+        """
+        Make NEST cleanup after a finished simulation.
+        """
+        print("Cleaning up after simulation")
+        nest.Cleanup()
 
 
 if __name__ == '__main__':
