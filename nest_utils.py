@@ -88,8 +88,7 @@ class NESTInterface(object):
         self.start_nest_client()
         self.wait_until_client_finishes()
         self.reset_kernel()
-        # self.make_models()
-        self.make_nodes()
+        self.make_network()
         if synapses:
             self.make_synapse_models()
 
@@ -129,24 +128,14 @@ class NESTInterface(object):
         self.slot_out_reset.send(msg.SerializeToString())
         print('Sent reset')
 
-    def make_nodes(self):
+    def make_network(self):
         """
-        Creates the layers of nodes.
+        Creates the layers and models of nodes.
         """
         msg = sm.string_message()
         msg.value = self.networkSpecs
         self.slot_out_network.send(msg.SerializeToString())
-        print('Sent make nodes')
-
-
-    def make_models(self):
-        """
-        Creates custom models.
-        """
-        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
-        models = self.networkSpecs['models']
-        for new_mod, old_mod in models.items():
-            nest.CopyModel(old_mod, new_mod)
+        print('Sent make network')
 
     def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
         """
