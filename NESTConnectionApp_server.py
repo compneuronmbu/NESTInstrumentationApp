@@ -83,7 +83,9 @@ def connect_ajax():
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(network)
         pp.pprint(synapses)
-        pp.pprint(projections)
+        pp.pprint(internal_projections)
+        print('Projections:')
+        print(projections)
 
         interface = nu.NESTInterface(network,
                                      synapses,
