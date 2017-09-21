@@ -69,7 +69,6 @@ class NESTClient(object):
     def handle_reset(self, msg):
         print("RESET_KERNEL")
         nest.ResetKernel()
-        self.send_complete_signal()
 
     def send_complete_signal(self):
         msg = fm.float_message()
@@ -93,8 +92,10 @@ class NESTClient(object):
             for layer in self.networkSpecs['layers']:
                 neurons = layer['neurons']
                 if self.networkSpecs['is3DLayer']:
-                    pos = [[float(neuron['x']), float(neuron['y']), float(neuron['z'])]
-                       for neuron in neurons]
+                    pos = [[float(neuron['x']),
+                            float(neuron['y']),
+                            float(neuron['z'])]
+                           for neuron in neurons]
                 else:
                     pos = [[float(neuron['x']), float(neuron['y'])]
                            for neuron in neurons]
@@ -103,7 +104,7 @@ class NESTClient(object):
                     elem = []
                     for mod in model:
                         if isinstance(mod, str):
-                            elem.append(networkSpecs['models'][mod])
+                            elem.append(self.networkSpecs['models'][mod])
                         else:
                             elem.append(mod)
                     #elem = [ networkSpecs['models'][mod] for mod in model]
@@ -116,17 +117,18 @@ class NESTClient(object):
                 if not self.networkSpecs['is3DLayer']:
                     extent = extent[:-1]
                     center = center[:-1]
-                nest_layer = tp.CreateLayer({'positions': pos,
-                                             'extent': [float(ext) for ext in extent],  # JSON converts the double to int
-                                             'center': [float(cntr) for cntr in center],
-                                             'elements': elem})
+                nest_layer = tp.CreateLayer(
+                    {'positions': pos,
+                     'extent': [float(ext) for ext in extent],  # JSON converts the double to int
+                     'center': [float(cntr) for cntr in center],
+                     'elements': elem})
                 self.layers[layer['name']] = nest_layer
 
         print("layers: ", self.layers)
 
     def make_models(self):
         print("MAKE_MODELS")
-        
+
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
         models = self.networkSpecs['models']
