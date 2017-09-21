@@ -54,7 +54,7 @@ def print_GIDs():
         # print(selection)
         data = flask.request.json
         # pp.pprint(data)
-        interface = nu.NESTInterface(data['network'])
+        interface = nu.NESTInterface(json.dumps(data['network']))
         gids, positions = interface.printGIDs(data['info'])
         print(gids)
         pp.pprint(positions)
@@ -76,7 +76,7 @@ def connect_ajax():
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
         network = json.dumps(data['network'])
-        synapses = data['synapses']
+        synapses = json.dumps(data['synapses'])
         internal_projections = data['internalProjections']
         projections = data['projections']
 
@@ -118,8 +118,8 @@ def simulate_ajax():
         print("Cannot simulate, NEST is busy!")
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
-    network = data['network']
-    synapses = data['synapses']
+    network = json.dumps(data['network'])
+    synapses = json.dumps(data['synapses'])
     internal_projections = data['internalProjections']
     projections = data['projections']
     t = data['time']
@@ -208,8 +208,8 @@ def streamSimulate():
         return flask.Response(status=BUSY_ERRORCODE)
 
     data = flask.request.json
-    network = data['network']
-    synapses = data['synapses']
+    network = json.dumps(data['network'])
+    synapses = json.dumps(data['synapses'])
     print("synapses: ", synapses)
     internal_projections = data['internalProjections']
     projections = data['projections']

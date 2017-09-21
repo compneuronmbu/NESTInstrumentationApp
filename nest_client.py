@@ -50,17 +50,25 @@ class NESTClient(object):
 
         self.slot_in_reset = nett.slot_in_float_message()
         self.slot_in_network = nett.slot_in_string_message()
+        self.slot_in_synapses = nett.slot_in_string_message()
+
         self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
         self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
+        self.slot_in_synapses.connect('tcp://127.0.0.1:2001', 'synapses')
+
         observe_slot_reset = observe_slot(self.slot_in_reset,
                                           fm.float_message(),
                                           self.handle_reset)
         observe_slot_network = observe_slot(self.slot_in_network,
                                             sm.string_message(),
                                             self.handle_make_network_specs)
+        observe_slot_synapses = observe_slot(self.slot_in_synapses,
+                                            sm.string_message(),
+                                            self.handle_synapse_models)
         print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
+        observe_slot_synapses.start()
         self.send_complete_signal()  # let the server know the client is ready
 
         self.networkSpecs = {}
@@ -82,6 +90,23 @@ class NESTClient(object):
         self.networkSpecs = json.loads(msg.value)
         self.make_models()
         self.make_nodes()
+
+    def make_models(self):
+        print("MAKE_MODELS")
+        
+        # NOTE: We currently do not take paramaters from users into account,
+        # like 'tau' etc.
+        models = self.networkSpecs['models']
+        for new_mod, old_mod in models.items():
+            nest.CopyModel(old_mod, new_mod)
+
+    def handle_synapse_models(self, msg):
+        print("MAKE_SYNAPSE_MODELS")
+
+        synapses = json.loads(msg.value)
+
+        for syn_name, model_name, syn_specs in synapses:
+            nest.CopyModel(syn_name, model_name, syn_specs)
 
     def make_nodes(self):
         print("MAKE_NODES")
@@ -123,15 +148,6 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
         print("layers: ", self.layers)
-
-    def make_models(self):
-        print("MAKE_MODELS")
-        
-        # NOTE: We currently do not take paramaters from users into account,
-        # like 'tau' etc.
-        models = self.networkSpecs['models']
-        for new_mod, old_mod in models.items():
-            nest.CopyModel(old_mod, new_mod)
 
 
 if __name__ == '__main__':
