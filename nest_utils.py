@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import time
 import math
+import os
 import sys
+import threading
 # import nest
 # import nest.topology as tp
 import numbers
@@ -9,8 +11,43 @@ import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
-nett.initialize('tcp://127.0.0.1:2001')
+#nett.initialize('tcp://127.0.0.1:2001')
+if os.name == 'posix' and sys.version_info[0] < 3:
+    # A backport of the subprocess module from Python 3.2/3.3 for Python 2.x
+    try:
+        import subprocess32 as sp
+    except ImportError:
+        print('Module subprocess32 not found, using old subprocess module.')
+        import subprocess as sp
+else:
+    import subprocess as sp
 
+
+class observe_slot(threading.Thread):
+
+    def __init__(self, slot, message_type, callback):
+        super(observe_slot, self).__init__()
+        self.slot = slot
+        self.msg = message_type
+        self.last_message = None
+        self.state = False
+        self.last_message = None
+        self.callback = callback
+
+    def get_last_message(self):
+        return self.last_message
+
+    def set_state(self, state):
+        self.state = state
+
+    def run(self):
+        while True:
+            self.msg.ParseFromString(self.slot.receive())
+            if self.msg.value is not None:
+                self.last_message = self.msg.value
+                self.callback(self.msg)
+            self.state = not self.state
+            self.last_message = self.msg
 
 class NESTInterface(object):
     """
@@ -35,12 +72,21 @@ class NESTInterface(object):
         self.layers = {}
         self.rec_devices = []
 
-        self.slot_out_greet = nett.slot_out_float_message('greet')
+        nett.initialize('tcp://127.0.0.1:2001')
+
         self.slot_out_reset = nett.slot_out_float_message('reset')
         self.slot_out_network = nett.slot_out_string_message('network')
 
-        self.greet()
-        time.sleep(0.1)
+        self.client_complete = False
+        self.slot_in_complete = nett.slot_in_float_message()
+        self.slot_in_complete.connect('tcp://127.0.0.1:8000', 'task_complete')
+        self.observe_slot_ready = observe_slot(self.slot_in_complete,
+                                          fm.float_message(),
+                                          self.handle_complete)
+        self.observe_slot_ready.start()
+
+        self.start_nest_client()
+        self.wait_until_client_finishes()
         self.reset_kernel()
         # self.make_models()
         self.make_nodes()
@@ -50,14 +96,28 @@ class NESTInterface(object):
         # nest.set_verbosity("M_ERROR")
         # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
 
-    def greet(self):
-        """
-        Needed to open connection to nest client.
-        """
-        msg = fm.float_message()
-        msg.value = 1.
-        self.slot_out_greet.send(msg.SerializeToString())
-        print('Sent greet')
+    def start_nest_client(self):
+        self.client = sp.Popen(['python', 'nest_client.py'])
+        print('NEST client started')
+
+    def terminate_nest_client(self):
+        self.client.terminate()
+        print('NEST client terminated')
+        # self.observe_slot_ready.alive = False
+        # self.observe_slot_ready.join()
+        # print('Joined observe thread')
+
+    def handle_complete(self, msg):
+        print('Received complete signal')
+        self.client_complete = True
+
+    def reset_complete(self):
+        self.client_complete = False
+
+    def wait_until_client_finishes(self):
+        while not self.client_complete:
+            print('Waiting for client...')
+            time.sleep(0.2)
 
     def reset_kernel(self):
         """
