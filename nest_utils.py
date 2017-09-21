@@ -33,7 +33,7 @@ def print(*args, **kwargs):
 
 class observe_slot(threading.Thread):
 
-    def __init__(self, slot, message_type, callback):
+    def __init__(self, slot, message_type, callback=None):
         super(observe_slot, self).__init__()
         self.slot = slot
         self.msg = message_type
@@ -53,7 +53,8 @@ class observe_slot(threading.Thread):
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
                 self.last_message = self.msg.value
-                self.callback(self.msg)
+                if self.callback is not None:
+                    self.callback(self.msg)
             self.state = not self.state
             self.last_message = self.msg
 
@@ -61,20 +62,15 @@ class NESTInterface(object):
     """
     Class for interacting with NEST.
 
-    :param networkSpecs: Dictionary of network specifications
-    :param synapses: Optional list of synapse specifications
-    :param internal_projections: Optional list of projections between layers
+    :param networkSpecs: Dictionary of network specifications, including
+                         synapse specifications and projections between layers
     :param device_projections: Optional list of projections between layers and
                                devices
     """
 
     def __init__(self, networkSpecs,
-                 synapses=None,
-                 internal_projections=None,
                  device_projections=None):
         self.networkSpecs = networkSpecs
-        self.synapses = synapses
-        self.internal_projections = internal_projections
         self.device_projections = device_projections
 
         # Remember to remove when all is moved to nest_client
@@ -85,23 +81,31 @@ class NESTInterface(object):
 
         self.slot_out_reset = nett.slot_out_float_message('reset')
         self.slot_out_network = nett.slot_out_string_message('network')
-        self.slot_out_synapses = nett.slot_out_string_message('synapses')
+        self.slot_out_projections = nett.slot_out_string_message('projections')
+        self.slot_out_get_nconnections = nett.slot_out_float_message('get_nconnections')
+        self.slot_out_connect = nett.slot_out_float_message('connect')
         self.slot_out_simulate = nett.slot_out_float_message('simulate')
 
         self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
+        self.slot_in_nconnections = nett.slot_in_float_message()
         self.slot_in_complete.connect('tcp://127.0.0.1:8000', 'task_complete')
+        self.slot_in_nconnections.connect('tcp://127.0.0.1:8000', 'nconnections')
         self.observe_slot_ready = observe_slot(self.slot_in_complete,
                                           fm.float_message(),
                                           self.handle_complete)
+        self.observe_slot_nconnections = observe_slot(self.slot_in_nconnections,
+                                                      fm.float_message())
         self.observe_slot_ready.start()
+        self.observe_slot_nconnections.start()
 
         self.start_nest_client()
         self.wait_until_client_finishes()
         self.reset_kernel()
+        self.send_device_projections()
+        self.reset_complete()
         self.make_network()
-        if synapses:
-            self.make_synapse_models()
+        self.wait_until_client_finishes()
 
         # nest.set_verbosity("M_ERROR")
         # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
@@ -125,8 +129,9 @@ class NESTInterface(object):
         self.client_complete = False
 
     def wait_until_client_finishes(self):
+        print('Waiting for client...')
         while not self.client_complete:
-            print('Waiting for client...')
+            # print('Waiting for client...')
             time.sleep(0.2)
 
     def reset_kernel(self):
@@ -139,6 +144,12 @@ class NESTInterface(object):
         self.slot_out_reset.send(msg.SerializeToString())
         print('Sent reset')
 
+    def send_device_projections(self):
+        msg = sm.string_message()
+        msg.value = self.device_projections
+        self.slot_out_projections.send(msg.SerializeToString())
+        print('Sent projections')
+
     def make_network(self):
         """
         Creates the layers and models of nodes.
@@ -147,15 +158,6 @@ class NESTInterface(object):
         msg.value = self.networkSpecs
         self.slot_out_network.send(msg.SerializeToString())
         print('Sent make network')
-
-    def make_synapse_models(self):
-        """
-        Makes custom synapse models.
-        """
-        msg = sm.string_message()
-        msg.value = self.synapses
-        self.slot_out_network.send(msg.SerializeToString())
-        print('Sent make synapse_model')
 
     def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
         """
@@ -361,15 +363,19 @@ class NESTInterface(object):
         Connects both projections between layers and projections between layers
         and devices.
         """
-        self.connect_internal_projections()
-        self.connect_to_devices()
+        # self.connect_internal_projections()
+        # self.connect_to_devices()
+        msg = fm.float_message()
+        msg.value = 1.
+        self.slot_out_connect.send(msg.SerializeToString())
+        print('Sent connect')
 
     def connect_internal_projections(self):
         """
         Makes connections from specifications of internal projections.
         """
-        if self.internal_projections is None:
-            return
+        # if self.internal_projections is None:
+        #     return
 
         print("Connecting internal projections...")
         for proj in self.internal_projections:
@@ -420,21 +426,6 @@ class NESTInterface(object):
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
 
-    def floatify_dictionary(self, dict_to_floatify):
-        """
-        Function that goes through a (possibly nested) dictionary and
-        floatifies integers.
-
-        :param dict_to_floatify: dictionary to go through
-        :returns: dictionary where integers are floats
-        """
-        for d in dict_to_floatify:
-            if isinstance(dict_to_floatify[d], dict):
-                self.floatify_dictionary(dict_to_floatify[d])
-            elif isinstance(dict_to_floatify[d], numbers.Number):
-                    dict_to_floatify[d] = float(dict_to_floatify[d])
-        return dict_to_floatify
-
     def get_connections(self):
         """
         Gets all connections from NEST.
@@ -449,7 +440,16 @@ class NESTInterface(object):
 
         :returns: number of connections
         """
-        return nest.GetKernelStatus()['num_connections']
+        # return nest.GetKernelStatus()['num_connections']
+        msg = fm.float_message()
+        msg.value = 1.
+        self.reset_complete()
+        self.slot_out_get_nconnections.send(msg.SerializeToString())
+        print('Sent get Nconnections')
+        self.wait_until_client_finishes()
+        nconnections = int(self.observe_slot_nconnections.get_last_message().value)
+        print("Nconnections: {}".format(nconnections))
+        return nconnections
 
     def simulate(self, t):
         """
