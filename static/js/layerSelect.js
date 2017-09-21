@@ -758,8 +758,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: projections
             } ),
             dataType: "json"
@@ -798,8 +796,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: projections,
                 time: "1000"
             } ),
@@ -830,8 +826,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: this.makeProjections(),
                 time: "10000"
             } ),

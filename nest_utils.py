@@ -62,20 +62,15 @@ class NESTInterface(object):
     """
     Class for interacting with NEST.
 
-    :param networkSpecs: Dictionary of network specifications
-    :param synapses: Optional list of synapse specifications
-    :param internal_projections: Optional list of projections between layers
+    :param networkSpecs: Dictionary of network specifications, including
+                         synapse specifications and projections between layers
     :param device_projections: Optional list of projections between layers and
                                devices
     """
 
     def __init__(self, networkSpecs,
-                 synapses=None,
-                 internal_projections=None,
                  device_projections=None):
         self.networkSpecs = networkSpecs
-        self.synapses = synapses
-        self.internal_projections = internal_projections
         self.device_projections = device_projections
 
         # Remember to remove when all is moved to nest_client
@@ -89,7 +84,6 @@ class NESTInterface(object):
         self.slot_out_projections = nett.slot_out_string_message('projections')
         self.slot_out_get_nconnections = nett.slot_out_float_message('get_nconnections')
         self.slot_out_connect = nett.slot_out_float_message('connect')
-        self.slot_out_synapses = nett.slot_out_string_message('synapses')
         self.slot_out_simulate = nett.slot_out_float_message('simulate')
 
         self.client_complete = False
@@ -112,8 +106,6 @@ class NESTInterface(object):
         self.reset_complete()
         self.make_network()
         self.wait_until_client_finishes()
-        if synapses:
-            self.make_synapse_models()
 
         # nest.set_verbosity("M_ERROR")
         # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
@@ -166,15 +158,6 @@ class NESTInterface(object):
         msg.value = self.networkSpecs
         self.slot_out_network.send(msg.SerializeToString())
         print('Sent make network')
-
-    def make_synapse_models(self):
-        """
-        Makes custom synapse models.
-        """
-        msg = sm.string_message()
-        msg.value = self.synapses
-        self.slot_out_network.send(msg.SerializeToString())
-        print('Sent make synapse_model')
 
     def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
         """
