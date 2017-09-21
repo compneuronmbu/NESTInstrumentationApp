@@ -1,8 +1,16 @@
+from __future__ import print_function
+import __builtin__  # for Python 3: builtins as __builtin__
 import threading
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 import nest
+
+
+# redefine print
+def print(*args, **kwargs):
+    __builtin__.print('[\033[1m\033[96mclient\033[0m] ', end='')
+    return __builtin__.print(*args, **kwargs)
 
 
 class observe_slot(threading.Thread):
