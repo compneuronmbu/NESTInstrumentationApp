@@ -57,12 +57,18 @@ class NESTClient(object):
         self.slot_in_projections = nett.slot_in_string_message()
         self.slot_in_connect = nett.slot_in_float_message()
         self.slot_in_get_n_connections = nett.slot_in_float_message()
+        self.slot_in_synapses = nett.slot_in_string_message()
+        self.slot_in_simulate = nett.slot_in_float_message()
+
         self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
         self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
         self.slot_in_projections.connect('tcp://127.0.0.1:2001', 'projections')
         self.slot_in_connect.connect('tcp://127.0.0.1:2001', 'connect')
         self.slot_in_get_n_connections.connect('tcp://127.0.0.1:2001',
                                                'get_nconnections')
+        self.slot_in_synapses.connect('tcp://127.0.0.1:2001', 'synapses')
+        self.slot_in_simulate.connect('tcp://127.0.0.1:2001', 'simulate')
+
         observe_slot_reset = observe_slot(self.slot_in_reset,
                                           fm.float_message(),
                                           self.handle_reset)
@@ -73,18 +79,25 @@ class NESTClient(object):
                                                 sm.string_message(),
                                                 self.handle_recv_projections)
         observe_slot_connect = observe_slot(self.slot_in_connect,
+        observe_slot_synapses = observe_slot(self.slot_in_synapses,
                                             sm.string_message(),
                                             self.handle_connect)
         observe_slot_get_nconnections = observe_slot(
             self.slot_in_get_n_connections,
             fm.float_message(),
             self.handle_get_nconnections)
+                                            self.handle_synapse_models)
+        observe_slot_simulate = observe_slot(self.slot_in_synapses,
+                                            fm.float_message(),
+                                            self.handle_simulate)
         print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
         observe_slot_projections.start()
         observe_slot_connect.start()
         observe_slot_get_nconnections.start()
+        observe_slot_synapses.start()
+        observe_slot_simulate.start()
         self.send_complete_signal()  # let the server know the client is ready
 
         self.networkSpecs = {}
@@ -107,6 +120,23 @@ class NESTClient(object):
         self.make_models()
         self.make_nodes()
         self.send_complete_signal()
+
+    def make_models(self):
+        print("MAKE_MODELS")
+        
+        # NOTE: We currently do not take paramaters from users into account,
+        # like 'tau' etc.
+        models = self.networkSpecs['models']
+        for new_mod, old_mod in models.items():
+            nest.CopyModel(old_mod, new_mod)
+
+    def handle_synapse_models(self, msg):
+        print("MAKE_SYNAPSE_MODELS")
+
+        synapses = json.loads(msg.value)
+
+        for syn_name, model_name, syn_specs in synapses:
+            nest.CopyModel(syn_name, model_name, syn_specs)
 
     def make_nodes(self):
         print("Making nodes...")
@@ -160,6 +190,38 @@ class NESTClient(object):
         models = self.networkSpecs['models']
         for new_mod, old_mod in models.items():
             nest.CopyModel(old_mod, new_mod)
+
+    def handle_simulate(self, msg):
+        print("HANDLE SIMULATION")
+        
+        t = msg.value
+        self.prepare_simulation()
+        self.run(t)
+        self.cleanup_simulation()
+
+    def prepare_simulation(self):
+        """
+        Prepares NEST to run a simulation.
+        """
+        print("Preparing simulation")
+        nest.Prepare()
+
+    def run(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: time to simulate
+        """
+        # nest.SetKernelStatus({'print_time': True})
+
+        nest.Run(t)
+
+    def cleanup_simulation(self):
+        """
+        Make NEST cleanup after a finished simulation.
+        """
+        print("Cleaning up after simulation")
+        nest.Cleanup()
 
     def handle_recv_projections(self, msg):
         self.device_projections = json.loads(msg.value)

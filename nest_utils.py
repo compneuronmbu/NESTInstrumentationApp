@@ -78,6 +78,7 @@ class NESTInterface(object):
         self.internal_projections = internal_projections
         self.device_projections = device_projections
 
+        # Remember to remove when all is moved to nest_client
         self.layers = {}
         self.rec_devices = []
 
@@ -88,6 +89,8 @@ class NESTInterface(object):
         self.slot_out_projections = nett.slot_out_string_message('projections')
         self.slot_out_get_nconnections = nett.slot_out_float_message('get_nconnections')
         self.slot_out_connect = nett.slot_out_float_message('connect')
+        self.slot_out_synapses = nett.slot_out_string_message('synapses')
+        self.slot_out_simulate = nett.slot_out_float_message('simulate')
 
         self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
@@ -164,6 +167,15 @@ class NESTInterface(object):
         self.slot_out_network.send(msg.SerializeToString())
         print('Sent make network')
 
+    def make_synapse_models(self):
+        """
+        Makes custom synapse models.
+        """
+        msg = sm.string_message()
+        msg.value = self.synapses
+        self.slot_out_network.send(msg.SerializeToString())
+        print('Sent make synapse_model')
+
     def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
         """
         Makes a mask from the specifications.
@@ -238,13 +250,6 @@ class NESTInterface(object):
         mask = tp.CreateMask(mask_type, spec)
 
         return mask
-
-    def make_synapse_models(self):
-        """
-        Makes custom synapse models.
-        """
-        for syn_name, model_name, syn_specs in self.synapses:
-            nest.CopyModel(syn_name, model_name, syn_specs)
 
     def get_gids(self, selection_dict):
         """
@@ -463,6 +468,19 @@ class NESTInterface(object):
         print("Nconnections: {}".format(nconnections))
         return nconnections
 
+    def simulate(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: time to simulate
+        """
+
+        msg = fm.float_message()
+        msg.value = t
+        self.slot_out_reset.send(msg.SerializeToString())
+        print('Sent simulate')
+
+    '''
     def prepare_simulation(self):
         """
         Prepares NEST to run a simulation.
@@ -486,6 +504,7 @@ class NESTInterface(object):
         """
         print("Cleaning up after simulation")
         nest.Cleanup()
+    '''
 
     def get_device_results(self):
         """
