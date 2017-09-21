@@ -1,5 +1,4 @@
 import threading
-import time
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
@@ -33,35 +32,37 @@ class observe_slot(threading.Thread):
             self.last_message = self.msg
 
 
-def handle_reset(msg):
-    print("RESET_KERNEL")
-    nest.ResetKernel()
+class NESTClient(object):
+    def __init__(self):
+        nett.initialize('tcp://127.0.0.1:8000')
 
+        self.slot_out_complete = nett.slot_out_float_message('task_complete')
 
-def main():
-    nett.initialize('tcp://127.0.0.1:8000')
+        self.slot_in_reset = nett.slot_in_float_message()
+        self.slot_in_network = nett.slot_in_string_message()
+        self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
+        self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
+        observe_slot_reset = observe_slot(self.slot_in_reset,
+                                          fm.float_message(),
+                                          self.handle_reset)
+        observe_slot_network = observe_slot(self.slot_in_network,
+                                            sm.string_message(),
+                                            None)
+        print('Client starting to observe')
+        observe_slot_reset.start()
+        observe_slot_network.start()
+        self.send_complete_signal()  # let the server know the client is ready
 
-    slot_in_reset = nett.slot_in_float_message()
-    slot_in_network = nett.slot_in_string_message()
-    slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
-    slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
-    observe_slot_reset = observe_slot(slot_in_reset,
-                                      fm.float_message(),
-                                      handle_reset)
-    observe_slot_network = observe_slot(slot_in_network,
-                                        sm.string_message(),
-                                        None)
-    print('Client starting to observe')
-    observe_slot_reset.start()
-    observe_slot_network.start()
+    def handle_reset(self, msg):
+        print("RESET_KERNEL")
+        nest.ResetKernel()
+        self.send_complete_signal()
 
-    #while 1:
-        #print(observe_string_slot.new_message)
-        #if observe_string_slot.new_message: # funker visst ikke..
-        #print(observe_string_slot.get_last_message())
-        #time.sleep(0.3)
+    def send_complete_signal(self):
+        msg = fm.float_message()
+        msg.value = 1.
+        self.slot_out_complete.send(msg.SerializeToString())
 
 
 if __name__ == '__main__':
-    print("Main socket")
-    main()
+    client = NESTClient()
