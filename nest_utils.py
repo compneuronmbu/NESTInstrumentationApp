@@ -9,12 +9,6 @@ import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
-if sys.version_info[0] == 2:
-    # A backport of the subprocess module from Python 3.2/3.3 for Python 2.x
-    import subprocess32 as sp
-else:
-    import subprocess as sp
-
 nett.initialize('tcp://127.0.0.1:2001')
 
 
@@ -43,12 +37,13 @@ class NESTInterface(object):
 
         self.slot_out_greet = nett.slot_out_float_message('greet')
         self.slot_out_reset = nett.slot_out_float_message('reset')
+        self.slot_out_network = nett.slot_out_string_message('network')
 
         self.greet()
         time.sleep(0.1)
         self.reset_kernel()
         # self.make_models()
-        # self.make_nodes()
+        self.make_nodes()
         if synapses:
             self.make_synapse_models()
 
@@ -78,41 +73,11 @@ class NESTInterface(object):
         """
         Creates the layers of nodes.
         """
-        # NOTE: We currently do not take paramaters from users into account, like 'tau' etc.
-        if nest.GetKernelStatus()['network_size'] == 1:
+        msg = sm.string_message()
+        msg.value = self.networkSpecs
+        self.slot_out_network.send(msg.SerializeToString())
+        print('Sent make nodes')
 
-            for layer in self.networkSpecs['layers']:
-                neurons = layer['neurons']
-                if self.networkSpecs['is3DLayer']:
-                    pos = [[float(neuron['x']), float(neuron['y']), float(neuron['z'])]
-                       for neuron in neurons]
-                else:
-                    pos = [[float(neuron['x']), float(neuron['y'])]
-                           for neuron in neurons]
-                model = layer['elements']
-                if isinstance(model, list):
-                    elem = []
-                    for mod in model:
-                        if isinstance(mod, str):
-                            elem.append(self.networkSpecs['models'][mod])
-                        else:
-                            elem.append(mod)
-                    #elem = [ self.networkSpecs['models'][mod] for mod in model]
-                else:
-                    elem = self.networkSpecs['models'][model]
-                # TODO: Use models from make_models!
-
-                extent = layer['extent']
-                center = layer['center']
-                if not self.networkSpecs['is3DLayer']:
-                    extent = extent[:-1]
-                    center = center[:-1]
-                nest_layer = tp.CreateLayer({'positions': pos,
-                                             'extent': [float(ext) for ext in extent],  # JSON converts the double to int
-                                             'center': [float(cntr) for cntr in center],
-                                             'elements': elem})
-                self.layers[layer['name']] = nest_layer
-            return self.layers
 
     def make_models(self):
         """
