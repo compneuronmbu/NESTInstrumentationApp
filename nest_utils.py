@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+import __builtin__  # for Python 3: builtins as __builtin__
 import time
 import math
 import os
@@ -13,7 +15,7 @@ import string_message_pb2 as sm
 
 #nett.initialize('tcp://127.0.0.1:2001')
 if os.name == 'posix' and sys.version_info[0] < 3:
-    # A backport of the subprocess module from Python 3.2/3.3 for Python 2.x
+    # Import a backport of the subprocess module from Python 3 for Python 2
     try:
         import subprocess32 as sp
     except ImportError:
@@ -21,6 +23,12 @@ if os.name == 'posix' and sys.version_info[0] < 3:
         import subprocess as sp
 else:
     import subprocess as sp
+
+
+# redefine print
+def print(*args, **kwargs):
+    __builtin__.print('[\033[1m\033[93mserver\033[0m] ', end='')
+    return __builtin__.print(*args, **kwargs)
 
 
 class observe_slot(threading.Thread):
