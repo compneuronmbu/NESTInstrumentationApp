@@ -463,32 +463,6 @@ class NESTInterface(object):
         self.slot_out_reset.send(msg.SerializeToString())
         print('Sent simulate')
 
-    '''
-    def prepare_simulation(self):
-        """
-        Prepares NEST to run a simulation.
-        """
-        print("Preparing simulation")
-        nest.Prepare()
-
-    def run(self, t):
-        """
-        Runs a simulation for a specified time.
-
-        :param t: time to simulate
-        """
-        # nest.SetKernelStatus({'print_time': True})
-
-        nest.Run(t)
-
-    def cleanup_simulation(self):
-        """
-        Make NEST cleanup after a finished simulation.
-        """
-        print("Cleaning up after simulation")
-        nest.Cleanup()
-    '''
-
     def get_device_results(self):
         """
         Gets results from devices.
