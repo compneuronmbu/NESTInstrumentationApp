@@ -2,18 +2,13 @@
 from __future__ import print_function
 import __builtin__  # for Python 3: builtins as __builtin__
 import time
-import math
 import os
 import sys
 import threading
-# import nest
-# import nest.topology as tp
-import numbers
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
-#nett.initialize('tcp://127.0.0.1:2001')
 if os.name == 'posix' and sys.version_info[0] < 3:
     # Import a backport of the subprocess module from Python 3 for Python 2
     try:
@@ -99,16 +94,16 @@ class NESTInterface(object):
         self.observe_slot_ready.start()
         self.observe_slot_nconnections.start()
 
-        self.start_nest_client()
-        self.wait_until_client_finishes()
+        self.with_wait_for_client(self.start_nest_client)
         self.reset_kernel()
         self.send_device_projections()
-        self.reset_complete()
-        self.make_network()
-        self.wait_until_client_finishes()
+        self.with_wait_for_client(self.make_network)
 
-        # nest.set_verbosity("M_ERROR")
-        # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
+    def with_wait_for_client(self, method, *args):
+        self.reset_complete_signal()
+        method(*args)
+        self.wait_until_client_finishes()
 
     def start_nest_client(self):
         self.client = sp.Popen(['python', 'nest_client.py'])
@@ -125,7 +120,7 @@ class NESTInterface(object):
         print('Received complete signal')
         self.client_complete = True
 
-    def reset_complete(self):
+    def reset_complete_signal(self):
         self.client_complete = False
 
     def wait_until_client_finishes(self):
@@ -180,8 +175,9 @@ class NESTInterface(object):
         # self.connect_to_devices()
         msg = fm.float_message()
         msg.value = 1.
-        self.slot_out_connect.send(msg.SerializeToString())
-        print('Sent connect')
+        print('Sending connect')
+        self.with_wait_for_client(self.slot_out_connect.send,
+                                  msg.SerializeToString())
 
     def get_connections(self):
         """
@@ -200,10 +196,10 @@ class NESTInterface(object):
         # return nest.GetKernelStatus()['num_connections']
         msg = fm.float_message()
         msg.value = 1.
-        self.reset_complete()
-        self.slot_out_get_nconnections.send(msg.SerializeToString())
-        print('Sent get Nconnections')
-        self.wait_until_client_finishes()
+        print('Sending get Nconnections')
+        self.with_wait_for_client(self.slot_out_get_nconnections.send,
+                                  msg.SerializeToString())
+        #self.wait_until_client_finishes()
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
         print("Nconnections: {}".format(nconnections))
         return nconnections

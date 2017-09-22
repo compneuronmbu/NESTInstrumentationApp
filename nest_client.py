@@ -49,6 +49,8 @@ class NESTClient(object):
     def __init__(self):
         nett.initialize('tcp://127.0.0.1:8000')
 
+        nest.set_verbosity("M_ERROR")
+
         self.networkSpecs = {}
         self.layers = {}
         self.rec_devices = []
@@ -120,7 +122,7 @@ class NESTClient(object):
         self.send_complete_signal()
 
     def make_models(self):
-        print("MAKE_MODELS")
+        print("Making models...")
 
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
@@ -178,15 +180,6 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
         print("layers: ", self.layers)
-
-    def make_models(self):
-        print("Making models...")
-
-        # NOTE: We currently do not take paramaters from users into account,
-        # like 'tau' etc.
-        models = self.networkSpecs['models']
-        for new_mod, old_mod in models.items():
-            nest.CopyModel(old_mod, new_mod)
 
     def handle_simulate(self, msg):
         print("HANDLE SIMULATION")
