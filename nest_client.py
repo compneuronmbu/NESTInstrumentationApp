@@ -27,6 +27,7 @@ class observe_slot(gevent.Greenlet):
         self.state = False
         self.last_message = None
         self.callback = callback
+        print('Started {}'.format(callback))
 
     def get_last_message(self):
         return self.last_message
@@ -58,7 +59,7 @@ class NESTClient(object):
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
-        self.slot_out_gids = nett.slot_out_string_message('GIDs')
+        # self.slot_out_gids = nett.slot_out_string_message('GIDs')
         self.slot_out_device_results = (
             nett.slot_out_string_message('device_results'))
 
@@ -104,11 +105,11 @@ class NESTClient(object):
         print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
-        observe_slot_gids.start()
         observe_slot_projections.start()
         observe_slot_connect.start()
-        observe_slot_get_nconnections.start()
         observe_slot_simulate.start()
+        # observe_slot_get_nconnections.start()
+        # observe_slot_gids.start()
         self.send_complete_signal()  # let the server know the client is ready
         gevent.sleep()  # Yield context to let greenlets work.
 
@@ -117,6 +118,7 @@ class NESTClient(object):
         nest.ResetKernel()
 
     def send_complete_signal(self):
+        print('Sending complete signal')
         msg = fm.float_message()
         msg.value = 1.
         self.slot_out_complete.send(msg.SerializeToString())
@@ -238,6 +240,7 @@ class NESTClient(object):
         print(self.device_projections)
 
     def handle_connect(self, msg):
+        print('Received connect signal')
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()
@@ -395,11 +398,12 @@ class NESTClient(object):
         selection_dict = json.loads(msg.value)
         gid = self.get_gids(selection_dict)
 
-        msg_out = sm.string_message()
-        msg_out.value = json.dumps(gid)
+        # msg_out = sm.string_message()
+        # msg_out.value = json.dumps(gid)
         print("GID positions:")
         print(tp.GetPosition(gid))
-        self.slot_out_gids.send(msg_out.SerializeToString())
+        print(gid)
+        # self.slot_out_gids.send(msg_out.SerializeToString())
         self.send_complete_signal()
 
     def get_gids(self, selection_dict):

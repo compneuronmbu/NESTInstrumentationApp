@@ -55,9 +55,10 @@ def print_GIDs():
         data = flask.request.json
         # pp.pprint(data)
         interface = nu.NESTInterface(json.dumps(data['network']))
-        gids = interface.printGIDs(json.dumps(data['info']))
-        print("GIDs:")
-        print(gids)
+        print('Trying to print gids..')
+        interface.printGIDs(json.dumps(data['info']))
+        # print("GIDs:")
+        # print(gids)
         busy = False
 
         interface.terminate_nest_client()
@@ -78,20 +79,14 @@ def connect_ajax():
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
         network = json.dumps(data['network'])
-        synapses = json.dumps(data['synapses'])
-        internal_projections = data['internalProjections']
-        projections = data['projections']
+        projections = json.dumps(data['projections'])
 
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(network)
-        pp.pprint(synapses)
-        pp.pprint(internal_projections)
         print('Projections:')
         print(projections)
 
         interface = nu.NESTInterface(network,
-                                     synapses,
-                                     internal_projections,
                                      projections)
         interface.connect_all()
         return flask.Response(status=204)
@@ -123,15 +118,11 @@ def simulate_ajax():
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
     network = json.dumps(data['network'])
-    synapses = json.dumps(data['synapses'])
-    internal_projections = data['internalProjections']
-    projections = data['projections']
-    t = data['time']
+    projections = json.dumps(data['projections'])
+    t = float(data['time'])
 
     busy = True
     interface = nu.NESTInterface(network,
-                                 synapses,
-                                 internal_projections,
                                  projections)
     interface.connect_all()
 

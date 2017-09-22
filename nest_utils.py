@@ -88,12 +88,12 @@ class NESTInterface(object):
         self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
         self.slot_in_nconnections = nett.slot_in_float_message()
-        self.slot_in_gids = nett.slot_in_string_message()
+        # self.slot_in_gids = nett.slot_in_string_message()
         self.slot_in_device_results = nett.slot_in_string_message()
 
         self.slot_in_complete.connect('tcp://127.0.0.1:8000', 'task_complete')
         self.slot_in_nconnections.connect('tcp://127.0.0.1:8000', 'nconnections')
-        self.slot_in_gids.connect('tcp://127.0.0.1:8000', 'GIDs')
+        # self.slot_in_gids.connect('tcp://127.0.0.1:8000', 'GIDs')
         self.slot_in_device_results.connect('tcp://127.0.0.1:8000', 'device_results')
 
         self.observe_slot_ready = observe_slot(self.slot_in_complete,
@@ -101,23 +101,26 @@ class NESTInterface(object):
                                           self.handle_complete)
         self.observe_slot_nconnections = observe_slot(self.slot_in_nconnections,
                                                       fm.float_message())
-        self.observe_slot_gids = observe_slot(self.slot_in_gids,
-                                              sm.string_message())
+        # self.observe_slot_gids = observe_slot(self.slot_in_gids,
+                                              # sm.string_message())
         self.observe_slot_device_results = observe_slot(self.slot_in_device_results,
                                                         sm.string_message(),
                                                         self.handle_device_results)
 
         self.observe_slot_ready.start()
         self.observe_slot_nconnections.start()
-        self.observe_slot_gids.start()
+        # self.observe_slot_gids.start()
         self.observe_slot_device_results.start()
 
         with self.wait_for_client():
             self.start_nest_client()
+        # print('Connecting all in init')
+        # self.connect_all()
         self.reset_kernel()
         self.send_device_projections()
         with self.wait_for_client():
             self.make_network()
+
 
     @contextlib.contextmanager
     def wait_for_client(self):
@@ -184,11 +187,11 @@ class NESTInterface(object):
         msg = sm.string_message()
         msg.value = selection
 
+        print('Sending get GIDs')
         with self.wait_for_client():
             self.slot_out_get_gids.send(msg.SerializeToString())
-        print('Sent get GIDs')
-        gids = self.observe_slot_gids.get_last_message().value
-        return (gids)
+        #gids = self.observe_slot_gids.get_last_message().value
+        #return (gids)
 
     def connect_all(self):
         """
@@ -230,6 +233,7 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
+        
         msg = fm.float_message()
         msg.value = t
         print('Sending simulate for {} ms'.format(t))
