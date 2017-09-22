@@ -2,18 +2,15 @@
 from __future__ import print_function
 import __builtin__  # for Python 3: builtins as __builtin__
 import time
-import math
 import os
 import sys
 import threading
-# import nest
-# import nest.topology as tp
-import numbers
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
 nett.initialize('tcp://127.0.0.1:2001')
+
 if os.name == 'posix' and sys.version_info[0] < 3:
     # Import a backport of the subprocess module from Python 3 for Python 2
     try:
@@ -107,16 +104,16 @@ class NESTInterface(object):
         self.observe_slot_nconnections.start()
         self.observe_slot_gids.start()
 
-        self.start_nest_client()
-        self.wait_until_client_finishes()
+        self.with_wait_for_client(self.start_nest_client)
         self.reset_kernel()
         self.send_device_projections()
-        self.reset_complete()
-        self.make_network()
-        self.wait_until_client_finishes()
+        self.with_wait_for_client(self.make_network)
 
-        # nest.set_verbosity("M_ERROR")
-        # nest.sr("M_ERROR setverbosity")  # While set_verbosity function is broken.
+
+    def with_wait_for_client(self, method, *args):
+        self.reset_complete_signal()
+        method(*args)
+        self.wait_until_client_finishes()
 
     def start_nest_client(self):
         self.client = sp.Popen(['python', 'nest_client.py'])
@@ -133,7 +130,7 @@ class NESTInterface(object):
         print('Received complete signal')
         self.client_complete = True
 
-    def reset_complete(self):
+    def reset_complete_signal(self):
         self.client_complete = False
 
     def wait_until_client_finishes(self):
@@ -169,7 +166,6 @@ class NESTInterface(object):
         self.slot_out_network.send(msg.SerializeToString())
         print('Sent make network')
 
-
     def printGIDs(self, selection):
         """
         Prints the selected GIDs to terminal.
@@ -196,64 +192,9 @@ class NESTInterface(object):
         # self.connect_to_devices()
         msg = fm.float_message()
         msg.value = 1.
-        self.slot_out_connect.send(msg.SerializeToString())
-        print('Sent connect')
-
-    def connect_internal_projections(self):
-        """
-        Makes connections from specifications of internal projections.
-        """
-        # if self.internal_projections is None:
-        #     return
-
-        print("Connecting internal projections...")
-        for proj in self.internal_projections:
-            pre = proj[0]
-            post = proj[1]
-            conndict = self.floatify_dictionary(proj[2])
-            tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
-            print("Connected {} and {}".format(pre, post))
-
-    def connect_to_devices(self):
-        """
-        Makes connections from selections specified by the user.
-        """
-        if self.device_projections is None:
-            return
-
-        print("Connecting to devices...")
-        params_to_floatify = ['rate', 'amplitude', 'frequency']
-        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator', 'ac_generator']
-
-        for device_name in self.device_projections:
-            model = self.device_projections[device_name]['specs']['model']
-            params = self.device_projections[device_name]['specs']['params']
-            # floatify params
-            for key in params:
-                if key in params_to_floatify:
-                    params[key] = float(params[key])
-            nest_device = nest.Create(model, 1, params)
-
-            # If it is a recording device, add it to the list
-            if 'record_to' in nest.GetStatus(nest_device)[0]:
-                self.rec_devices.append([device_name, nest_device])
-
-            connectees = self.device_projections[device_name]['connectees']
-            for selection in connectees:
-                nest_neurons = self.get_gids(selection)
-                #synapse_model = selection['synModel']
-
-                synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
-                if model == 'ac_generator':
-                    synapse_model = 'static_synapse'
-
-                if model in reverse_connection:
-                    print("Connecting {} to {}".format(model, "neurons"))
-                    nest.Connect(nest_device, nest_neurons, syn_spec=synapse_model)
-                else:
-                    print("Connecting {} to {}".format("neurons", model))
-                    nest.Connect(nest_neurons, nest_device,
-                                 syn_spec=synapse_model)
+        print('Sending connect')
+        self.with_wait_for_client(self.slot_out_connect.send,
+                                  msg.SerializeToString())
 
     def get_connections(self):
         """
@@ -272,10 +213,10 @@ class NESTInterface(object):
         # return nest.GetKernelStatus()['num_connections']
         msg = fm.float_message()
         msg.value = 1.
-        self.reset_complete()
-        self.slot_out_get_nconnections.send(msg.SerializeToString())
-        print('Sent get Nconnections')
-        self.wait_until_client_finishes()
+        print('Sending get Nconnections')
+        self.with_wait_for_client(self.slot_out_get_nconnections.send,
+                                  msg.SerializeToString())
+        #self.wait_until_client_finishes()
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
         print("Nconnections: {}".format(nconnections))
         return nconnections

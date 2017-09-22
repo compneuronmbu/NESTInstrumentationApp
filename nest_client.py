@@ -1,7 +1,7 @@
 from __future__ import print_function
 import __builtin__  # for Python 3: builtins as __builtin__
 import json
-import threading
+import gevent
 import numbers
 import math
 import nett_python as nett
@@ -17,7 +17,7 @@ def print(*args, **kwargs):
     return __builtin__.print(*args, **kwargs)
 
 
-class observe_slot(threading.Thread):
+class observe_slot(gevent.Greenlet):
 
     def __init__(self, slot, message_type, callback):
         super(observe_slot, self).__init__()
@@ -42,11 +42,14 @@ class observe_slot(threading.Thread):
                 self.callback(self.msg)
             self.state = not self.state
             self.last_message = self.msg
+            gevent.sleep()  # Yield context to let other greenlets work.
 
 
 class NESTClient(object):
     def __init__(self):
         nett.initialize('tcp://127.0.0.1:8000')
+
+        nest.set_verbosity("M_ERROR")
 
         self.networkSpecs = {}
         self.layers = {}
@@ -105,6 +108,7 @@ class NESTClient(object):
         observe_slot_get_nconnections.start()
         observe_slot_simulate.start()
         self.send_complete_signal()  # let the server know the client is ready
+        gevent.sleep()  # Yield context to let greenlets work.
 
     def handle_reset(self, msg):
         print("Reseting kernel")
@@ -122,11 +126,11 @@ class NESTClient(object):
         #self.make_synapse_models()
         self.make_models()
         self.make_nodes()
-        #self.make_synapse_models()
+        self.make_synapse_models()
         self.send_complete_signal()
 
     def make_models(self):
-        print("MAKE_MODELS")
+        print("Making models...")
 
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
@@ -136,13 +140,10 @@ class NESTClient(object):
             nest.CopyModel(old_mod, new_mod)
 
     def make_synapse_models(self):
-        print("MAKE_SYNAPSE_MODELS")
+        print("Making synapse models")
 
         synapses = self.networkSpecs['syn_models']
-        print(synapses)
-
         for syn_name, model_name, syn_specs in synapses:
-            print(syn_name, model_name, syn_specs)
             nest.CopyModel(syn_name, model_name, syn_specs)
             #nest.CopyModel('static_synapse', model_name, syn_specs)
 

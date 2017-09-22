@@ -10,11 +10,8 @@ projections_json = json.dumps(projections)
 
 ni = nu.NESTInterface(nett_spec_json, device_projections=projections_json)
 
-ni.reset_complete()
 ni.connect_all()
-ni.wait_until_client_finishes()
-
 num_connections = ni.get_num_connections()
 
 ni.terminate_nest_client()
-print('** end of test **')
+print('** end of script **')
