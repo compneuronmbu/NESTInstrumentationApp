@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import threading
+import contextlib
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
@@ -100,15 +101,17 @@ class NESTInterface(object):
         self.observe_slot_nconnections.start()
         self.observe_slot_device_results.start()
 
-        self.with_wait_for_client(self.start_nest_client)
+        with self.wait_for_client():
+            self.start_nest_client()
         self.reset_kernel()
         self.send_device_projections()
-        self.with_wait_for_client(self.make_network)
+        with self.wait_for_client():
+            self.make_network()
 
-
-    def with_wait_for_client(self, method, *args):
+    @contextlib.contextmanager
+    def wait_for_client(self):
         self.reset_complete_signal()
-        method(*args)
+        yield
         self.wait_until_client_finishes()
 
     def start_nest_client(self):
@@ -176,8 +179,8 @@ class NESTInterface(object):
         msg = fm.float_message()
         msg.value = 1.
         print('Sending connect')
-        self.with_wait_for_client(self.slot_out_connect.send,
-                                  msg.SerializeToString())
+        with self.wait_for_client():
+            self.slot_out_connect.send(msg.SerializeToString())
 
     def get_connections(self):
         """
@@ -196,8 +199,8 @@ class NESTInterface(object):
         msg = fm.float_message()
         msg.value = 1.
         print('Sending get Nconnections')
-        self.with_wait_for_client(self.slot_out_get_nconnections.send,
-                                  msg.SerializeToString())
+        with self.wait_for_client():
+            self.slot_out_get_nconnections.send(msg.SerializeToString())
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
         print("Nconnections: {}".format(nconnections))
         return nconnections
@@ -211,8 +214,8 @@ class NESTInterface(object):
         msg = fm.float_message()
         msg.value = t
         print('Sending simulate for {} ms'.format(t))
-        self.with_wait_for_client(self.slot_out_simulate.send,
-                                  msg.SerializeToString())
+        with self.wait_for_client():
+            self.slot_out_simulate.send(msg.SerializeToString())
 
     '''
     def prepare_simulation(self):
