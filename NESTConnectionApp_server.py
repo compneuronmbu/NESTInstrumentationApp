@@ -31,7 +31,21 @@ def index():
     """
     Renders the index page template and sends it to the client.
     """
+    print("REFRESHED PAGE")
     return flask.render_template('NESTConnectionApp.html')
+
+
+@app.route('/makeNetwork', methods=['POST'])
+def make_network():
+    """
+    Receives the network and construct the interface.
+    """
+    print("MAKE NETWORK")
+    data = flask.request.json
+    global interface
+    interface = nu.NESTInterface(json.dumps(data['network']))
+    
+    return flask.Response(status=204)
 
 
 @app.route('/selector', methods=['POST', 'GET'])
@@ -41,7 +55,6 @@ def print_GIDs():
     selected areas to the terminal.
     """
     if flask.request.method == 'POST':
-        global interface
         global busy
 
         if busy:
@@ -49,12 +62,7 @@ def print_GIDs():
             return flask.Response(status=BUSY_ERRORCODE)
         busy = True
 
-        pp = pprint.PrettyPrinter(indent=4)
-        # print(name)
-        # print(selection)
         data = flask.request.json
-        # pp.pprint(data)
-        interface = nu.NESTInterface(json.dumps(data['network']))
         print('Trying to print gids..')
         interface.printGIDs(json.dumps(data['info']))
         # print("GIDs:")
@@ -78,7 +86,6 @@ def connect_ajax():
             print("Cannot connect, NEST is busy!")
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
-        network = json.dumps(data['network'])
         projections = json.dumps(data['projections'])
 
         pp = pprint.PrettyPrinter(indent=4)
@@ -86,8 +93,8 @@ def connect_ajax():
         print('Projections:')
         print(projections)
 
-        interface = nu.NESTInterface(network,
-                                     projections)
+        interface.projections = projections
+
         interface.connect_all()
         return flask.Response(status=204)
 
@@ -117,13 +124,11 @@ def simulate_ajax():
         print("Cannot simulate, NEST is busy!")
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
-    network = json.dumps(data['network'])
     projections = json.dumps(data['projections'])
     t = float(data['time'])
 
     busy = True
-    interface = nu.NESTInterface(network,
-                                 projections)
+    interface.projections = projections
     interface.connect_all()
 
     print("Simulating for ", t, "ms ...")
@@ -148,10 +153,10 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     global busy
     busy = True
 
-    interface = nu.NESTInterface(network,
-                                 synapses,
-                                 internal_projections,
-                                 projections)
+    interface.synapses = synapses
+    interface.internal_projections = internal_projections
+    interface.projections = projections
+
     interface.connect_all()
 
     q = gevent.queue.Queue()
@@ -204,8 +209,8 @@ def streamSimulate():
     network = json.dumps(data['network'])
     synapses = json.dumps(data['synapses'])
     print("synapses: ", synapses)
-    internal_projections = data['internalProjections']
-    projections = data['projections']
+    internal_projections = json.dumps(data['internalProjections'])
+    projections = json.dumps(data['projections'])
     t = data['time']
 
     print("Simulating for ", t, "ms")

@@ -71,10 +71,6 @@ class NESTInterface(object):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
 
-        # Remember to remove when all is moved to nest_client
-        self.layers = {}
-        self.rec_devices = []
-
         #nett.initialize('tcp://127.0.0.1:2001')
 
         self.slot_out_reset = nett.slot_out_float_message('reset')
