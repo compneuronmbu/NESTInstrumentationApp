@@ -55,9 +55,11 @@ class NESTClient(object):
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
+        self.slot_out_gids = nett.slot_out_string_message('GIDs')
 
         self.slot_in_reset = nett.slot_in_float_message()
         self.slot_in_network = nett.slot_in_string_message()
+        self.slot_in_gids = nett.slot_in_string_message()
         self.slot_in_projections = nett.slot_in_string_message()
         self.slot_in_connect = nett.slot_in_float_message()
         self.slot_in_get_n_connections = nett.slot_in_float_message()
@@ -65,6 +67,7 @@ class NESTClient(object):
 
         self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
         self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
+        self.slot_in_gids.connect('tcp://127.0.0.1:2001', 'get_GIDs')
         self.slot_in_projections.connect('tcp://127.0.0.1:2001', 'projections')
         self.slot_in_connect.connect('tcp://127.0.0.1:2001', 'connect')
         self.slot_in_get_n_connections.connect('tcp://127.0.0.1:2001',
@@ -77,6 +80,9 @@ class NESTClient(object):
         observe_slot_network = observe_slot(self.slot_in_network,
                                             sm.string_message(),
                                             self.handle_make_network_specs)
+        observe_slot_gids = observe_slot(self.slot_in_gids,
+                                         sm.string_message(),
+                                         self.handle_get_gids)
         observe_slot_projections = observe_slot(self.slot_in_projections,
                                                 sm.string_message(),
                                                 self.handle_recv_projections)
@@ -93,6 +99,7 @@ class NESTClient(object):
         print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
+        observe_slot_gids.start()
         observe_slot_projections.start()
         observe_slot_connect.start()
         observe_slot_get_nconnections.start()
@@ -112,6 +119,7 @@ class NESTClient(object):
         print("Making network specs")
 
         self.networkSpecs = json.loads(msg.value)
+        #self.make_synapse_models()
         self.make_models()
         self.make_nodes()
         #self.make_synapse_models()
@@ -123,6 +131,7 @@ class NESTClient(object):
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
         models = self.networkSpecs['models']
+        print(models)
         for new_mod, old_mod in models.items():
             nest.CopyModel(old_mod, new_mod)
 
@@ -135,6 +144,7 @@ class NESTClient(object):
         for syn_name, model_name, syn_specs in synapses:
             print(syn_name, model_name, syn_specs)
             nest.CopyModel(syn_name, model_name, syn_specs)
+            #nest.CopyModel('static_synapse', model_name, syn_specs)
 
     def make_nodes(self):
         print("Making nodes...")
@@ -180,15 +190,6 @@ class NESTClient(object):
 
         print("layers: ", self.layers)
 
-    def make_models(self):
-        print("Making models...")
-
-        # NOTE: We currently do not take paramaters from users into account,
-        # like 'tau' etc.
-        models = self.networkSpecs['models']
-        for new_mod, old_mod in models.items():
-            nest.CopyModel(old_mod, new_mod)
-
     def handle_simulate(self, msg):
         print("HANDLE SIMULATION")
         
@@ -223,7 +224,7 @@ class NESTClient(object):
 
     def handle_recv_projections(self, msg):
         self.device_projections = json.loads(msg.value)
-        # print(self.device_projections)
+        print(self.device_projections)
 
     def handle_connect(self, msg):
         self.connect_internal_projections()
@@ -282,9 +283,10 @@ class NESTClient(object):
             connectees = self.device_projections[device_name]['connectees']
             for selection in connectees:
                 nest_neurons = self.get_gids(selection)
-                #synapse_model = selection['synModel']
 
-                synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
+                # NBNBNBNB!!!!!!! Remove once fixed synapse
+                #synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
+                synapse_model = 'static_synapse'
                 if model == 'ac_generator':
                     synapse_model = 'static_synapse'
 
@@ -378,6 +380,19 @@ class NESTClient(object):
 
         return mask
 
+    def handle_get_gids(self, msg):
+        print("Get gids")
+
+        selection_dict = json.loads(msg.value)
+        gid = self.get_gids(selection_dict)
+
+        msg_out = sm.string_message()
+        msg_out.value = json.dumps(gid)
+        print("GID positions:")
+        print(tp.GetPosition(gid))
+        self.slot_out_gids.send(msg_out.SerializeToString())
+        self.send_complete_signal()
+
     def get_gids(self, selection_dict):
         """
         Gets a list of the selected GIDs.
@@ -448,6 +463,47 @@ class NESTClient(object):
                         collected_gids += sorted_gids[start_idx:end_idx]
 
         return collected_gids
+
+    def getIndicesOfNeuronType(self, neuron_type, models, numberOfPositions):
+        """
+        Given a neuron type and number of selected neuron positions, finds the
+        start and end indices in the list of selected neurons.
+
+        :param neuron_type: type of neurons to find
+        :param models: list of neuron models, on the form
+            ``['L23pyr', 2, 'L23in', 1]`` or ``['Relay', 'Inter']``
+        :param numberOfPositions: number of selected neuron positions
+        """
+        # models can for instance be of the form
+        # ['L23pyr', 2, 'L23in', 1, 'L4pyr', 2, 'L4in', 1, 'L56pyr', 2, 'L56in', 1] or
+        # ['Relay', 'Inter']
+
+        # We count number of elements. So Relay will set counter to 1, while L23pyr will set counter to 2.
+        counter = 0
+        list_counter = 0
+        start_index = 0
+        end_index = 0
+        for mod in models:
+            # If mod is a string, we add the element, unless we have hit apon the neuron type, in which we need to
+            # find the indices.
+            if isinstance(mod, str):
+                if mod == neuron_type:
+                    start_index = counter * numberOfPositions
+
+                    if list_counter + 1 == len(models) or isinstance(models[list_counter + 1], str):
+                        end_index = ( counter + 1 ) * numberOfPositions
+                    else:
+                        end_index = ( counter + models[ list_counter + 1 ] ) * numberOfPositions
+                    break
+                # Adding element
+                counter += 1
+            else:
+                # If mod is not a string, we have a number telling us how many elements of the last type
+                # there is, so we add the number and subtract the element count from above.
+                counter += mod - 1
+            list_counter += 1
+
+        return int(start_index), int(end_index)
 
 
 if __name__ == '__main__':

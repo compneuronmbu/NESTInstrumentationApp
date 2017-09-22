@@ -55,9 +55,9 @@ def print_GIDs():
         data = flask.request.json
         # pp.pprint(data)
         interface = nu.NESTInterface(json.dumps(data['network']))
-        gids, positions = interface.printGIDs(data['info'])
+        gids = interface.printGIDs(json.dumps(data['info']))
+        print("GIDs:")
         print(gids)
-        pp.pprint(positions)
         busy = False
 
         return flask.Response(status=204)
