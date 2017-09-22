@@ -213,8 +213,9 @@ class NESTInterface(object):
 
         msg = fm.float_message()
         msg.value = t
-        self.slot_out_reset.send(msg.SerializeToString())
-        print('Sent simulate')
+        print('Sending simulate for {} ms'.format(t))
+        self.with_wait_for_client(self.slot_out_simulate.send,
+                                  msg.SerializeToString())
 
     '''
     def prepare_simulation(self):

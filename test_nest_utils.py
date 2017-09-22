@@ -13,5 +13,7 @@ ni = nu.NESTInterface(nett_spec_json, device_projections=projections_json)
 ni.connect_all()
 num_connections = ni.get_num_connections()
 
+ni.simulate(10000)
+
 ni.terminate_nest_client()
 print('** end of script **')

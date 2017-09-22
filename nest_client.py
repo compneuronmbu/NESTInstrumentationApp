@@ -182,12 +182,13 @@ class NESTClient(object):
         print("layers: ", self.layers)
 
     def handle_simulate(self, msg):
-        print("HANDLE SIMULATION")
-        
+
         t = msg.value
+        print("Simulating for {} ms".format(t))
         self.prepare_simulation()
         self.run(t)
         self.cleanup_simulation()
+        self.send_complete_signal()
 
     def prepare_simulation(self):
         """
@@ -202,7 +203,7 @@ class NESTClient(object):
 
         :param t: time to simulate
         """
-        # nest.SetKernelStatus({'print_time': True})
+        nest.SetKernelStatus({'print_time': True})
 
         nest.Run(t)
 
