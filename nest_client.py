@@ -58,6 +58,8 @@ class NESTClient(object):
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
+        self.slot_out_device_results = (
+            nett.slot_out_string_message('device_results'))
 
         self.slot_in_reset = nett.slot_in_float_message()
         self.slot_in_network = nett.slot_in_string_message()
@@ -188,6 +190,7 @@ class NESTClient(object):
         self.prepare_simulation()
         self.run(t)
         self.cleanup_simulation()
+        self.send_device_results()
         self.send_complete_signal()
 
     def prepare_simulation(self):
@@ -213,6 +216,12 @@ class NESTClient(object):
         """
         print("Cleaning up after simulation")
         nest.Cleanup()
+
+    def send_device_results(self):
+        msg = sm.string_message()
+        msg.value = json.dumps(self.get_device_results())
+        print(msg.value)
+        self.slot_out_device_results.send(msg.SerializeToString())
 
     def handle_recv_projections(self, msg):
         self.device_projections = json.loads(msg.value)
@@ -441,6 +450,66 @@ class NESTClient(object):
                         collected_gids += sorted_gids[start_idx:end_idx]
 
         return collected_gids
+
+    def get_device_results(self):
+        """
+        Gets results from devices.
+
+        :returns: if there are new results from the devices, returns a
+            dictionary with these, else returns `None`
+        """
+
+        results = {}
+        # TODO: Set up on the fly
+        recording_events = {'spike_det': {'senders': [], 'times': []},
+                            'rec_dev': {'times': [], 'V_m': []}}
+
+        time_array = []
+        vm_array = []
+
+        for device_name, device_gid in self.rec_devices:
+            status = nest.GetStatus(device_gid)[0]
+            if status['n_events'] > 0:
+                events = {}
+                device_events = status['events']
+
+                # TODO numpy i json?
+                if 'voltmeter' in device_name:
+                    for e in range(status['n_events']):
+                        events[str(device_events['senders'][e])] = [
+                            device_events['times'][e],
+                            round(device_events['V_m'][e])]
+                else:
+                    for e in range(status['n_events']):
+                        events[str(device_events['senders'][e])] = [
+                            device_events['times'][e]]
+                results[device_name] = events
+
+                # For plotting: (All should just be one dictionary eventually...)
+                if 'spike_detector' in device_name:
+                    recording_events['spike_det']['senders'] += (
+                        [float(y) for y in device_events['senders']])
+                    recording_events['spike_det']['times'] += (
+                        [float(x) for x in device_events['times']])
+                else:
+                    vm_count = -1
+                    for count, t in enumerate(device_events['times']):
+                        if t not in time_array:
+                            time_array.append(t)
+                            vm_array.append([])
+                            vm_count += 1
+                        vm_array[vm_count].append(device_events['V_m'][count])
+                    recording_events['rec_dev']['times'] += time_array
+                    recording_events['rec_dev']['V_m'] += vm_array
+
+                nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+
+        if results:
+            recording_events['time'] = nest.GetKernelStatus('time')
+            return {"stream_results": results,
+                    "plot_results": recording_events}
+        else:
+            return None
 
 
 if __name__ == '__main__':
