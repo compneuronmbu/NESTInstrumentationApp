@@ -60,6 +60,8 @@ def print_GIDs():
         print(gids)
         busy = False
 
+        interface.terminate_nest_client()
+
         return flask.Response(status=204)
 
 

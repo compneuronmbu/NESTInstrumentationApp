@@ -13,7 +13,7 @@ import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
-#nett.initialize('tcp://127.0.0.1:2001')
+nett.initialize('tcp://127.0.0.1:2001')
 if os.name == 'posix' and sys.version_info[0] < 3:
     # Import a backport of the subprocess module from Python 3 for Python 2
     try:
@@ -77,7 +77,7 @@ class NESTInterface(object):
         self.layers = {}
         self.rec_devices = []
 
-        nett.initialize('tcp://127.0.0.1:2001')
+        #nett.initialize('tcp://127.0.0.1:2001')
 
         self.slot_out_reset = nett.slot_out_float_message('reset')
         self.slot_out_network = nett.slot_out_string_message('network')
