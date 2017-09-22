@@ -180,12 +180,13 @@ class NESTInterface(object):
             selected areas
         :returns: a list of GIDs
         """
-        self.reset_complete()
+
         msg = sm.string_message()
         msg.value = selection
-        self.slot_out_get_gids.send(msg.SerializeToString())
+
+        with self.wait_for_client():
+            self.slot_out_get_gids.send(msg.SerializeToString())
         print('Sent get GIDs')
-        self.wait_until_client_finishes()
         gids = self.observe_slot_gids.get_last_message().value
         return (gids)
 
@@ -234,33 +235,6 @@ class NESTInterface(object):
         print('Sending simulate for {} ms'.format(t))
         with self.wait_for_client():
             self.slot_out_simulate.send(msg.SerializeToString())
-
-    '''
-    def prepare_simulation(self):
-        """
-        Prepares NEST to run a simulation.
-        """
-        print("Preparing simulation")
-        nest.Prepare()
-
-    def run(self, t):
-        """
-        Runs a simulation for a specified time.
-
-        :param t: time to simulate
-        """
-        # nest.SetKernelStatus({'print_time': True})
-
-        nest.Run(t)
-
-    def cleanup_simulation(self):
-        """
-        Make NEST cleanup after a finished simulation.
-        """
-        print("Cleaning up after simulation")
-        nest.Cleanup()
-    '''
->>>>>>> branch 'separate_nest_with_sockets' of https://github.com/compneuronmbu/NESTConnectionApp.git
 
     def handle_device_results(self, msg):
         print('Received device results:\n' +

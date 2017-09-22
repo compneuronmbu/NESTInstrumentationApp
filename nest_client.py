@@ -125,7 +125,7 @@ class NESTClient(object):
         print("Making network specs")
 
         self.networkSpecs = json.loads(msg.value)
-        #self.make_synapse_models()
+
         self.make_models()
         self.make_nodes()
         self.make_synapse_models()
@@ -295,9 +295,7 @@ class NESTClient(object):
             for selection in connectees:
                 nest_neurons = self.get_gids(selection)
 
-                # NBNBNBNB!!!!!!! Remove once fixed synapse
-                #synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
-                synapse_model = 'static_synapse'
+                synapse_model = selection['synModel'] if not [device_name, nest_device] in self.rec_devices else 'static_synapse'
                 if model == 'ac_generator':
                     synapse_model = 'static_synapse'
 
