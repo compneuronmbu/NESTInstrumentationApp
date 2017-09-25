@@ -41,6 +41,10 @@ def make_network():
     """
     data = flask.request.json
     global interface
+
+    if interface:
+        interface.terminate_nest_client()
+
     interface = nu.NESTInterface(json.dumps(data['network']))
     
     return flask.Response(status=204)
@@ -102,8 +106,6 @@ def get_connections_ajax():
     print("Received ", flask.request.args.get('input'))
     n_connections = interface.get_num_connections()
     return flask.jsonify(connections=n_connections)
-    #    connections=[{'pre': c[0], 'post': c[1]}
-    #                 for c in connections])
 
 
 @app.route('/simulate', methods=['POST'])
@@ -172,7 +174,7 @@ def g_simulate(network, projections, t):
         interface.run(dt)
         # if i % 10 == 0:
         #    continue
-        results = interface.get_device_results()
+        results = json.loads(interface.get_device_results())
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:

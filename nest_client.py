@@ -55,6 +55,12 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_get_nconnections()
         elif msg_type == 'simulate':
             self.client.handle_simulate(msg_data)
+        elif msg_type == 'prepare_simulation':
+            self.client.prepare_simulation()
+        elif msg_type == 'run':
+            self.client.run(msg_data)
+        elif msg_type == 'cleanup_simulation':
+            self.client.cleanup_simulation()
 
     def run(self):
         while True:
@@ -228,7 +234,7 @@ class NESTClient(object):
         self.prepare_simulation()
         self.run(t)
         self.cleanup_simulation()
-        self.send_device_results()
+        #self.send_device_results()
         self.send_complete_signal()
 
     def prepare_simulation(self):
@@ -237,6 +243,7 @@ class NESTClient(object):
         """
         print("Preparing simulation")
         nest.Prepare()
+        self.send_complete_signal()
 
     def run(self, t):
         """
@@ -248,12 +255,16 @@ class NESTClient(object):
 
         nest.Run(t)
 
+        self.send_device_results()
+        self.send_complete_signal()
+
     def cleanup_simulation(self):
         """
         Make NEST cleanup after a finished simulation.
         """
         print("Cleaning up after simulation")
         nest.Cleanup()
+        self.send_complete_signal()
 
     def send_device_results(self):
         msg = sm.string_message()

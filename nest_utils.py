@@ -71,6 +71,8 @@ class NESTInterface(object):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
 
+        self.device_results = {}
+
         #nett.initialize('tcp://127.0.0.1:2001')
 
         self.slot_out_data = nett.slot_out_string_message('data')
@@ -226,6 +228,22 @@ class NESTInterface(object):
         with self.wait_for_client():
             self.send_to_client('simulate', str(t))
 
+    def prepare_simulation(self):
+        with self.wait_for_client():
+            self.send_to_client('prepare_simulation')
+
+    def run(self, t):
+        with self.wait_for_client():
+            self.send_to_client('run', str(t))
+
+    def cleanup_simulation(self):
+        with self.wait_for_client():
+            self.send_to_client('cleanup_simulation')
+
     def handle_device_results(self, msg):
         print('Received device results:\n' +
               '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+        self.device_results = msg.value
+
+    def get_device_results(self):
+        return self.device_results
