@@ -69,9 +69,11 @@ class NESTInterface(object):
     """
 
     def __init__(self, networkSpecs,
-                 device_projections='[]'):
+                 device_projections='[]',
+                 silent=False):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
+        self.silent = silent
 
         #nett.initialize('tcp://127.0.0.1:2001')
 
@@ -118,11 +120,16 @@ class NESTInterface(object):
 
         with self.wait_for_client():
             self.start_nest_client()
-        self.reset_kernel()
-        self.send_device_projections()
+        with self.wait_for_client():
+            self.reset_kernel()
+        if self.device_projections != '[]':
+            self.send_device_projections()
         with self.wait_for_client():
             self.make_network()
 
+    def print(self, *args, **kwargs):
+        if not self.silent:
+            print(*args, **kwargs)
 
     @contextlib.contextmanager
     def wait_for_client(self):
@@ -131,22 +138,26 @@ class NESTInterface(object):
         self.wait_until_client_finishes()
 
     def start_nest_client(self):
-        self.client = sp.Popen(['python', 'nest_client.py'])
-        print('NEST client started')
+        cmd = ['python', 'nest_client.py']
+        if self.silent:
+            self.client = sp.Popen(cmd + ['-s'], stdout=sp.PIPE)
+        else:
+            self.client = sp.Popen(cmd)
+        self.print('NEST client started')
 
     def terminate_nest_client(self):
         self.client.terminate()
-        print('NEST client terminated')
+        self.print('NEST client terminated')
 
     def handle_complete(self, msg):
-        print('Received complete signal')
+        self.print('Received complete signal')
         self.event.set()
 
     def reset_complete_signal(self):
         self.event.clear()
 
     def wait_until_client_finishes(self):
-        print('Waiting for client...')
+        self.print('Waiting for client...')
         self.event.wait()
 
     def send_to_client(self, label, data=''):
@@ -163,12 +174,12 @@ class NESTInterface(object):
         # msg.value = 1.
         # self.slot_out_reset.send(msg.SerializeToString())
         self.send_to_client('reset')
-        print('Sent reset')
+        self.print('Sent reset')
 
     def send_device_projections(self):
-        print("device_projections")
+        self.print("device_projections")
         self.send_to_client('projections', self.device_projections)
-        print('Sent projections')
+        self.print('Sent projections')
 
     def make_network(self):
         """
@@ -178,7 +189,7 @@ class NESTInterface(object):
         # msg = sm.string_message()
         # msg.value = self.networkSpecs
         # self.slot_out_network.send(msg.SerializeToString())
-        print('Sent make network')
+        self.print('Sent make network')
 
     def printGIDs(self, selection):
         """
@@ -188,7 +199,7 @@ class NESTInterface(object):
             selected areas
         :returns: a list of GIDs
         """
-        print('Sending get GIDs')
+        self.print('Sending get GIDs')
         with self.wait_for_client():
             self.send_to_client('get_gids', selection)
             # self.slot_out_get_gids.send(msg.SerializeToString())
@@ -200,10 +211,10 @@ class NESTInterface(object):
         Connects both projections between layers and projections between layers
         and devices.
         """
-        print('Sending connect')
+        self.print('Sending connect')
         with self.wait_for_client():
             self.send_to_client('connect')
-        print("Connection complete")
+        self.print("Connection complete")
 
     def get_num_connections(self):
         """
@@ -211,11 +222,11 @@ class NESTInterface(object):
 
         :returns: number of connections
         """
-        print('Sending get Nconnections')
+        self.print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
-        print("Nconnections: {}".format(nconnections))
+        self.print("Nconnections: {}".format(nconnections))
         return nconnections
 
     def simulate(self, t):
@@ -224,10 +235,10 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
-        print('Sending simulate for {} ms'.format(t))
+        self.print('Sending simulate for {} ms'.format(t))
         with self.wait_for_client():
             self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
-        print('Received device results:\n' +
+        self.print('Received device results:\n' +
               '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))

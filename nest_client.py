@@ -1,5 +1,6 @@
 from __future__ import print_function
 import __builtin__  # for Python 3: builtins as __builtin__
+import sys
 import json
 import gevent
 import numbers
@@ -69,15 +70,17 @@ class observe_slot(gevent.Greenlet):
 
 
 class NESTClient(object):
-    def __init__(self):
+    def __init__(self, silent):
         nett.initialize('tcp://127.0.0.1:8000')
-
         nest.set_verbosity("M_ERROR")
+        self.silent = silent
 
         self.networkSpecs = {}
         self.layers = {}
         self.rec_devices = []
+        self.device_projections = None
 
+        self.print('Setting up slot messages..')
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
@@ -86,11 +89,13 @@ class NESTClient(object):
             nett.slot_out_string_message('device_results'))
 
         self.slot_in_data = nett.slot_in_string_message()
+        self.print('Connecting to data input stream..')
         self.slot_in_data.connect('tcp://127.0.0.1:2001', 'data')
+        self.print('Initializing observe slot..')
         observe_slot_data = observe_slot(self.slot_in_data,
                                          sm.string_message(),
                                          self)
-        print('Client starting to observe')
+        self.print('Starting observe slot..')
         observe_slot_data.start()
         """
         self.slot_in_reset = nett.slot_in_float_message()
@@ -143,18 +148,23 @@ class NESTClient(object):
         self.send_complete_signal()  # let the server know the client is ready
         gevent.sleep()  # Yield context to let greenlets work.
 
+    def print(self, *args, **kwargs):
+        if not self.silent:
+            print(*args, **kwargs)
+
     def handle_reset(self):
-        print("Reseting kernel")
+        self.print("Reseting kernel")
         nest.ResetKernel()
+        self.send_complete_signal()
 
     def send_complete_signal(self):
-        print('Sending complete signal')
+        self.print('Sending complete signal')
         msg = fm.float_message()
         msg.value = 1.
         self.slot_out_complete.send(msg.SerializeToString())
 
     def handle_make_network_specs(self, networkSpecs):
-        print("Making network specs")
+        self.print("Making network specs")
 
         self.networkSpecs = json.loads(networkSpecs)
 
@@ -164,17 +174,17 @@ class NESTClient(object):
         self.send_complete_signal()
 
     def make_models(self):
-        print("Making models...")
+        self.print("Making models...")
 
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
         models = self.networkSpecs['models']
-        print(models)
+        self.print(models)
         for new_mod, old_mod in models.items():
             nest.CopyModel(old_mod, new_mod)
 
     def make_synapse_models(self):
-        print("Making synapse models")
+        self.print("Making synapse models")
 
         synapses = self.networkSpecs['syn_models']
         for syn_name, model_name, syn_specs in synapses:
@@ -182,7 +192,7 @@ class NESTClient(object):
             #nest.CopyModel('static_synapse', model_name, syn_specs)
 
     def make_nodes(self):
-        print("Making nodes...")
+        self.print("Making nodes...")
 
         # NOTE: We currently do not take paramaters from users into account,
         # like 'tau' etc.
@@ -224,7 +234,7 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
     def handle_simulate(self, t):
-        print("Simulating for {} ms".format(t))
+        self.print("Simulating for {} ms".format(t))
         self.prepare_simulation()
         self.run(t)
         self.cleanup_simulation()
@@ -235,7 +245,7 @@ class NESTClient(object):
         """
         Prepares NEST to run a simulation.
         """
-        print("Preparing simulation")
+        self.print("Preparing simulation")
         nest.Prepare()
 
     def run(self, t):
@@ -252,7 +262,7 @@ class NESTClient(object):
         """
         Make NEST cleanup after a finished simulation.
         """
-        print("Cleaning up after simulation")
+        self.print("Cleaning up after simulation")
         nest.Cleanup()
 
     def send_device_results(self):
@@ -264,20 +274,20 @@ class NESTClient(object):
         self.device_projections = json.loads(projections)
 
     def handle_connect(self):
-        print('Received connect signal')
+        self.print('Received connect signal')
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()
 
     def connect_internal_projections(self):
-        print("Connecting internal projections...")
+        self.print("Connecting internal projections...")
         internal_projections = self.networkSpecs['projections']
         for proj in internal_projections:
             pre = proj[0]
             post = proj[1]
             conndict = self.floatify_dictionary(proj[2])
             tp.ConnectLayers(self.layers[pre], self.layers[post], conndict)
-            print("Connected {} and {}".format(pre, post))
+            self.print("Connected {} and {}".format(pre, post))
 
     def floatify_dictionary(self, dict_to_floatify):
         """
@@ -301,7 +311,7 @@ class NESTClient(object):
         if self.device_projections is None:
             return
 
-        print("Connecting to devices...")
+        self.print("Connecting to devices...")
         params_to_floatify = ['rate', 'amplitude', 'frequency']
         reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator', 'ac_generator']
 
@@ -327,10 +337,10 @@ class NESTClient(object):
                     synapse_model = 'static_synapse'
 
                 if model in reverse_connection:
-                    print("Connecting {} to {}".format(model, "neurons"))
+                    self.print("Connecting {} to {}".format(model, "neurons"))
                     nest.Connect(nest_device, nest_neurons, syn_spec=synapse_model)
                 else:
-                    print("Connecting {} to {}".format("neurons", model))
+                    self.print("Connecting {} to {}".format("neurons", model))
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
 
@@ -338,7 +348,7 @@ class NESTClient(object):
         msg = fm.float_message()
         msg.value = nest.GetKernelStatus()['num_connections']
         self.slot_out_nconnections.send(msg.SerializeToString())
-        print('Sent Nconnections: {}'.format(msg.value))
+        self.print('Sent Nconnections: {}'.format(msg.value))
         self.send_complete_signal()
 
     def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
@@ -417,14 +427,14 @@ class NESTClient(object):
         return mask
 
     def handle_get_gids(self, selection):
-        print("Get gids")
+        self.print("Get gids")
 
         selection_dict = json.loads(selection)
         gid = self.get_gids(selection_dict)
 
-        print("GID positions:")
-        print(tp.GetPosition(gid))
-        print(gid)
+        self.print("GID positions:")
+        self.print(tp.GetPosition(gid))
+        self.print(gid)
         self.send_complete_signal()
 
     def get_gids(self, selection_dict):
@@ -600,4 +610,5 @@ class NESTClient(object):
 
 
 if __name__ == '__main__':
-    client = NESTClient()
+    silent = sys.argv[1] == '-s' if len(sys.argv) > 1 else False
+    client = NESTClient(silent)
