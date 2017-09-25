@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import threading
+import atexit
 import contextlib
 import nett_python as nett
 import float_message_pb2 as fm
@@ -39,6 +40,7 @@ class observe_slot(threading.Thread):
         self.state = False
         self.last_message = None
         self.callback = callback
+        self.daemon = True
 
     def get_last_message(self):
         return self.last_message
@@ -75,6 +77,8 @@ class NESTInterface(object):
 
         #nett.initialize('tcp://127.0.0.1:2001')
 
+        atexit.register(self.terminate_nest_client)
+
         self.slot_out_data = nett.slot_out_string_message('data')
         """
         self.slot_out_reset = nett.slot_out_float_message('reset')
@@ -86,7 +90,6 @@ class NESTInterface(object):
         self.slot_out_simulate = nett.slot_out_float_message('simulate')
         """
 
-        self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
         self.slot_in_nconnections = nett.slot_in_float_message()
         # self.slot_in_gids = nett.slot_in_string_message()
@@ -113,6 +116,7 @@ class NESTInterface(object):
         # self.observe_slot_gids.start()
         self.observe_slot_device_results.start()
 
+        self.event = threading.Event()
 
         with self.wait_for_client():
             self.start_nest_client()
@@ -138,16 +142,14 @@ class NESTInterface(object):
 
     def handle_complete(self, msg):
         print('Received complete signal')
-        self.client_complete = True
+        self.event.set()
 
     def reset_complete_signal(self):
-        self.client_complete = False
+        self.event.clear()
 
     def wait_until_client_finishes(self):
         print('Waiting for client...')
-        while not self.client_complete:
-            # print('Waiting for client...')
-            time.sleep(0.2)
+        self.event.wait()
 
     def send_to_client(self, label, data=''):
         # TODO: check that label and data are strings
