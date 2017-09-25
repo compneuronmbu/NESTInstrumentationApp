@@ -62,9 +62,10 @@ def print_GIDs():
         busy = True
 
         data = flask.request.json
-        gids = interface.printGIDs(json.dumps(data['info']))
-        print("GIDs:")
-        print(gids)
+        print('Trying to print gids..')
+        interface.printGIDs(json.dumps(data['info']))
+        # print("GIDs:")
+        # print(gids)
         busy = False
 
         interface.terminate_nest_client()
@@ -84,19 +85,13 @@ def connect_ajax():
             print("Cannot connect, NEST is busy!")
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
-        synapses = json.dumps(data['synapses'])
-        internal_projections = json.dumps(data['internalProjections'])
         projections = json.dumps(data['projections'])
 
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(network)
-        pp.pprint(synapses)
-        pp.pprint(internal_projections)
         print('Projections:')
         print(projections)
 
-        interface.synapses = synapses
-        interface.internal_projections = internal_projections
         interface.projections = projections
 
         interface.connect_all()
@@ -128,14 +123,10 @@ def simulate_ajax():
         print("Cannot simulate, NEST is busy!")
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
-    synapses = json.dumps(data['synapses'])
-    internal_projections = json.dumps(data['internalProjections'])
     projections = json.dumps(data['projections'])
-    t = data['time']
+    t = float(data['time'])
 
     busy = True
-    interface.synapses = synapses
-    interface.internal_projections = internal_projections
     interface.projections = projections
     interface.connect_all()
 

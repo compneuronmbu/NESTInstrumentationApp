@@ -19,14 +19,16 @@ def print(*args, **kwargs):
 
 class observe_slot(gevent.Greenlet):
 
-    def __init__(self, slot, message_type, callback):
+    def __init__(self, slot, message_type, client):
         super(observe_slot, self).__init__()
         self.slot = slot
         self.msg = message_type
         self.last_message = None
         self.state = False
         self.last_message = None
-        self.callback = callback
+        self.client = client
+        # self.callback = callback
+        # print('Started {}'.format(callback))
 
     def get_last_message(self):
         return self.last_message
@@ -34,15 +36,30 @@ class observe_slot(gevent.Greenlet):
     def set_state(self, state):
         self.state = state
 
+    def handle_message(self):
+        msg_type = self.msg.value.split()[0]
+        msg_data = " ".join(self.msg.value.split()[1:])
+        print(msg_type)
+        print(msg_data)
+        if msg_type == 'reset':
+            self.client.handle_reset()
+        elif msg_type == 'projections':
+            self.client.handle_recv_projections(msg_data)
+        elif msg_type == 'make_network':
+            self.client.handle_make_network_specs(msg_data)
+        elif msg_type == 'get_gids':
+            self.client.handle_get_gids(msg_data)
+
     def run(self):
         while True:
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
                 self.last_message = self.msg.value
-                self.callback(self.msg)
+                # self.callback(self.msg)
+                self.handle_message()
             self.state = not self.state
             self.last_message = self.msg
-            gevent.sleep()  # Yield context to let other greenlets work.
+            #gevent.sleep()  # Yield context to let other greenlets work.
 
 
 class NESTClient(object):
@@ -58,10 +75,18 @@ class NESTClient(object):
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
-        self.slot_out_gids = nett.slot_out_string_message('GIDs')
+        # self.slot_out_gids = nett.slot_out_string_message('GIDs')
         self.slot_out_device_results = (
             nett.slot_out_string_message('device_results'))
 
+        self.slot_in_data = nett.slot_in_string_message()
+        self.slot_in_data.connect('tcp://127.0.0.1:2001', 'data')
+        observe_slot_data = observe_slot(self.slot_in_data,
+                                         sm.string_message(),
+                                         self)
+        print('Client starting to observe')
+        observe_slot_data.start()
+        """
         self.slot_in_reset = nett.slot_in_float_message()
         self.slot_in_network = nett.slot_in_string_message()
         self.slot_in_gids = nett.slot_in_string_message()
@@ -101,30 +126,31 @@ class NESTClient(object):
         observe_slot_simulate = observe_slot(self.slot_in_simulate,
                                              fm.float_message(),
                                              self.handle_simulate)
-        print('Client starting to observe')
         observe_slot_reset.start()
         observe_slot_network.start()
-        observe_slot_gids.start()
         observe_slot_projections.start()
         observe_slot_connect.start()
-        observe_slot_get_nconnections.start()
         observe_slot_simulate.start()
+        # observe_slot_get_nconnections.start()
+        # observe_slot_gids.start()
+        """
         self.send_complete_signal()  # let the server know the client is ready
         gevent.sleep()  # Yield context to let greenlets work.
 
-    def handle_reset(self, msg):
+    def handle_reset(self):
         print("Reseting kernel")
         nest.ResetKernel()
 
     def send_complete_signal(self):
+        print('Sending complete signal')
         msg = fm.float_message()
         msg.value = 1.
         self.slot_out_complete.send(msg.SerializeToString())
 
-    def handle_make_network_specs(self, msg):
+    def handle_make_network_specs(self, networkSpecs):
         print("Making network specs")
 
-        self.networkSpecs = json.loads(msg.value)
+        self.networkSpecs = json.loads(networkSpecs)
 
         self.make_models()
         self.make_nodes()
@@ -233,11 +259,12 @@ class NESTClient(object):
         print(msg.value)
         self.slot_out_device_results.send(msg.SerializeToString())
 
-    def handle_recv_projections(self, msg):
-        self.device_projections = json.loads(msg.value)
+    def handle_recv_projections(self, projections):
+        self.device_projections = json.loads(projections)
         print(self.device_projections)
 
     def handle_connect(self, msg):
+        print('Received connect signal')
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()
@@ -389,17 +416,18 @@ class NESTClient(object):
 
         return mask
 
-    def handle_get_gids(self, msg):
+    def handle_get_gids(self, selection):
         print("Get gids")
 
-        selection_dict = json.loads(msg.value)
+        selection_dict = json.loads(selection)
         gid = self.get_gids(selection_dict)
 
-        msg_out = sm.string_message()
-        msg_out.value = json.dumps(gid)
+        # msg_out = sm.string_message()
+        # msg_out.value = json.dumps(gid)
         print("GID positions:")
         print(tp.GetPosition(gid))
-        self.slot_out_gids.send(msg_out.SerializeToString())
+        print(gid)
+        # self.slot_out_gids.send(msg_out.SerializeToString())
         self.send_complete_signal()
 
     def get_gids(self, selection_dict):
