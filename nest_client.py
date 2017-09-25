@@ -39,8 +39,8 @@ class observe_slot(gevent.Greenlet):
     def handle_message(self):
         msg_type = self.msg.value.split()[0]
         msg_data = " ".join(self.msg.value.split()[1:])
-        print(msg_type)
-        print(msg_data)
+        print("MESSAGE TYPE", msg_type)
+        #print(msg_data)
         if msg_type == 'reset':
             self.client.handle_reset()
         elif msg_type == 'projections':
@@ -49,6 +49,10 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_make_network_specs(msg_data)
         elif msg_type == 'get_gids':
             self.client.handle_get_gids(msg_data)
+        elif msg_type == 'connect':
+            self.client.handle_connect()
+        elif msg_type == 'get_nconnections':
+            self.client.handle_get_nconnections()
 
     def run(self):
         while True:
@@ -217,8 +221,6 @@ class NESTClient(object):
                      'elements': elem})
                 self.layers[layer['name']] = nest_layer
 
-        print("layers: ", self.layers)
-
     def handle_simulate(self, msg):
 
         t = msg.value
@@ -256,14 +258,12 @@ class NESTClient(object):
     def send_device_results(self):
         msg = sm.string_message()
         msg.value = json.dumps(self.get_device_results())
-        print(msg.value)
         self.slot_out_device_results.send(msg.SerializeToString())
 
     def handle_recv_projections(self, projections):
         self.device_projections = json.loads(projections)
-        print(self.device_projections)
 
-    def handle_connect(self, msg):
+    def handle_connect(self):
         print('Received connect signal')
         self.connect_internal_projections()
         self.connect_to_devices()
@@ -334,7 +334,7 @@ class NESTClient(object):
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
 
-    def handle_get_nconnections(self, in_msg):
+    def handle_get_nconnections(self):
         msg = fm.float_message()
         msg.value = nest.GetKernelStatus()['num_connections']
         self.slot_out_nconnections.send(msg.SerializeToString())
@@ -422,12 +422,9 @@ class NESTClient(object):
         selection_dict = json.loads(selection)
         gid = self.get_gids(selection_dict)
 
-        # msg_out = sm.string_message()
-        # msg_out.value = json.dumps(gid)
         print("GID positions:")
         print(tp.GetPosition(gid))
         print(gid)
-        # self.slot_out_gids.send(msg_out.SerializeToString())
         self.send_complete_signal()
 
     def get_gids(self, selection_dict):
@@ -463,7 +460,6 @@ class NESTClient(object):
         # TODO: Think we might be able to use only one of these for-loops, the last one. And then check if layer['name'] is in layer_names
         # In case of a 3D layer, we have to go through all the layer names in the selection_dict, because we only have one dict
         # for the selection, but the area might encompass several layers.
-        print(self.layers)
         for name in layer_names:
             gids = tp.SelectNodesByMask(self.layers[name],
                                         cntr, mask)

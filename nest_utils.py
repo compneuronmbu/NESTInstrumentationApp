@@ -165,7 +165,6 @@ class NESTInterface(object):
 
     def send_device_projections(self):
         print("device_projections")
-        print(self.device_projections)
         self.send_to_client('projections', self.device_projections)
         print('Sent projections')
 
@@ -199,19 +198,13 @@ class NESTInterface(object):
         Connects both projections between layers and projections between layers
         and devices.
         """
-        msg = fm.float_message()
-        msg.value = 1.
+        #msg = fm.float_message()
+        #msg.value = 1.
         print('Sending connect')
         with self.wait_for_client():
-            self.slot_out_connect.send(msg.SerializeToString())
-
-    def get_connections(self):
-        """
-        Gets all connections from NEST.
-
-        :returns: list of connections
-        """
-        return nest.GetConnections()
+            self.send_to_client('connect')
+        print("Connection complete")
+            #self.slot_out_connect.send(msg.SerializeToString())
 
     def get_num_connections(self):
         """
@@ -219,11 +212,12 @@ class NESTInterface(object):
 
         :returns: number of connections
         """
-        msg = fm.float_message()
-        msg.value = 1.
+        #msg = fm.float_message()
+        #msg.value = 1.
         print('Sending get Nconnections')
         with self.wait_for_client():
-            self.slot_out_get_nconnections.send(msg.SerializeToString())
+            self.send_to_client('get_nconnections')
+            #self.slot_out_get_nconnections.send(msg.SerializeToString())
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
         print("Nconnections: {}".format(nconnections))
         return nconnections
