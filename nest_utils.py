@@ -73,6 +73,8 @@ class NESTInterface(object):
 
         #nett.initialize('tcp://127.0.0.1:2001')
 
+        self.slot_out_data = nett.slot_out_string_message('data')
+        """
         self.slot_out_reset = nett.slot_out_float_message('reset')
         self.slot_out_network = nett.slot_out_string_message('network')
         self.slot_out_get_gids = nett.slot_out_string_message('get_GIDs')
@@ -80,6 +82,7 @@ class NESTInterface(object):
         self.slot_out_connect = nett.slot_out_float_message('connect')
         self.slot_out_get_nconnections = nett.slot_out_float_message('get_nconnections')
         self.slot_out_simulate = nett.slot_out_float_message('simulate')
+        """
 
         self.client_complete = False
         self.slot_in_complete = nett.slot_in_float_message()
@@ -108,10 +111,9 @@ class NESTInterface(object):
         # self.observe_slot_gids.start()
         self.observe_slot_device_results.start()
 
+
         with self.wait_for_client():
             self.start_nest_client()
-        # print('Connecting all in init')
-        # self.connect_all()
         self.reset_kernel()
         self.send_device_projections()
         with self.wait_for_client():
@@ -145,30 +147,36 @@ class NESTInterface(object):
             # print('Waiting for client...')
             time.sleep(0.2)
 
+    def send_to_client(self, label, data=''):
+        # TODO: check that label and data are strings
+        msg = sm.string_message()
+        msg.value = label + ' '*bool(data) + data
+        self.slot_out_data.send(msg.SerializeToString())
+
     def reset_kernel(self):
         """
         Resets the NEST kernel.
         """
-        msg = fm.float_message()
-        msg.value = 1.
-        self.slot_out_reset.send(msg.SerializeToString())
+        # msg = fm.float_message()
+        # msg.value = 1.
+        # self.slot_out_reset.send(msg.SerializeToString())
+        self.send_to_client('reset')
         print('Sent reset')
 
     def send_device_projections(self):
-        msg = sm.string_message()
         print("device_projections")
         print(self.device_projections)
-        msg.value = self.device_projections
-        self.slot_out_projections.send(msg.SerializeToString())
+        self.send_to_client('projections', self.device_projections)
         print('Sent projections')
 
     def make_network(self):
         """
         Creates the layers and models of nodes.
         """
-        msg = sm.string_message()
-        msg.value = self.networkSpecs
-        self.slot_out_network.send(msg.SerializeToString())
+        self.send_to_client('make_network', self.networkSpecs)
+        # msg = sm.string_message()
+        # msg.value = self.networkSpecs
+        # self.slot_out_network.send(msg.SerializeToString())
         print('Sent make network')
 
     def printGIDs(self, selection):
@@ -179,13 +187,10 @@ class NESTInterface(object):
             selected areas
         :returns: a list of GIDs
         """
-
-        msg = sm.string_message()
-        msg.value = selection
-
         print('Sending get GIDs')
         with self.wait_for_client():
-            self.slot_out_get_gids.send(msg.SerializeToString())
+            self.send_to_client('get_gids', selection)
+            # self.slot_out_get_gids.send(msg.SerializeToString())
         #gids = self.observe_slot_gids.get_last_message().value
         #return (gids)
 

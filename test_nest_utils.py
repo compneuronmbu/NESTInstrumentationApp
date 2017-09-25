@@ -9,7 +9,12 @@ projections = {'poisson_generator_1': {'specs': {'model': 'poisson_generator', '
                'spike_detector_2': {'specs': {'model': 'spike_detector', 'params': {}}, 'connectees': [{'noOfNeuronTypesInLayer': {'exAndIn': 1}, 'selection': {'ll': {'y': -0.1, 'x': -0.1, 'z': -0.1}, 'ur': {'y': 0.1, 'x': 0.1, 'z': 0.1}}, 'name': ['exAndIn'], 'synModel': 'static_excitatory', 'maskShape': 'box', 'azimuthAngle': 0, 'neuronType': 'All'}]}}
 projections_json = json.dumps(projections)
 
+selection = {"noOfNeuronTypesInLayer": {"Excitatory": 1}, "selection": {"ll": {"y": 0.4313553719421309, "x": -0.5395088164334471, "z": 0}, "ur": {"y": 0.5156593534291923, "x": -0.45801496766262073, "z": 0}}, "name": ["Excitatory"], "synModel": "static_excitatory", "maskShape": "rectangular", "azimuthAngle": 1.5707963267948966, "neuronType": "All"}
+selection_json = json.dumps(selection)
+
 ni = nu.NESTInterface(nett_spec_json, device_projections=projections_json)
+
+ni.printGIDs(selection_json)
 
 ni.connect_all()
 num_connections = ni.get_num_connections()
