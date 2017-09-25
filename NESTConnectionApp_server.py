@@ -31,7 +31,6 @@ def index():
     """
     Renders the index page template and sends it to the client.
     """
-    print("REFRESHED PAGE")
     return flask.render_template('NESTConnectionApp.html')
 
 
