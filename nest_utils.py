@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import threading
+import atexit
 import contextlib
 import nett_python as nett
 import float_message_pb2 as fm
@@ -39,6 +40,7 @@ class observe_slot(threading.Thread):
         self.state = False
         self.last_message = None
         self.callback = callback
+        self.daemon = True
 
     def get_last_message(self):
         return self.last_message
@@ -72,6 +74,8 @@ class NESTInterface(object):
         self.device_projections = device_projections
 
         #nett.initialize('tcp://127.0.0.1:2001')
+
+        atexit.register(self.terminate_nest_client)
 
         self.slot_out_data = nett.slot_out_string_message('data')
         """
