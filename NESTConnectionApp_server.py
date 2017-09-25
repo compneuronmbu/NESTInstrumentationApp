@@ -31,7 +31,6 @@ def index():
     """
     Renders the index page template and sends it to the client.
     """
-    print("REFRESHED PAGE")
     return flask.render_template('NESTConnectionApp.html')
 
 
@@ -40,7 +39,6 @@ def make_network():
     """
     Receives the network and construct the interface.
     """
-    print("MAKE NETWORK")
     data = flask.request.json
     global interface
     interface = nu.NESTInterface(json.dumps(data['network']))
@@ -65,11 +63,7 @@ def print_GIDs():
         data = flask.request.json
         print('Trying to print gids..')
         interface.printGIDs(json.dumps(data['info']))
-        # print("GIDs:")
-        # print(gids)
         busy = False
-
-        interface.terminate_nest_client()
 
         return flask.Response(status=204)
 
@@ -89,11 +83,11 @@ def connect_ajax():
         projections = json.dumps(data['projections'])
 
         pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(network)
         print('Projections:')
         print(projections)
 
-        interface.projections = projections
+        interface.device_projections = projections
+        interface.send_device_projections()
 
         interface.connect_all()
         return flask.Response(status=204)
@@ -128,7 +122,8 @@ def simulate_ajax():
     t = float(data['time'])
 
     busy = True
-    interface.projections = projections
+    interface.device_projections = projections
+    interface.send_device_projections()
     interface.connect_all()
 
     print("Simulating for ", t, "ms ...")
@@ -138,14 +133,12 @@ def simulate_ajax():
     return flask.Response(status=204)
 
 
-def g_simulate(network, synapses, internal_projections, projections, t):
+def g_simulate(network, projections, t):
     """
     Runs a simulation in steps. This way the client can be updated on the
     status of the simulation.
 
     :param network: network specifications
-    :param synapses: synapse specifications
-    :param internal_projections: projections between the layers
     :param projections: projections between layers and devices
     :param t: time to simulate
     """
@@ -153,10 +146,9 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     global busy
     busy = True
 
-    interface.synapses = synapses
-    interface.internal_projections = internal_projections
-    interface.projections = projections
+    interface.device_projections = projections
 
+    interface.send_device_projections()
     interface.connect_all()
 
     q = gevent.queue.Queue()
@@ -207,15 +199,11 @@ def streamSimulate():
 
     data = flask.request.json
     network = json.dumps(data['network'])
-    synapses = json.dumps(data['synapses'])
-    print("synapses: ", synapses)
-    internal_projections = json.dumps(data['internalProjections'])
     projections = json.dumps(data['projections'])
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, synapses, internal_projections,
-                 projections, t)
+    gevent.spawn(g_simulate, network, projections, t)
 
     return flask.Response(status=204)
 
