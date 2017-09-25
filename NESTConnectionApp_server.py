@@ -133,14 +133,12 @@ def simulate_ajax():
     return flask.Response(status=204)
 
 
-def g_simulate(network, synapses, internal_projections, projections, t):
+def g_simulate(network, projections, t):
     """
     Runs a simulation in steps. This way the client can be updated on the
     status of the simulation.
 
     :param network: network specifications
-    :param synapses: synapse specifications
-    :param internal_projections: projections between the layers
     :param projections: projections between layers and devices
     :param t: time to simulate
     """
@@ -148,8 +146,6 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     global busy
     busy = True
 
-    interface.synapses = synapses
-    interface.internal_projections = internal_projections
     interface.device_projections = projections
 
     interface.send_device_projections()
@@ -203,15 +199,11 @@ def streamSimulate():
 
     data = flask.request.json
     network = json.dumps(data['network'])
-    synapses = json.dumps(data['synapses'])
-    print("synapses: ", synapses)
-    internal_projections = json.dumps(data['internalProjections'])
     projections = json.dumps(data['projections'])
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, synapses, internal_projections,
-                 projections, t)
+    gevent.spawn(g_simulate, network, projections, t)
 
     return flask.Response(status=204)
 

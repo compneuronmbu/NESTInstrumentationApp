@@ -198,13 +198,10 @@ class NESTInterface(object):
         Connects both projections between layers and projections between layers
         and devices.
         """
-        #msg = fm.float_message()
-        #msg.value = 1.
         print('Sending connect')
         with self.wait_for_client():
             self.send_to_client('connect')
         print("Connection complete")
-            #self.slot_out_connect.send(msg.SerializeToString())
 
     def get_num_connections(self):
         """
@@ -212,12 +209,9 @@ class NESTInterface(object):
 
         :returns: number of connections
         """
-        #msg = fm.float_message()
-        #msg.value = 1.
         print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
-            #self.slot_out_get_nconnections.send(msg.SerializeToString())
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
         print("Nconnections: {}".format(nconnections))
         return nconnections
@@ -228,12 +222,9 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
-        
-        msg = fm.float_message()
-        msg.value = t
         print('Sending simulate for {} ms'.format(t))
         with self.wait_for_client():
-            self.slot_out_simulate.send(msg.SerializeToString())
+            self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
         print('Received device results:\n' +

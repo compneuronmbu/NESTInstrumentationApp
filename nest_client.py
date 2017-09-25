@@ -53,6 +53,8 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_connect()
         elif msg_type == 'get_nconnections':
             self.client.handle_get_nconnections()
+        elif msg_type == 'simulate':
+            self.client.handle_simulate(msg_data)
 
     def run(self):
         while True:
@@ -221,9 +223,7 @@ class NESTClient(object):
                      'elements': elem})
                 self.layers[layer['name']] = nest_layer
 
-    def handle_simulate(self, msg):
-
-        t = msg.value
+    def handle_simulate(self, t):
         print("Simulating for {} ms".format(t))
         self.prepare_simulation()
         self.run(t)
