@@ -11,6 +11,7 @@ import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
+nett = reload(nett)  # In case nett has been changed by the testsuite.
 nett.initialize('tcp://127.0.0.1:2001')
 
 if os.name == 'posix' and sys.version_info[0] < 3:
@@ -42,6 +43,7 @@ class observe_slot(threading.Thread):
         self.callback = callback
         self.daemon = True
 
+
     def get_last_message(self):
         return self.last_message
 
@@ -52,7 +54,7 @@ class observe_slot(threading.Thread):
         while True:
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
-                self.last_message = self.msg.value
+                self.last_message = self.msg
                 if self.callback is not None:
                     self.callback(self.msg)
             self.state = not self.state
@@ -177,8 +179,8 @@ class NESTInterface(object):
         self.print('Sent reset')
 
     def send_device_projections(self):
-        self.print("device_projections")
-        self.send_to_client('projections', self.device_projections)
+        with self.wait_for_client():
+            self.send_to_client('projections', self.device_projections)
         self.print('Sent projections')
 
     def make_network(self):

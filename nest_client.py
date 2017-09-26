@@ -40,8 +40,6 @@ class observe_slot(gevent.Greenlet):
     def handle_message(self):
         msg_type = self.msg.value.split()[0]
         msg_data = " ".join(self.msg.value.split()[1:])
-        print("MESSAGE TYPE", msg_type)
-        #print(msg_data)
         if msg_type == 'reset':
             self.client.handle_reset()
         elif msg_type == 'projections':
@@ -70,7 +68,10 @@ class observe_slot(gevent.Greenlet):
 
 
 class NESTClient(object):
-    def __init__(self, silent):
+    def __init__(self, silent=False, nett_replacement=None):
+        # if nett_replacement:  # Replace nett, for testing purposes.
+        #     global nett
+        #     nett = nett_replacement
         nett.initialize('tcp://127.0.0.1:8000')
         nest.set_verbosity("M_ERROR")
         self.silent = silent
@@ -79,6 +80,7 @@ class NESTClient(object):
         self.layers = {}
         self.rec_devices = []
         self.device_projections = None
+        self.last_results = None
 
         self.print('Setting up slot messages..')
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
@@ -155,6 +157,7 @@ class NESTClient(object):
     def handle_reset(self):
         self.print("Reseting kernel")
         nest.ResetKernel()
+        self.device_projections = None
         self.send_complete_signal()
 
     def send_complete_signal(self):
@@ -254,7 +257,7 @@ class NESTClient(object):
 
         :param t: time to simulate
         """
-        nest.SetKernelStatus({'print_time': True})
+        nest.SetKernelStatus({'print_time': not self.silent})
 
         nest.Run(t)
 
@@ -272,6 +275,7 @@ class NESTClient(object):
 
     def handle_recv_projections(self, projections):
         self.device_projections = json.loads(projections)
+        self.send_complete_signal()
 
     def handle_connect(self):
         self.print('Received connect signal')
@@ -430,12 +434,13 @@ class NESTClient(object):
         self.print("Get gids")
 
         selection_dict = json.loads(selection)
-        gid = self.get_gids(selection_dict)
+        gids = self.get_gids(selection_dict)
 
         self.print("GID positions:")
-        self.print(tp.GetPosition(gid))
-        self.print(gid)
+        self.print(tp.GetPosition(gids))
+        self.print(gids)
         self.send_complete_signal()
+        return gids
 
     def get_gids(self, selection_dict):
         """
@@ -601,6 +606,7 @@ class NESTClient(object):
 
                 nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
+        self.last_results = results
         if results:
             recording_events['time'] = nest.GetKernelStatus('time')
             return {"stream_results": results,
