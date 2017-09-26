@@ -72,8 +72,7 @@ class NESTInterface(object):
                  device_projections='[]'):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
-
-        self.device_results = {}
+        self.device_results = '{}'
 
         #nett.initialize('tcp://127.0.0.1:2001')
 
@@ -193,9 +192,6 @@ class NESTInterface(object):
         print('Sending get GIDs')
         with self.wait_for_client():
             self.send_to_client('get_gids', selection)
-            # self.slot_out_get_gids.send(msg.SerializeToString())
-        #gids = self.observe_slot_gids.get_last_message().value
-        #return (gids)
 
     def connect_all(self):
         """
@@ -226,21 +222,7 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
-        print('Sending simulate for {} ms'.format(t))
-        with self.wait_for_client():
-            self.send_to_client('simulate', str(t))
-
-    def prepare_simulation(self):
-        with self.wait_for_client():
-            self.send_to_client('prepare_simulation')
-
-    def run(self, t):
-        with self.wait_for_client():
-            self.send_to_client('run', str(t))
-
-    def cleanup_simulation(self):
-        with self.wait_for_client():
-            self.send_to_client('cleanup_simulation')
+        self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
         print('Received device results:\n' +

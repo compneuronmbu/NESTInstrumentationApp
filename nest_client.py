@@ -7,6 +7,7 @@ import math
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
+import time
 import nest
 import nest.topology as tp
 
@@ -25,9 +26,7 @@ class observe_slot(gevent.Greenlet):
         self.msg = message_type
         self.last_message = None
         self.state = False
-        self.last_message = None
         self.client = client
-        # self.callback = callback
         # print('Started {}'.format(callback))
 
     def get_last_message(self):
@@ -55,12 +54,6 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_get_nconnections()
         elif msg_type == 'simulate':
             self.client.handle_simulate(msg_data)
-        elif msg_type == 'prepare_simulation':
-            self.client.prepare_simulation()
-        elif msg_type == 'run':
-            self.client.run(msg_data)
-        elif msg_type == 'cleanup_simulation':
-            self.client.cleanup_simulation()
 
     def run(self):
         while True:
@@ -71,8 +64,7 @@ class observe_slot(gevent.Greenlet):
                 self.handle_message()
             self.state = not self.state
             self.last_message = self.msg
-            #gevent.sleep()  # Yield context to let other greenlets work.
-
+            #gevent.sleep(0.001)  # Yield context to let other greenlets work.
 
 class NESTClient(object):
     def __init__(self):
@@ -83,11 +75,12 @@ class NESTClient(object):
         self.networkSpecs = {}
         self.layers = {}
         self.rec_devices = []
+        self.abort_signal_sent = False
+        self.prepared_simulation = False
 
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
-        # self.slot_out_gids = nett.slot_out_string_message('GIDs')
         self.slot_out_device_results = (
             nett.slot_out_string_message('device_results'))
 
@@ -98,54 +91,7 @@ class NESTClient(object):
                                          self)
         print('Client starting to observe')
         observe_slot_data.start()
-        """
-        self.slot_in_reset = nett.slot_in_float_message()
-        self.slot_in_network = nett.slot_in_string_message()
-        self.slot_in_gids = nett.slot_in_string_message()
-        self.slot_in_projections = nett.slot_in_string_message()
-        self.slot_in_connect = nett.slot_in_float_message()
-        self.slot_in_get_n_connections = nett.slot_in_float_message()
-        self.slot_in_simulate = nett.slot_in_float_message()
 
-        self.slot_in_reset.connect('tcp://127.0.0.1:2001', 'reset')
-        self.slot_in_network.connect('tcp://127.0.0.1:2001', 'network')
-        self.slot_in_gids.connect('tcp://127.0.0.1:2001', 'get_GIDs')
-        self.slot_in_projections.connect('tcp://127.0.0.1:2001', 'projections')
-        self.slot_in_connect.connect('tcp://127.0.0.1:2001', 'connect')
-        self.slot_in_get_n_connections.connect('tcp://127.0.0.1:2001',
-                                               'get_nconnections')
-        self.slot_in_simulate.connect('tcp://127.0.0.1:2001', 'simulate')
-
-        observe_slot_reset = observe_slot(self.slot_in_reset,
-                                          fm.float_message(),
-                                          self.handle_reset)
-        observe_slot_network = observe_slot(self.slot_in_network,
-                                            sm.string_message(),
-                                            self.handle_make_network_specs)
-        observe_slot_gids = observe_slot(self.slot_in_gids,
-                                         sm.string_message(),
-                                         self.handle_get_gids)
-        observe_slot_projections = observe_slot(self.slot_in_projections,
-                                                sm.string_message(),
-                                                self.handle_recv_projections)
-        observe_slot_connect = observe_slot(self.slot_in_connect,
-                                            fm.float_message(),
-                                            self.handle_connect)
-        observe_slot_get_nconnections = observe_slot(
-            self.slot_in_get_n_connections,
-            fm.float_message(),
-            self.handle_get_nconnections)
-        observe_slot_simulate = observe_slot(self.slot_in_simulate,
-                                             fm.float_message(),
-                                             self.handle_simulate)
-        observe_slot_reset.start()
-        observe_slot_network.start()
-        observe_slot_projections.start()
-        observe_slot_connect.start()
-        observe_slot_simulate.start()
-        # observe_slot_get_nconnections.start()
-        # observe_slot_gids.start()
-        """
         self.send_complete_signal()  # let the server know the client is ready
         gevent.sleep()  # Yield context to let greenlets work.
 
@@ -230,12 +176,19 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
     def handle_simulate(self, t):
-        print("Simulating for {} ms".format(t))
-        self.prepare_simulation()
-        self.run(t)
-        self.cleanup_simulation()
-        #self.send_device_results()
-        self.send_complete_signal()
+
+        if not self.prepared_simulation:
+            print("prepare simulation")
+            self.prepare_simulation()
+            self.prepared_simulation = True
+
+        if t == '-1':
+            print("cleanup simulation")
+            self.cleanup_simulation()
+            self.prepared_simulation = False
+        else:
+            self.run(t)
+            self.send_device_results()
 
     def prepare_simulation(self):
         """
@@ -243,7 +196,6 @@ class NESTClient(object):
         """
         print("Preparing simulation")
         nest.Prepare()
-        self.send_complete_signal()
 
     def run(self, t):
         """
@@ -255,16 +207,12 @@ class NESTClient(object):
 
         nest.Run(t)
 
-        self.send_device_results()
-        self.send_complete_signal()
-
     def cleanup_simulation(self):
         """
         Make NEST cleanup after a finished simulation.
         """
         print("Cleaning up after simulation")
         nest.Cleanup()
-        self.send_complete_signal()
 
     def send_device_results(self):
         msg = sm.string_message()
