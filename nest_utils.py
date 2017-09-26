@@ -27,11 +27,23 @@ else:
 
 # redefine print
 def print(*args, **kwargs):
+    """
+    A cosmetic change to the print function to show more clearly what is
+    actually printing when we are running the NESTClient in the same terminal.
+    """
     __builtin__.print('[\033[1m\033[93mserver\033[0m] ', end='')
     return __builtin__.print(*args, **kwargs)
 
 
 class observe_slot(threading.Thread):
+    """
+    A listener for messages from the NESTClient. Each listener spawns its own
+    thread.
+
+    :param slot: The nett type slot to receive from
+    :param message_type: The nett type data-type to receive
+    :param callback: Optional function to call on receiving data
+    """
 
     def __init__(self, slot, message_type, callback=None):
         super(observe_slot, self).__init__()
@@ -45,12 +57,25 @@ class observe_slot(threading.Thread):
 
 
     def get_last_message(self):
+        """
+        Gets the last message received.
+
+        :returns: The last message received
+        """
         return self.last_message
 
     def set_state(self, state):
+        """
+        Sets the state.
+
+        :param state: State to set
+        """
         self.state = state
 
     def run(self):
+        """
+        Runs the thread.
+        """
         while True:
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
@@ -62,7 +87,7 @@ class observe_slot(threading.Thread):
 
 class NESTInterface(object):
     """
-    Class for interacting with NEST.
+    For interacting with the NESTClient.
 
     :param networkSpecs: Dictionary of network specifications, including
                          synapse specifications and projections between layers
@@ -130,16 +155,26 @@ class NESTInterface(object):
             self.make_network()
 
     def print(self, *args, **kwargs):
+        """
+        Wrapper around the print function to handle silent mode.
+        """
         if not self.silent:
             print(*args, **kwargs)
 
     @contextlib.contextmanager
     def wait_for_client(self):
+        """
+        Context manager for waiting for the client.
+        """
         self.reset_complete_signal()
         yield
         self.wait_until_client_finishes()
 
     def start_nest_client(self):
+        """
+        Starting the NEST client in a separate process using the subprocess
+        module.
+        """
         cmd = ['python', 'nest_client.py']
         if self.silent:
             self.client = sp.Popen(cmd + ['-s'], stdout=sp.PIPE)
@@ -148,21 +183,41 @@ class NESTInterface(object):
         self.print('NEST client started')
 
     def terminate_nest_client(self):
+        """
+        Terminates the NEST client subprocess.
+        """
         self.client.terminate()
         self.print('NEST client terminated')
 
     def handle_complete(self, msg):
+        """
+        Handles receiving complete signal from the client.
+
+        :param msg: The nett type message received.
+        """
         self.print('Received complete signal')
         self.event.set()
 
     def reset_complete_signal(self):
+        """
+        Resets the complete signal.
+        """
         self.event.clear()
 
     def wait_until_client_finishes(self):
+        """
+        Blocks until complete signal from the client is received.
+        """
         self.print('Waiting for client...')
         self.event.wait()
 
     def send_to_client(self, label, data=''):
+        """
+        Sends a command or data to the NEST client.
+
+        :param label: Command or label for the data
+        :param data: Data to send
+        """
         # TODO: check that label and data are strings
         msg = sm.string_message()
         msg.value = label + ' '*bool(data) + data
@@ -172,20 +227,21 @@ class NESTInterface(object):
         """
         Resets the NEST kernel.
         """
-        # msg = fm.float_message()
-        # msg.value = 1.
-        # self.slot_out_reset.send(msg.SerializeToString())
         self.send_to_client('reset')
         self.print('Sent reset')
 
     def send_device_projections(self):
+        """
+        Sends projections to the NEST client.
+        """
         with self.wait_for_client():
             self.send_to_client('projections', self.device_projections)
         self.print('Sent projections')
 
     def make_network(self):
         """
-        Creates the layers and models of nodes.
+        Sends the network specifications to the NEST client, which then creates
+        the layers and models of nodes.
         """
         self.send_to_client('make_network', self.networkSpecs)
         # msg = sm.string_message()
@@ -242,5 +298,10 @@ class NESTInterface(object):
             self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
+        """
+        Handles receiving device results.
+
+        :param msg: Nett type message with the device results
+        """
         self.print('Received device results:\n' +
               '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))

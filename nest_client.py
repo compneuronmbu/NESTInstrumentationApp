@@ -14,11 +14,24 @@ import nest.topology as tp
 
 # redefine print
 def print(*args, **kwargs):
+    """
+    A cosmetic change to the print function to show more clearly what is
+    actually printing when we are running the NESTClient in the same terminal.
+    """
     __builtin__.print('[\033[1m\033[96mclient\033[0m] ', end='')
     return __builtin__.print(*args, **kwargs)
 
 
 class observe_slot(gevent.Greenlet):
+    """
+    A listener for messages from the server. Each listener spawns its own
+    Greenlet.
+
+    :param slot: The nett type slot to receive from
+    :param message_type: The nett type data-type to receive
+    :param client: The instance of NESTClient that created the listener. Used
+                   to call callback functions.
+    """
 
     def __init__(self, slot, message_type, client):
         super(observe_slot, self).__init__()
@@ -32,12 +45,26 @@ class observe_slot(gevent.Greenlet):
         # print('Started {}'.format(callback))
 
     def get_last_message(self):
+        """
+        Gets the last message received.
+
+        :returns: The last message received
+        """
         return self.last_message
 
     def set_state(self, state):
+        """
+        Sets the state.
+
+        :param state: State to set
+        """
         self.state = state
 
     def handle_message(self):
+        """
+        Handles the message received and calls the appropriate callback
+        function in the client.
+        """
         msg_type = self.msg.value.split()[0]
         msg_data = " ".join(self.msg.value.split()[1:])
         if msg_type == 'reset':
@@ -56,6 +83,9 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_simulate(msg_data)
 
     def run(self):
+        """
+        Runs the Greenlet.
+        """
         while True:
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
@@ -68,10 +98,11 @@ class observe_slot(gevent.Greenlet):
 
 
 class NESTClient(object):
+    """
+    For running NEST. Controlled by NESTInterface.
+    """
+
     def __init__(self, silent=False, nett_replacement=None):
-        # if nett_replacement:  # Replace nett, for testing purposes.
-        #     global nett
-        #     nett = nett_replacement
         nett.initialize('tcp://127.0.0.1:8000')
         nest.set_verbosity("M_ERROR")
         self.silent = silent
@@ -151,22 +182,37 @@ class NESTClient(object):
         gevent.sleep()  # Yield context to let greenlets work.
 
     def print(self, *args, **kwargs):
+        """
+        Wrapper around the print function to handle silent mode.
+        """
         if not self.silent:
             print(*args, **kwargs)
 
     def handle_reset(self):
+        """
+        Resets the NEST kernel.
+        """
         self.print("Reseting kernel")
         nest.ResetKernel()
         self.device_projections = None
         self.send_complete_signal()
 
     def send_complete_signal(self):
+        """
+        Sends a signal to NESTInterface that the current task is complete.
+        """
         self.print('Sending complete signal')
         msg = fm.float_message()
         msg.value = 1.
         self.slot_out_complete.send(msg.SerializeToString())
 
     def handle_make_network_specs(self, networkSpecs):
+        """
+        Loads the network specifications from JSON format and makes models,
+        nodes, and synapse models.
+
+        :param networkSpecs: Network specifications
+        """
         self.print("Making network specs")
 
         self.networkSpecs = json.loads(networkSpecs)
@@ -177,6 +223,9 @@ class NESTClient(object):
         self.send_complete_signal()
 
     def make_models(self):
+        """
+        Makes neuron models, based on models from network specifications.
+        """
         self.print("Making models...")
 
         # NOTE: We currently do not take paramaters from users into account,
@@ -187,6 +236,9 @@ class NESTClient(object):
             nest.CopyModel(old_mod, new_mod)
 
     def make_synapse_models(self):
+        """
+        Makes synapse models, based on models from network specifications.
+        """
         self.print("Making synapse models")
 
         synapses = self.networkSpecs['syn_models']
@@ -195,6 +247,9 @@ class NESTClient(object):
             #nest.CopyModel('static_synapse', model_name, syn_specs)
 
     def make_nodes(self):
+        """
+        Makes layers and nodes, based on network specifications.
+        """
         self.print("Making nodes...")
 
         # NOTE: We currently do not take paramaters from users into account,
@@ -237,6 +292,11 @@ class NESTClient(object):
                 self.layers[layer['name']] = nest_layer
 
     def handle_simulate(self, t):
+        """
+        Runs a simulation for a specified time.
+
+        :param t: Time to simulate
+        """
         self.print("Simulating for {} ms".format(t))
         self.prepare_simulation()
         self.run(t)
@@ -269,21 +329,36 @@ class NESTClient(object):
         nest.Cleanup()
 
     def send_device_results(self):
+        """
+        Gets results from the devices and sends them to NESTInterface.
+        """
         msg = sm.string_message()
         msg.value = json.dumps(self.get_device_results())
         self.slot_out_device_results.send(msg.SerializeToString())
 
     def handle_recv_projections(self, projections):
+        """
+        Handles receiving projections.
+
+        :param projections: Received projections
+        """
         self.device_projections = json.loads(projections)
         self.send_complete_signal()
 
     def handle_connect(self):
+        """
+        Handles connecting all the network.
+        """
         self.print('Received connect signal')
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()
 
     def connect_internal_projections(self):
+        """
+        Connects all internal projections, as specified in network
+        specifications.
+        """
         self.print("Connecting internal projections...")
         internal_projections = self.networkSpecs['projections']
         for proj in internal_projections:
@@ -349,13 +424,18 @@ class NESTClient(object):
                                  syn_spec=synapse_model)
 
     def handle_get_nconnections(self):
+        """
+        Handles get number of connections. Gets number of connections from
+        NEST, then sends them to NESTInterface.
+        """
         msg = fm.float_message()
         msg.value = nest.GetKernelStatus()['num_connections']
         self.slot_out_nconnections.send(msg.SerializeToString())
         self.print('Sent Nconnections: {}'.format(msg.value))
         self.send_complete_signal()
 
-    def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle, polar_angle, cntr):
+    def make_mask(self, lower_left, upper_right, mask_type, azimuth_angle,
+                  polar_angle, cntr):
         """
         Makes a mask from the specifications.
 
