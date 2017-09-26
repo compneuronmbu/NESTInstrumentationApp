@@ -224,6 +224,14 @@ class NESTClient(object):
 
     def handle_connect(self):
         print('Received connect signal')
+
+        # First need to reset kernel, make nodes, models and synapses
+        self.handle_reset()
+        self.make_models()
+        self.make_nodes()
+        self.make_synapse_models()
+
+        # Then need to connect
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()

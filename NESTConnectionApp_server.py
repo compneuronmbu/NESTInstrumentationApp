@@ -133,6 +133,7 @@ def simulate_ajax():
     print("Simulating for ", t, "ms ...")
     interface.simulate(json.dumps(t))
     interface.simulate(-1)
+    interface.device_results = '{}'
     busy = False
 
     return flask.Response(status=204)
