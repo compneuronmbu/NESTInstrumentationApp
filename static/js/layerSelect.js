@@ -7,6 +7,10 @@ class App  // TODO: rename App -> ???
     {
         this.controls;
 
+        this.renderer;
+        this.scene;
+        this.camera;
+
         this.renderer2;
         this.scene2;
         this.camera2;

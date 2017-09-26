@@ -11,6 +11,7 @@ import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
 
+nett = reload(nett)  # In case nett has been changed by the testsuite.
 nett.initialize('tcp://127.0.0.1:2001')
 
 if os.name == 'posix' and sys.version_info[0] < 3:
@@ -26,11 +27,23 @@ else:
 
 # redefine print
 def print(*args, **kwargs):
+    """
+    A cosmetic change to the print function to show more clearly what is
+    actually printing when we are running the NESTClient in the same terminal.
+    """
     __builtin__.print('[\033[1m\033[93mserver\033[0m] ', end='')
     return __builtin__.print(*args, **kwargs)
 
 
 class observe_slot(threading.Thread):
+    """
+    A listener for messages from the NESTClient. Each listener spawns its own
+    thread.
+
+    :param slot: The nett type slot to receive from
+    :param message_type: The nett type data-type to receive
+    :param callback: Optional function to call on receiving data
+    """
 
     def __init__(self, slot, message_type, callback=None):
         super(observe_slot, self).__init__()
@@ -42,17 +55,31 @@ class observe_slot(threading.Thread):
         self.callback = callback
         self.daemon = True
 
+
     def get_last_message(self):
+        """
+        Gets the last message received.
+
+        :returns: The last message received
+        """
         return self.last_message
 
     def set_state(self, state):
+        """
+        Sets the state.
+
+        :param state: State to set
+        """
         self.state = state
 
     def run(self):
+        """
+        Runs the thread.
+        """
         while True:
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
-                self.last_message = self.msg.value
+                self.last_message = self.msg
                 if self.callback is not None:
                     self.callback(self.msg)
             self.state = not self.state
@@ -60,7 +87,7 @@ class observe_slot(threading.Thread):
 
 class NESTInterface(object):
     """
-    Class for interacting with NEST.
+    For interacting with the NESTClient.
 
     :param networkSpecs: Dictionary of network specifications, including
                          synapse specifications and projections between layers
@@ -69,10 +96,12 @@ class NESTInterface(object):
     """
 
     def __init__(self, networkSpecs,
-                 device_projections='[]'):
+                 device_projections='[]',
+                 silent=False):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
         self.device_results = '{}'
+        self.silent = silent
 
         #nett.initialize('tcp://127.0.0.1:2001')
 
@@ -119,38 +148,77 @@ class NESTInterface(object):
 
         with self.wait_for_client():
             self.start_nest_client()
-        self.reset_kernel()
-        self.send_device_projections()
+        with self.wait_for_client():
+            self.reset_kernel()
+        if self.device_projections != '[]':
+            self.send_device_projections()
         with self.wait_for_client():
             self.make_network()
 
+    def print(self, *args, **kwargs):
+        """
+        Wrapper around the print function to handle silent mode.
+        """
+        if not self.silent:
+            print(*args, **kwargs)
 
     @contextlib.contextmanager
     def wait_for_client(self):
+        """
+        Context manager for waiting for the client.
+        """
         self.reset_complete_signal()
         yield
         self.wait_until_client_finishes()
 
     def start_nest_client(self):
-        self.client = sp.Popen(['python', 'nest_client.py'])
-        print('NEST client started')
+        """
+        Starting the NEST client in a separate process using the subprocess
+        module.
+        """
+        cmd = ['python', 'nest_client.py']
+        if self.silent:
+            self.client = sp.Popen(cmd + ['-s'], stdout=sp.PIPE)
+        else:
+            self.client = sp.Popen(cmd)
+        self.print('NEST client started')
 
     def terminate_nest_client(self):
+        """
+        Terminates the NEST client subprocess.
+        """
         self.client.terminate()
-        print('NEST client terminated')
+        self.print('NEST client terminated')
 
     def handle_complete(self, msg):
-        print('Received complete signal')
+        """
+        Handles receiving complete signal from the client.
+
+        :param msg: The nett type message received.
+        """
+        self.print('Received complete signal')
         self.event.set()
 
     def reset_complete_signal(self):
+        """
+        Resets the complete signal.
+        """
         self.event.clear()
 
     def wait_until_client_finishes(self):
-        print('Waiting for client...')
+        """
+        Blocks until complete signal from the client is received.
+        """
+        self.print('Waiting for client...')
         self.event.wait()
 
     def send_to_client(self, label, data=''):
+        """
+        Sends a command or data to the NEST client.
+
+        :param label: Command or label for the data
+        :param data: Data to send
+        """
         # TODO: check that label and data are strings
         msg = sm.string_message()
         msg.value = label + ' '*bool(data) + data
@@ -160,26 +228,27 @@ class NESTInterface(object):
         """
         Resets the NEST kernel.
         """
-        # msg = fm.float_message()
-        # msg.value = 1.
-        # self.slot_out_reset.send(msg.SerializeToString())
         self.send_to_client('reset')
-        print('Sent reset')
+        self.print('Sent reset')
 
     def send_device_projections(self):
-        print("device_projections")
-        self.send_to_client('projections', self.device_projections)
-        print('Sent projections')
+        """
+        Sends projections to the NEST client.
+        """
+        with self.wait_for_client():
+            self.send_to_client('projections', self.device_projections)
+        self.print('Sent projections')
 
     def make_network(self):
         """
-        Creates the layers and models of nodes.
+        Sends the network specifications to the NEST client, which then creates
+        the layers and models of nodes.
         """
         self.send_to_client('make_network', self.networkSpecs)
         # msg = sm.string_message()
         # msg.value = self.networkSpecs
         # self.slot_out_network.send(msg.SerializeToString())
-        print('Sent make network')
+        self.print('Sent make network')
 
     def printGIDs(self, selection):
         """
@@ -189,7 +258,7 @@ class NESTInterface(object):
             selected areas
         :returns: a list of GIDs
         """
-        print('Sending get GIDs')
+        self.print('Sending get GIDs')
         with self.wait_for_client():
             self.send_to_client('get_gids', selection)
 
@@ -198,10 +267,10 @@ class NESTInterface(object):
         Connects both projections between layers and projections between layers
         and devices.
         """
-        print('Sending connect')
+        self.print('Sending connect')
         with self.wait_for_client():
             self.send_to_client('connect')
-        print("Connection complete")
+        self.print("Connection complete")
 
     def get_num_connections(self):
         """
@@ -209,11 +278,11 @@ class NESTInterface(object):
 
         :returns: number of connections
         """
-        print('Sending get Nconnections')
+        self.print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
         nconnections = int(self.observe_slot_nconnections.get_last_message().value)
-        print("Nconnections: {}".format(nconnections))
+        self.print("Nconnections: {}".format(nconnections))
         return nconnections
 
     def simulate(self, t):
@@ -225,7 +294,12 @@ class NESTInterface(object):
         self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
-        print('Received device results:\n' +
+        """
+        Handles receiving device results.
+
+        :param msg: Nett type message with the device results
+        """
+        self.print('Received device results:\n' +
               '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
         self.device_results = msg.value
 
