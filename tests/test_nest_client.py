@@ -45,6 +45,7 @@ class MockObserveSlot(object):
 class TestNESTClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+
         nc.nett.initialize = mock_initialize
         nc.nett.slot_out_float_message = MockSlotOutMessage
         nc.nett.slot_out_string_message = MockSlotOutMessage
@@ -54,6 +55,7 @@ class TestNESTClient(unittest.TestCase):
 
     def setUp(self):
         self.client.handle_reset()
+        self.client.handle_recv_projections(json.dumps({}))
 
     def test_make_network_specs(self):
         """ Client make network specs """

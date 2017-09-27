@@ -12,30 +12,6 @@ projections_json = json.dumps(projections)
 selection_json = json.dumps(selection)
 
 
-class MockSlotOutMessage(object):
-    def __init__(self, *args):
-        pass
-
-    def send(self, *args):
-        pass
-
-
-class MockSlotInMessage(object):
-    def __init__(self):
-        pass
-
-    def connect(self, *args):
-        pass
-
-
-class MockObserveSlot(object):
-    def __init__(self, slot, message_type, client):
-        pass
-
-    def start(self):
-        pass
-
-
 class TestNESTInterface(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

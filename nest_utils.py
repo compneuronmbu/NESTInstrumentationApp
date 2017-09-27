@@ -271,6 +271,9 @@ class NESTInterface(object):
         self.print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
+        # TODO: There is an elusive bug here where get_last_message() will
+        # sometimes return None. Running the testsuite a few times should
+        # replicate it.
         nconnections = int(
             self.observe_slot_nconnections.get_last_message().value)
         self.print("Nconnections: {}".format(nconnections))
