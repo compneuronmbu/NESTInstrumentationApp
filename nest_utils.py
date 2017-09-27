@@ -6,6 +6,7 @@ import sys
 import threading
 import atexit
 import contextlib
+import signal
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
@@ -53,6 +54,7 @@ class observe_slot(threading.Thread):
         self.last_message = None
         self.callback = callback
         self.daemon = True
+        self.ceased = False
 
     def get_last_message(self):
         """
@@ -76,6 +78,8 @@ class observe_slot(threading.Thread):
         """
         while True:
             self.msg.ParseFromString(self.slot.receive())
+            if self.ceased:
+                break
             if self.msg.value is not None:
                 self.last_message = self.msg
                 if self.callback is not None:
@@ -179,6 +183,15 @@ class NESTInterface(object):
         """
         self.client.terminate()
         self.print('NEST client terminated')
+
+    def cease_threads(self):
+        """
+        Marks the current observing threads as obsolete, so they will stop at
+        the first available opportunity.
+        """
+        for thread in [self.observe_slot_ready, self.observe_slot_nconnections,
+                       self.observe_slot_device_results]:
+            thread.ceased = True
 
     def handle_complete(self, msg):
         """
