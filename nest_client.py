@@ -87,6 +87,9 @@ class observe_slot(gevent.Greenlet):
         Runs the Greenlet.
         """
         while True:
+            # TODO: Either find a way to use Greenlets with nett without having
+            # slot.receive() blocking them, or remove the implementation with
+            # Greenlets as it isn't needed in the current implementation.
             self.msg.ParseFromString(self.slot.receive())
             if self.msg.value is not None:
                 self.last_message = self.msg.value
@@ -181,7 +184,7 @@ class NESTClient(object):
         """
         self.print("Making models...")
 
-        # NOTE: We currently do not take paramaters from users into account,
+        # NOTE: We currently do not take parameters from users into account,
         # like 'tau' etc.
         models = self.networkSpecs['models']
         self.print(models)
@@ -204,7 +207,7 @@ class NESTClient(object):
         """
         self.print("Making nodes...")
 
-        # NOTE: We currently do not take paramaters from users into account,
+        # NOTE: We currently do not take parameters from users into account,
         # like 'tau' etc.
         if nest.GetKernelStatus()['network_size'] == 1:
 
@@ -277,7 +280,7 @@ class NESTClient(object):
 
     def cleanup_simulation(self):
         """
-        Make NEST cleanup after a finished simulation.
+        Make NEST clean up after a finished simulation.
         """
         self.print("Cleaning up after simulation")
         nest.Cleanup()
@@ -403,7 +406,7 @@ class NESTClient(object):
                           ``ellipse``.
         :param azimuth_angle: Rotation angle in degrees from x-axis.
         :param polar_angle: Rotation angle in degrees from z-axis.
-        :param cntr: Coordinates for the center of the layer.
+        :param cntr: Coordinates for the centre of the layer.
         :returns: A NEST ``Mask`` object.
         """
 
@@ -501,7 +504,7 @@ class NESTClient(object):
         ll = [selection['ll']['x'], selection['ll']['y'], selection['ll']['z']]
         ur = [selection['ur']['x'], selection['ur']['y'], selection['ur']['z']]
 
-        # TODO: There must be a better way to do this. Also, center in origo is
+        # TODO: There must be a better way to do this. Also, centre in origo is
         # not always correct. Also, does SelectNodesByMask really need to be
         # sent cntr? Could it work if we said that it start in origo at c++
         # level? What happens if layer is outside origo?
@@ -527,7 +530,7 @@ class NESTClient(object):
                 collected_gids += gids
                 continue
 
-            # If we have chosen a spesific neuron_type, we have to find the
+            # If we have chosen a specific neuron_type, we have to find the
             # correct GIDs. To do this, we have to go through all the layers
             # and compare to the type we have chosen.
             for layer in self.networkSpecs['layers']:

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import __builtin__  # for Python 3: builtins as __builtin__
-import time
 import os
 import sys
 import threading
@@ -25,11 +24,11 @@ else:
     import subprocess as sp
 
 
-# redefine print
 def print(*args, **kwargs):
     """
-    A cosmetic change to the print function to show more clearly what is
-    actually printing when we are running the NESTClient in the same terminal.
+    A cosmetic change to the print function to show more clearly which script
+    is actually printing when we are running the NESTClient in the same
+    terminal.
     """
     __builtin__.print('[\033[1m\033[93mserver\033[0m] ', end='')
     return __builtin__.print(*args, **kwargs)
@@ -54,7 +53,6 @@ class observe_slot(threading.Thread):
         self.last_message = None
         self.callback = callback
         self.daemon = True
-
 
     def get_last_message(self):
         """
@@ -85,6 +83,7 @@ class observe_slot(threading.Thread):
             self.state = not self.state
             self.last_message = self.msg
 
+
 class NESTInterface(object):
     """
     For interacting with the NESTClient.
@@ -102,20 +101,9 @@ class NESTInterface(object):
         self.device_projections = device_projections
         self.silent = silent
 
-        #nett.initialize('tcp://127.0.0.1:2001')
-
         atexit.register(self.terminate_nest_client)
 
         self.slot_out_data = nett.slot_out_string_message('data')
-        """
-        self.slot_out_reset = nett.slot_out_float_message('reset')
-        self.slot_out_network = nett.slot_out_string_message('network')
-        self.slot_out_get_gids = nett.slot_out_string_message('get_GIDs')
-        self.slot_out_projections = nett.slot_out_string_message('projections')
-        self.slot_out_connect = nett.slot_out_float_message('connect')
-        self.slot_out_get_nconnections = nett.slot_out_float_message('get_nconnections')
-        self.slot_out_simulate = nett.slot_out_float_message('simulate')
-        """
 
         self.slot_in_complete = nett.slot_in_float_message()
         self.slot_in_nconnections = nett.slot_in_float_message()
@@ -123,20 +111,22 @@ class NESTInterface(object):
         self.slot_in_device_results = nett.slot_in_string_message()
 
         self.slot_in_complete.connect('tcp://127.0.0.1:8000', 'task_complete')
-        self.slot_in_nconnections.connect('tcp://127.0.0.1:8000', 'nconnections')
+        self.slot_in_nconnections.connect('tcp://127.0.0.1:8000',
+                                          'nconnections')
         # self.slot_in_gids.connect('tcp://127.0.0.1:8000', 'GIDs')
-        self.slot_in_device_results.connect('tcp://127.0.0.1:8000', 'device_results')
+        self.slot_in_device_results.connect('tcp://127.0.0.1:8000',
+                                            'device_results')
 
         self.observe_slot_ready = observe_slot(self.slot_in_complete,
-                                          fm.float_message(),
-                                          self.handle_complete)
-        self.observe_slot_nconnections = observe_slot(self.slot_in_nconnections,
-                                                      fm.float_message())
-        # self.observe_slot_gids = observe_slot(self.slot_in_gids,
-                                              # sm.string_message())
-        self.observe_slot_device_results = observe_slot(self.slot_in_device_results,
-                                                        sm.string_message(),
-                                                        self.handle_device_results)
+                                               fm.float_message(),
+                                               self.handle_complete)
+        self.observe_slot_nconnections = observe_slot(
+            self.slot_in_nconnections,
+            fm.float_message())
+        self.observe_slot_device_results = observe_slot(
+            self.slot_in_device_results,
+            sm.string_message(),
+            self.handle_device_results)
 
         self.observe_slot_ready.start()
         self.observe_slot_nconnections.start()
@@ -220,7 +210,7 @@ class NESTInterface(object):
         """
         # TODO: check that label and data are strings
         msg = sm.string_message()
-        msg.value = label + ' '*bool(data) + data
+        msg.value = label + ' ' * bool(data) + data
         self.slot_out_data.send(msg.SerializeToString())
 
     def reset_kernel(self):
@@ -261,8 +251,6 @@ class NESTInterface(object):
         with self.wait_for_client():
             self.send_to_client('get_gids', selection)
             # self.slot_out_get_gids.send(msg.SerializeToString())
-        #gids = self.observe_slot_gids.get_last_message().value
-        #return (gids)
 
     def connect_all(self):
         """
@@ -283,7 +271,8 @@ class NESTInterface(object):
         self.print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
-        nconnections = int(self.observe_slot_nconnections.get_last_message().value)
+        nconnections = int(
+            self.observe_slot_nconnections.get_last_message().value)
         self.print("Nconnections: {}".format(nconnections))
         return nconnections
 
@@ -304,4 +293,4 @@ class NESTInterface(object):
         :param msg: Nett type message with the device results
         """
         self.print('Received device results:\n' +
-              '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+                   '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))

@@ -42,7 +42,7 @@ def make_network():
     data = flask.request.json
     global interface
     interface = nu.NESTInterface(json.dumps(data['network']))
-    
+
     return flask.Response(status=204)
 
 
