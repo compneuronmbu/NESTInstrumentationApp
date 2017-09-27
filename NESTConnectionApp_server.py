@@ -155,6 +155,7 @@ def g_simulate(network, projections, t):
     interface.device_projections = projections
     interface.send_device_projections()
     interface.connect_all()
+    interface.device_results = '{}'
 
     q = gevent.queue.Queue()
     abort_sub.append(q)
