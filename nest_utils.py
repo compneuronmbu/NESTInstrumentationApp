@@ -99,6 +99,7 @@ class NESTInterface(object):
                  silent=False):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
+        self.device_results = '{}'
         self.silent = silent
 
         atexit.register(self.terminate_nest_client)
@@ -250,7 +251,6 @@ class NESTInterface(object):
         self.print('Sending get GIDs')
         with self.wait_for_client():
             self.send_to_client('get_gids', selection)
-            # self.slot_out_get_gids.send(msg.SerializeToString())
 
     def connect_all(self):
         """
@@ -282,9 +282,7 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
-        self.print('Sending simulate for {} ms'.format(t))
-        with self.wait_for_client():
-            self.send_to_client('simulate', str(t))
+        self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
         """
@@ -294,3 +292,7 @@ class NESTInterface(object):
         """
         self.print('Received device results:\n' +
                    '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+        self.device_results = msg.value
+
+    def get_device_results(self):
+        return self.device_results

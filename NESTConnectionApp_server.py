@@ -41,7 +41,13 @@ def make_network():
     """
     data = flask.request.json
     global interface
+
+    if interface:
+        interface.terminate_nest_client()
+
     interface = nu.NESTInterface(json.dumps(data['network']))
+
+    #interface.send_abort_signal()
 
     return flask.Response(status=204)
 
@@ -102,8 +108,6 @@ def get_connections_ajax():
     print("Received ", flask.request.args.get('input'))
     n_connections = interface.get_num_connections()
     return flask.jsonify(connections=n_connections)
-    #    connections=[{'pre': c[0], 'post': c[1]}
-    #                 for c in connections])
 
 
 @app.route('/simulate', methods=['POST'])
@@ -127,7 +131,9 @@ def simulate_ajax():
     interface.connect_all()
 
     print("Simulating for ", t, "ms ...")
-    interface.simulate(t)
+    interface.simulate(json.dumps(t))
+    interface.simulate(-1)
+    interface.device_results = '{}'
     busy = False
 
     return flask.Response(status=204)
@@ -147,7 +153,6 @@ def g_simulate(network, projections, t):
     busy = True
 
     interface.device_projections = projections
-
     interface.send_device_projections()
     interface.connect_all()
 
@@ -157,30 +162,26 @@ def g_simulate(network, projections, t):
     steps = 1000
     sleep_t = 0.1  # sleep time
     dt = float(t) / steps
-    print("dt=%f" % dt)
-    interface.prepare_simulation()
+
     for i in range(steps):
-        print("step: ", i)
+        print(i)
         if not q.empty():
             abort = q.get()
             if abort:
                 print("Simulation aborted")
                 break
-        #if i % 10 == 0 and i > 0:
-        #    sys.stdout.write("\rStep %i" % i)
-        #    sys.stdout.flush()
-        interface.run(dt)
-        # if i % 10 == 0:
-        #    continue
-        results = interface.get_device_results()
+        interface.simulate(dt)
+        results = json.loads(interface.get_device_results())
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
-        # yield this context to check abort and send data
+        interface.device_results = '{}'
+        # Yield this context to check abort and send data
         gevent.sleep(sleep_t)
-    print("")
-    interface.cleanup_simulation()
+
+    interface.simulate(-1)
+    interface.device_results = '{}'
 
     busy = False
 

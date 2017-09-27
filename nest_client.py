@@ -8,6 +8,7 @@ import math
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
+import time
 import nest
 import nest.topology as tp
 
@@ -39,9 +40,7 @@ class observe_slot(gevent.Greenlet):
         self.msg = message_type
         self.last_message = None
         self.state = False
-        self.last_message = None
         self.client = client
-        # self.callback = callback
         # print('Started {}'.format(callback))
 
     def get_last_message(self):
@@ -113,6 +112,7 @@ class NESTClient(object):
         self.networkSpecs = {}
         self.layers = {}
         self.rec_devices = []
+        self.prepared_simulation = False
         self.device_projections = None
         self.last_results = None
 
@@ -120,7 +120,6 @@ class NESTClient(object):
         self.slot_out_complete = nett.slot_out_float_message('task_complete')
         self.slot_out_nconnections = (
             nett.slot_out_float_message('nconnections'))
-        # self.slot_out_gids = nett.slot_out_string_message('GIDs')
         self.slot_out_device_results = (
             nett.slot_out_string_message('device_results'))
 
@@ -150,7 +149,6 @@ class NESTClient(object):
         """
         self.print("Reseting kernel")
         nest.ResetKernel()
-        self.device_projections = None
         self.send_complete_signal()
 
     def send_complete_signal(self):
@@ -254,12 +252,18 @@ class NESTClient(object):
 
         :param t: Time to simulate
         """
-        self.print("Simulating for {} ms".format(t))
-        self.prepare_simulation()
-        self.run(t)
-        self.cleanup_simulation()
-        self.send_device_results()
-        self.send_complete_signal()
+        if not self.prepared_simulation:
+            self.print("prepare simulation")
+            self.prepare_simulation()
+            self.prepared_simulation = True
+
+        if t == '-1':
+            self.print("cleanup simulation")
+            self.cleanup_simulation()
+            self.prepared_simulation = False
+        else:
+            self.run(t)
+            self.send_device_results()
 
     def prepare_simulation(self):
         """
@@ -307,6 +311,14 @@ class NESTClient(object):
         Handles connecting all the network.
         """
         self.print('Received connect signal')
+
+        # First need to reset kernel, make nodes, models and synapses
+        nest.ResetKernel()
+        self.make_models()
+        self.make_nodes()
+        self.make_synapse_models()
+
+        # Then need to connect
         self.connect_internal_projections()
         self.connect_to_devices()
         self.send_complete_signal()
