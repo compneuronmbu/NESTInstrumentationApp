@@ -146,7 +146,6 @@ class NESTClient(object):
         """
         self.print("Reseting kernel")
         nest.ResetKernel()
-        self.device_projections = None
         self.send_complete_signal()
 
     def send_complete_signal(self):
@@ -251,12 +250,12 @@ class NESTClient(object):
         :param t: Time to simulate
         """
         if not self.prepared_simulation:
-            print("prepare simulation")
+            self.print("prepare simulation")
             self.prepare_simulation()
             self.prepared_simulation = True
 
         if t == '-1':
-            print("cleanup simulation")
+            self.print("cleanup simulation")
             self.cleanup_simulation()
             self.prepared_simulation = False
         else:
@@ -308,10 +307,10 @@ class NESTClient(object):
         """
         Handles connecting all the network.
         """
-        print('Received connect signal')
+        self.print('Received connect signal')
 
         # First need to reset kernel, make nodes, models and synapses
-        self.handle_reset()
+        nest.ResetKernel()
         self.make_models()
         self.make_nodes()
         self.make_synapse_models()
