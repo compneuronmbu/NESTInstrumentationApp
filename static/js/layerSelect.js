@@ -7,6 +7,10 @@ class App  // TODO: rename App -> ???
     {
         this.controls;
 
+        this.renderer;
+        this.scene;
+        this.camera;
+
         this.renderer2;
         this.scene2;
         this.camera2;
@@ -758,8 +762,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: projections
             } ),
             dataType: "json"
@@ -798,8 +800,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: projections,
                 time: "1000"
             } ),
@@ -830,8 +830,6 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                synapses: this.synModels,
-                internalProjections: this.modelParameters.projections,
                 projections: this.makeProjections(),
                 time: "10000"
             } ),

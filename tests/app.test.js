@@ -52,6 +52,7 @@ test('Test initContainer', () => {
         '        </div>' +
         '        <div id="select-square"></div>' +
         '        <div id="spikeTrain"></div>' +
+        '        <div id="coordinateHelper"></div>' +
         '</div>' +
         '<div id="startButtons">' +
         '    Press one of the buttons below to choose layer! </br>' +
@@ -94,6 +95,7 @@ test('Test main init', () => {
     app.initContainer = jest.fn();
     app.initParameters = jest.fn();
     app.initGUI = jest.fn();
+    app.initSecondCamera = jest.fn();
     Controls = jest.fn();
     DevicePlots = jest.fn();
     EventSource = jest.fn();
@@ -247,6 +249,7 @@ test('Test getSelectedDropDown', () => {
 
 test('Test getGIDPoint', () => {
     app.THREE = require('three');  // import THREE into the app
+    app.$ = require('jquery');  // import jquery into the app
     var brain = require('../static/js/makeBrainRepresentation.js');
     app.container = {
         clientWidth: 800,
@@ -263,6 +266,7 @@ test('Test getGIDPoint', () => {
 
 test('Test colorFromVm and colorFromSpike', () => {
     app.THREE = require('three');  // import THREE into the app
+    app.$ = require('jquery');  // import jquery into the app
     var brain = require('../static/js/makeBrainRepresentation.js');
     app.container = {
         clientWidth: 800,
@@ -383,8 +387,6 @@ test('Test makeConnections', () => {
         url: "/connect",
         data: JSON.stringify({
             network: MODELPARAMETERS,
-            synapses: app.synModels,
-            internalProjections: MODELPARAMETERS.projections,
             projections: app.makeProjections()
         }),
         dataType: "json"
@@ -425,8 +427,6 @@ test('Test runSimulation', () => {
         url: "/simulate",
         data: JSON.stringify({
             network: MODELPARAMETERS,
-            synapses: app.synModels,
-            internalProjections: MODELPARAMETERS.projections,
             projections: app.makeProjections(),
             time: "1000"
         }),
@@ -470,8 +470,6 @@ test('Test streamSimulate', () => {
         url: "/streamSimulate",
         data: JSON.stringify({
             network: MODELPARAMETERS,
-            synapses: app.synModels,
-            internalProjections: MODELPARAMETERS.projections,
             projections: app.makeProjections(),
             time: "10000"
         }),
@@ -547,6 +545,7 @@ test('Test loadSelection', () => {
 
 test('Test loadFromJSON', () => {
     app.THREE = require('three');  // import THREE into the app
+    app.$ = require('jquery');  // import jquery into the app
     app.controls = require('../static/js/selectionBox.js');
     app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant here
     app.SelectionBox = require('../static/js/selectionBox.js');
@@ -655,6 +654,10 @@ test('Test makeStimulationDevice and makeRecordingDevice', () => {
 test('Test render', () => {
     // Only checks that nothing crashes
     app.THREE = require('three');  // import THREE into the app
+    app.camera = new app.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
+    app.camera2 = new app.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
+    app.scene2 = new app.THREE.Scene();
     app.renderer = new app.THREE.CanvasRenderer();
+    app.renderer2 = new app.THREE.CanvasRenderer();
     app.render();
 });

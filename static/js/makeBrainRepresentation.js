@@ -87,6 +87,20 @@ var Brain = function( camera, scene )
             }
         }
 
+        app.$.ajax(
+        {
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/makeNetwork",
+            data: JSON.stringify(
+            {
+                network: app.modelParameters
+            } ),
+            success: function( data )
+            {},
+            dataType: "json"
+        } );
+
         app.outlineMaterial = new app.THREE.ShaderMaterial(
         {
             uniforms:

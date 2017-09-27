@@ -7,6 +7,7 @@ import gevent
 import gevent.wsgi
 import gevent.queue
 import flask
+import json
 import nest_utils as nu
 
 app = flask.Flask(__name__)
@@ -33,6 +34,25 @@ def index():
     return flask.render_template('NESTConnectionApp.html')
 
 
+@app.route('/makeNetwork', methods=['POST'])
+def make_network():
+    """
+    Receives the network and construct the interface.
+    """
+    data = flask.request.json
+    global interface
+
+    if interface:
+        interface.terminate_nest_client()
+        interface.cease_threads()
+
+    interface = nu.NESTInterface(json.dumps(data['network']))
+
+    #interface.send_abort_signal()
+
+    return flask.Response(status=204)
+
+
 @app.route('/selector', methods=['POST', 'GET'])
 def print_GIDs():
     """
@@ -40,7 +60,6 @@ def print_GIDs():
     selected areas to the terminal.
     """
     if flask.request.method == 'POST':
-        global interface
         global busy
 
         if busy:
@@ -48,15 +67,9 @@ def print_GIDs():
             return flask.Response(status=BUSY_ERRORCODE)
         busy = True
 
-        pp = pprint.PrettyPrinter(indent=4)
-        # print(name)
-        # print(selection)
         data = flask.request.json
-        # pp.pprint(data)
-        interface = nu.NESTInterface(data['network'])
-        gids, positions = interface.printGIDs(data['info'])
-        print(gids)
-        pp.pprint(positions)
+        print('Trying to print gids..')
+        interface.printGIDs(json.dumps(data['info']))
         busy = False
 
         return flask.Response(status=204)
@@ -74,15 +87,15 @@ def connect_ajax():
             print("Cannot connect, NEST is busy!")
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
-        network = data['network']
-        synapses = data['synapses']
-        internal_projections = data['internalProjections']
-        projections = data['projections']
+        projections = json.dumps(data['projections'])
 
-        interface = nu.NESTInterface(network,
-                                     synapses,
-                                     internal_projections,
-                                     projections)
+        pp = pprint.PrettyPrinter(indent=4)
+        print('Projections:')
+        print(projections)
+
+        interface.device_projections = projections
+        interface.send_device_projections()
+
         interface.connect_all()
         return flask.Response(status=204)
 
@@ -96,8 +109,6 @@ def get_connections_ajax():
     print("Received ", flask.request.args.get('input'))
     n_connections = interface.get_num_connections()
     return flask.jsonify(connections=n_connections)
-    #    connections=[{'pre': c[0], 'post': c[1]}
-    #                 for c in connections])
 
 
 @app.route('/simulate', methods=['POST'])
@@ -112,36 +123,28 @@ def simulate_ajax():
         print("Cannot simulate, NEST is busy!")
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
-    network = data['network']
-    synapses = data['synapses']
-    internal_projections = data['internalProjections']
-    projections = data['projections']
-    t = data['time']
+    projections = json.dumps(data['projections'])
+    t = float(data['time'])
 
     busy = True
-    interface = nu.NESTInterface(network,
-                                 synapses,
-                                 internal_projections,
-                                 projections)
+    interface.device_projections = projections
+    interface.send_device_projections()
     interface.connect_all()
 
-    interface.prepare_simulation()
     print("Simulating for ", t, "ms ...")
-    interface.run(t, return_events=True)
-    interface.cleanup_simulation()
+    interface.simulate(t)
+    interface.simulate(-1)
     busy = False
 
     return flask.Response(status=204)
 
 
-def g_simulate(network, synapses, internal_projections, projections, t):
+def g_simulate(network, projections, t):
     """
     Runs a simulation in steps. This way the client can be updated on the
     status of the simulation.
 
     :param network: network specifications
-    :param synapses: synapse specifications
-    :param internal_projections: projections between the layers
     :param projections: projections between layers and devices
     :param t: time to simulate
     """
@@ -149,11 +152,10 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     global busy
     busy = True
 
-    interface = nu.NESTInterface(network,
-                                 synapses,
-                                 internal_projections,
-                                 projections)
+    interface.device_projections = projections
+    interface.send_device_projections()
     interface.connect_all()
+    interface.device_results = '{}'
 
     q = gevent.queue.Queue()
     abort_sub.append(q)
@@ -161,30 +163,25 @@ def g_simulate(network, synapses, internal_projections, projections, t):
     steps = 1000
     sleep_t = 0.1  # sleep time
     dt = float(t) / steps
-    print("dt=%f" % dt)
-    interface.prepare_simulation()
+
     for i in range(steps):
-        print("step: ", i)
+        print(i)
         if not q.empty():
             abort = q.get()
             if abort:
                 print("Simulation aborted")
                 break
-        #if i % 10 == 0 and i > 0:
-        #    sys.stdout.write("\rStep %i" % i)
-        #    sys.stdout.flush()
-        interface.run(dt)
-        # if i % 10 == 0:
-        #    continue
-        results = interface.get_device_results()
+        interface.simulate(dt)
+        results = json.loads(interface.get_device_results())
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
-        # yield this context to check abort and send data
+        interface.device_results = '{}'
+        # Yield this context to check abort and send data
         gevent.sleep(sleep_t)
-    print("")
-    interface.cleanup_simulation()
+
+    interface.simulate(-1)
 
     busy = False
 
@@ -202,16 +199,12 @@ def streamSimulate():
         return flask.Response(status=BUSY_ERRORCODE)
 
     data = flask.request.json
-    network = data['network']
-    synapses = data['synapses']
-    print("synapses: ", synapses)
-    internal_projections = data['internalProjections']
-    projections = data['projections']
+    network = json.dumps(data['network'])
+    projections = json.dumps(data['projections'])
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, synapses, internal_projections,
-                 projections, t)
+    gevent.spawn(g_simulate, network, projections, t)
 
     return flask.Response(status=204)
 
