@@ -131,9 +131,8 @@ def simulate_ajax():
     interface.connect_all()
 
     print("Simulating for ", t, "ms ...")
-    interface.simulate(json.dumps(t))
+    interface.simulate(t)
     interface.simulate(-1)
-    interface.device_results = '{}'
     busy = False
 
     return flask.Response(status=204)
@@ -181,7 +180,6 @@ def g_simulate(network, projections, t):
         gevent.sleep(sleep_t)
 
     interface.simulate(-1)
-    interface.device_results = '{}'
 
     busy = False
 
