@@ -31,11 +31,11 @@ sys.path.insert(0, os.path.abspath('../../../'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode']
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -100,6 +100,10 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_sidebars = {'**': ['localtoc.html',
+                        # 'globaltoc.html',
+                        'searchbox.html']}
+
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -156,6 +160,3 @@ texinfo_documents = [
      author, 'NESTConnectionApp', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

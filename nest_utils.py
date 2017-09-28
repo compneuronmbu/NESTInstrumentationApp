@@ -6,7 +6,6 @@ import sys
 import threading
 import atexit
 import contextlib
-import signal
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm

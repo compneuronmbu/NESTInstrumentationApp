@@ -8,7 +8,6 @@ import math
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
-import time
 import nest
 import nest.topology as tp
 
@@ -104,7 +103,7 @@ class NESTClient(object):
     For running NEST. Controlled by NESTInterface.
     """
 
-    def __init__(self, silent=False, nett_replacement=None):
+    def __init__(self, silent=False):
         nett.initialize('tcp://127.0.0.1:8000')
         nest.set_verbosity("M_ERROR")
         self.silent = silent
