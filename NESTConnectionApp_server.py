@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import sys
 import pprint
+import subprocess as sp
 import gevent
 import gevent.wsgi
 import gevent.queue
@@ -10,6 +11,7 @@ import flask
 import json
 import nest_utils as nu
 
+VERSION = sp.check_output(["git", "describe"]).strip()
 app = flask.Flask(__name__)
 interface = None
 busy = False
@@ -31,7 +33,7 @@ def index():
     """
     Renders the index page template and sends it to the client.
     """
-    return flask.render_template('NESTConnectionApp.html')
+    return flask.render_template('NESTConnectionApp.html', version=VERSION)
 
 
 @app.route('/makeNetwork', methods=['POST'])

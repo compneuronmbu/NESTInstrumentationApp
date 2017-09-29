@@ -73,6 +73,12 @@ body {
   display: none
 }
 
+#version{
+  font-family:Monospace;
+  font-size:10px;
+  color: #666;
+}
+
 #gui_body {
   float: right;
   width: var(--gui_width);
