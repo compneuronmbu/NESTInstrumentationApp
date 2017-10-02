@@ -225,6 +225,7 @@ class App  // TODO: rename App -> ???
         document.documentElement.style.setProperty('--gui_width', guiWidth);
         this.setShowGUI(true);
         this.controls.onWindowResize();
+        document.getElementById("loadingOverlay").style.display = "block";
         this.$.getJSON( JSONstring, function( data )
         {
             this.modelParameters = data;
