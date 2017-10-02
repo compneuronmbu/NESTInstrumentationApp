@@ -139,7 +139,7 @@ class NESTInterface(object):
 
         self.event = threading.Event()
 
-        with self.wait_for_client():
+        with self.wait_for_client(10):
             self.start_nest_client()
         with self.wait_for_client():
             self.reset_kernel()
@@ -156,13 +156,13 @@ class NESTInterface(object):
             print(*args, **kwargs)
 
     @contextlib.contextmanager
-    def wait_for_client(self):
+    def wait_for_client(self, timeout=None):
         """
         Context manager for waiting for the client.
         """
         self.reset_complete_signal()
         yield
-        self.wait_until_client_finishes()
+        self.wait_until_client_finishes(timeout)
 
     def start_nest_client(self):
         """
@@ -216,12 +216,14 @@ class NESTInterface(object):
         """
         self.event.clear()
 
-    def wait_until_client_finishes(self):
+    def wait_until_client_finishes(self, timeout=None):
         """
         Blocks until complete signal from the client is received.
         """
         self.print('Waiting for client...')
-        self.event.wait()
+        recv_flag = self.event.wait(timeout)
+        if not recv_flag:
+            self.print('WARNING: Event timed out')
 
     def send_to_client(self, label, data=''):
         """
