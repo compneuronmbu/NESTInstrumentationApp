@@ -79,6 +79,8 @@ class observe_slot(gevent.Greenlet):
             self.client.handle_get_nconnections()
         elif msg_type == 'simulate':
             self.client.handle_simulate(msg_data)
+        elif msg_type == 'ping':
+            self.client.handle_ping()
 
     def run(self):
         """
@@ -141,6 +143,15 @@ class NESTClient(object):
         """
         if not self.silent:
             print(*args, **kwargs)
+
+    def handle_ping(self):
+        """
+        Sends a signal to all slots in the server.
+        """
+        for slot, msg in [[self.slot_out_nconnections, fm.float_message()],
+                          [self.slot_out_device_results, sm.string_message()]]:
+            slot.send(msg.SerializeToString())
+        self.send_complete_signal()
 
     def handle_reset(self):
         """
