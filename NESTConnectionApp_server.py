@@ -45,8 +45,8 @@ def make_network():
     global interface
 
     if interface:
-        interface.terminate_nest_client()
         interface.cease_threads()
+        interface.terminate_nest_client()
 
     interface = nu.NESTInterface(json.dumps(data['network']))
 

@@ -11,10 +11,10 @@ class App  // TODO: rename App -> ???
         this.scene;
         this.camera;
 
-        this.renderer2;
-        this.scene2;
-        this.camera2;
-     
+        this.axisRenderer;
+        this.axisScene;
+        this.axisCamera;
+
         this.outlineScene;
         this.outlineMaterial;
 
@@ -153,20 +153,22 @@ class App  // TODO: rename App -> ???
         var container2 = document.getElementById('coordinateHelper');
 
         // Renderer
-        this.renderer2 = new this.THREE.WebGLRenderer();
-        this.renderer2.setSize( 200, 200 );
-        container2.appendChild( this.renderer2.domElement );
+        this.axisRenderer = new this.THREE.WebGLRenderer( { antialias: true } );
+        this.axisRenderer.setSize( 200, 200 );
+        container2.appendChild( this.axisRenderer.domElement );
 
         // Scene
-        this.scene2 = new this.THREE.Scene();
+        this.axisScene = new this.THREE.Scene();
+        this.axisScene.background = new THREE.Color( 0x202020 );
 
         // Camera
-        this.camera2 = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
-        this.camera2.up = this.camera.up; // Important!
+        // this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
+        this.axisCamera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, 0.5, 1000);
+        this.axisCamera.up = this.camera.up; // Important!
 
         // Axes
-        var axes = new this.THREE.AxisHelper( 100 );
-        this.scene2.add(axes);
+        var axes = new this.THREE.AxisHelper( 0.9 );
+        this.axisScene.add(axes);
     }
 
     /**
@@ -225,6 +227,7 @@ class App  // TODO: rename App -> ???
         document.documentElement.style.setProperty('--gui_width', guiWidth);
         this.setShowGUI(true);
         this.controls.onWindowResize();
+        document.getElementById("loadingOverlay").style.display = "block";
         this.$.getJSON( JSONstring, function( data )
         {
             this.modelParameters = data;
@@ -237,6 +240,13 @@ class App  // TODO: rename App -> ???
         if ( this.is3DLayer )
         {
             this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
+        }
+        else
+        {
+            // remove the axis window
+            var coordinateHelper = document.getElementById('coordinateHelper');
+            coordinateHelper.removeChild( this.axisRenderer.domElement );
+            this.axisRenderer = undefined;
         }
 
         $("#startButtons").html( "Reload page to display model buttons again." );
@@ -1219,9 +1229,12 @@ class App  // TODO: rename App -> ???
         this.renderer.render( this.outlineScene, this.camera );
         this.renderer.render( this.scene, this.camera );
 
-        this.renderer2.render( this.scene2, this.camera2 );
-        this.camera2.position.copy( this.camera.position );
-        this.camera2.lookAt( this.scene2.position );
+        if ( this.axisRenderer !== undefined )
+        {
+            this.axisRenderer.render( this.axisScene, this.axisCamera );
+            this.axisCamera.position.copy( this.camera.position );
+            this.axisCamera.lookAt( this.axisScene.position );
+        }
 
         if ( !this.layerNamesMade && !this.is3DLayer )
         {

@@ -75,7 +75,7 @@ class observe_slot(threading.Thread):
         """
         Runs the thread.
         """
-        while True:
+        while not self.ceased:
             self.msg.ParseFromString(self.slot.receive())
             if self.ceased:
                 break
@@ -139,7 +139,7 @@ class NESTInterface(object):
 
         self.event = threading.Event()
 
-        with self.wait_for_client():
+        with self.wait_for_client(10):
             self.start_nest_client()
         with self.wait_for_client():
             self.reset_kernel()
@@ -156,13 +156,13 @@ class NESTInterface(object):
             print(*args, **kwargs)
 
     @contextlib.contextmanager
-    def wait_for_client(self):
+    def wait_for_client(self, timeout=None):
         """
         Context manager for waiting for the client.
         """
         self.reset_complete_signal()
         yield
-        self.wait_until_client_finishes()
+        self.wait_until_client_finishes(timeout)
 
     def start_nest_client(self):
         """
@@ -181,6 +181,7 @@ class NESTInterface(object):
         Terminates the NEST client subprocess.
         """
         self.client.terminate()
+        stdout, stderr = self.client.communicate()
         self.print('NEST client terminated')
 
     def cease_threads(self):
@@ -188,9 +189,17 @@ class NESTInterface(object):
         Marks the current observing threads as obsolete, so they will stop at
         the first available opportunity.
         """
-        for thread in [self.observe_slot_ready, self.observe_slot_nconnections,
-                       self.observe_slot_device_results]:
+        threads = [self.observe_slot_ready, self.observe_slot_nconnections,
+                   self.observe_slot_device_results]
+        for thread in threads:
             thread.ceased = True
+        # The threads are blocking until they receive a message. Therefore we
+        # make the client ping all slots so that all threads are terminated.
+        self.send_to_client('ping')
+        for thread in threads:
+            thread.join()
+        # Should be only the main thread now.
+        assert len(threading.enumerate()) == 1
 
     def handle_complete(self, msg):
         """
@@ -207,12 +216,14 @@ class NESTInterface(object):
         """
         self.event.clear()
 
-    def wait_until_client_finishes(self):
+    def wait_until_client_finishes(self, timeout=None):
         """
         Blocks until complete signal from the client is received.
         """
         self.print('Waiting for client...')
-        self.event.wait()
+        recv_flag = self.event.wait(timeout)
+        if not recv_flag:
+            self.print('WARNING: Event timed out')
 
     def send_to_client(self, label, data=''):
         """

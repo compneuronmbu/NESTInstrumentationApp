@@ -97,7 +97,9 @@ var Brain = function( camera, scene )
                 network: app.modelParameters
             } ),
             success: function( data )
-            {},
+            {
+                document.getElementById("loadingOverlay").style.display = "none";
+            },
             dataType: "json"
         } );
 
