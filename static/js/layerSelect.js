@@ -775,8 +775,10 @@ class App  // TODO: rename App -> ???
                 projections: projections
             } ),
             dataType: "json"
-        } );
-        this.getConnections();
+        } ).done( function()
+        {
+            this.getConnections();
+        }.bind(this));
     }
 
     /**
