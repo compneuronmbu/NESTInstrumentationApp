@@ -7,10 +7,10 @@
  */
 class SelectionBox
 {
-    constructor( ll, ur, shape )
+    constructor( ll, ur, shape, layerName = "" )
     {
         this.uniqueID = -1;
-        this.layerName = "";
+        this.layerName = layerName;
         // ll and ur use screen coordinates
         this.ll = ll;
         this.ur = ur;
@@ -39,56 +39,16 @@ class SelectionBox
         this.selectedPointIDs = [];
         this.nSelected = 0;
 
-        this.selectPoints();
         this.CURVE_SEGMENTS = 100;
-    }
 
-    /**
-     * Finds which points lie within the box, and colors them.
-     */
-    selectPoints()
-    {
-        var xypos;
-        var count = 0;
-
+        this.makeBox();
         this.getLayerName();
         if ( this.layerName === "" )
         {
+            // If there is no layerName, the selection is invalid
             return;
         }
-
-        var points = app.layer_points[ this.layerName ].points;
-        var colors = points.geometry.getAttribute( "customColor" ).array;
-        var positions = points.geometry.getAttribute( "position" ).array;
-
-        for ( var i = 0; i < positions.length; i += 3 )
-        {
-            var p = {};
-            p.x = positions[ i ];
-            p.y = positions[ i + 1 ];
-            p.z = positions[ i + 2 ];
-            xypos = app.toScreenXY( p );
-
-            if ( this.withinBounds( xypos ) )
-            {
-                this.selectedPointIDs.push( i );
-                colors[ i ] = 1.0;
-                colors[ i + 1 ] = 0.92;
-                colors[ i + 2 ] = 0.0;
-
-                points.geometry.attributes.customColor.needsUpdate = true;
-                count += 1;
-            }
-        }
-        if ( !count )
-        {
-            this.layerName = "";
-        }
-        else
-        {
-            this.nSelected += count;
-            app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
-        }
+        this.updateColors();
     }
 
     /**
@@ -96,6 +56,10 @@ class SelectionBox
      */
     getLayerName()
     {
+        if ( this.layerName !== "" ) // If layer name is already set
+        {
+            return;
+        }
         var roomMouseDown = app.toObjectCoordinates( app.mouseDownCoords );
         var mouseUpCoords = {
             x: app.mRelPos.x + app.mouseDownCoords.x,

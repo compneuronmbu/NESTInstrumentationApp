@@ -966,11 +966,14 @@ class App  // TODO: rename App -> ???
                                                            boxSpecs.depth,
                                                            boxSpecs.center,
                                                            boxSpecs.maskShape,
-                                                           boxSpecs.scale);
+                                                           boxSpecs.scale );
                     }
                     else
                     {
-                        var box = new this.SelectionBox( boxSpecs.ll, boxSpecs.ur, boxSpecs.maskShape );
+                        var box = new this.SelectionBox( boxSpecs.ll,
+                                                         boxSpecs.ur,
+                                                         boxSpecs.maskShape,
+                                                         boxSpecs.name );
                     }
                     box.uniqueID = boxSpecs.uniqueID;
 

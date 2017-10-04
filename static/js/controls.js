@@ -527,7 +527,6 @@ class Controls
 
         app.selectionBoxArray.push( this.boxInFocus );
 
-        this.boxInFocus.makeBox();
         this.boxInFocus.makeSelectionPoints();
 
         this.boxInFocus.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
