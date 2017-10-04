@@ -162,7 +162,7 @@ class App  // TODO: rename App -> ???
         this.axisScene.background = new THREE.Color( 0x202020 );
 
         // Camera
-        // this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
+        //this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
         this.axisCamera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, 0.5, 1000);
         this.axisCamera.up = this.camera.up; // Important!
 
