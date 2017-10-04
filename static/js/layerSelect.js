@@ -245,7 +245,7 @@ class App  // TODO: rename App -> ???
         {
             // remove the axis window
             var coordinateHelper = document.getElementById('coordinateHelper');
-            coordinateHelper.removeChild( this.axisRenderer.domElement );
+            coordinateHelper.parentElement.removeChild( coordinateHelper );
             this.axisRenderer = undefined;
         }
 
