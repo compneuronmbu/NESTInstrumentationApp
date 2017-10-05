@@ -104,6 +104,7 @@ class Brain
             success: function( data )
             {
                 document.getElementById("loadingOverlay").style.display = "none";
+                requestAnimationFrame( app.render.bind(app) );
             },
             dataType: "json"
         } );
@@ -140,7 +141,7 @@ class Brain
           }
         }
 
-        requestAnimationFrame( app.render.bind(app) );
+        // requestAnimationFrame( app.render.bind(app) );
     }
 
     /**

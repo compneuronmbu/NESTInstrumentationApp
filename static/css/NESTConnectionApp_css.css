@@ -46,6 +46,7 @@ body {
   right: calc(var(--gui_width));
   top: 0px;
   z-index: 100;
+  display: none;
 }
 
 #startButtons {

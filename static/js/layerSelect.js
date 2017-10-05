@@ -96,6 +96,7 @@ class App  // TODO: rename App -> ???
         // Server-Sent Events
         this.serverUpdateEvent = new EventSource( "/simulationData" );
         this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
+        this.render();
     }
 
     /**
@@ -240,6 +241,8 @@ class App  // TODO: rename App -> ???
         if ( this.is3DLayer )
         {
             this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
+            var coordinateHelper = document.getElementById('coordinateHelper');
+            coordinateHelper.style.display = "block";
         }
         else
         {
@@ -712,6 +715,7 @@ class App  // TODO: rename App -> ???
                 this.deviceBoxMap[ device ].connectees[ i ].updateColors();
             }
         }
+        requestAnimationFrame( this.render.bind(this) );
     }
 
     /**
@@ -1012,6 +1016,7 @@ class App  // TODO: rename App -> ???
             this.is3DLayer && this.controls.boxInFocus.setActive();
             this.is3DLayer && this.enableOrbitControls( true );
         }
+        requestAnimationFrame( this.render.bind(this) );
     }
 
     /**
@@ -1100,6 +1105,7 @@ class App  // TODO: rename App -> ???
             },
             connectees: []
         };
+        requestAnimationFrame( this.render.bind(this) );
     }
 
     /**
@@ -1114,8 +1120,7 @@ class App  // TODO: rename App -> ???
         if ( device === "poisson_generator" )
         {
             var col = 0xB28080
-                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-            var map = new this.THREE.TextureLoader().load( "static/js/textures/poisson.png" );
+            var mapPath = "static/js/textures/poisson.png";
             var params = {
                 rate: 70000.0
             }
@@ -1123,10 +1128,16 @@ class App  // TODO: rename App -> ???
         else if ( device === "ac_generator" )
         {
             var col = 0xc9725e
-                //var map = new THREE.TextureLoader().load( "static/js/textures/current_source_white.png" );
-            var map = new this.THREE.TextureLoader().load( "static/js/textures/sinus.png" );
+            var mapPath = "static/js/textures/sinus.png";
             var params = {'amplitude': 50., 'frequency': 35.}
         }
+        var map = new this.THREE.TextureLoader().load(
+            mapPath,
+            function( texture )  // function called when texture is loaded
+            {
+                requestAnimationFrame( this.render.bind(this) );
+            }.bind(this)
+        );
         this.makeDevice( device, col, map, params );
     }
 
@@ -1141,19 +1152,25 @@ class App  // TODO: rename App -> ???
         if ( device === "voltmeter" )
         {
             var col = 0xBDB280;
-            var map = new this.THREE.TextureLoader().load( "static/js/textures/voltmeter.png" );
+            var mapPath = "static/js/textures/voltmeter.png";
         }
         else if ( device === "spike_detector" )
         {
             var col = 0x809980;
-            var map = new this.THREE.TextureLoader().load( "static/js/textures/spike_detector.png" );
+            var mapPath = "static/js/textures/spike_detector.png";
         }
         else
         {
             var col = 0xBDB280;
-            var map = new this.THREE.TextureLoader().load( "static/js/textures/recording_device.png" );
+            var mapPath = "static/js/textures/recording_device.png";
         }
-
+        var map = new this.THREE.TextureLoader().load(
+            mapPath,
+            function( texture )  // function called when texture is loaded
+            {
+                requestAnimationFrame( this.render.bind(this) );
+            }.bind(this)
+        );
         this.makeDevice( device, col, map );
     }
 
@@ -1183,6 +1200,7 @@ class App  // TODO: rename App -> ???
         console.log( "Selection box: ", box )
 
         this.controls.serverPrintGids();
+        requestAnimationFrame( this.render.bind(this) );
     }
 
     /**
@@ -1216,6 +1234,7 @@ class App  // TODO: rename App -> ???
             }
             points.geometry.attributes.visible.needsUpdate = true;
         }
+        requestAnimationFrame( this.render.bind(this) );
     }
 
     /**
@@ -1223,8 +1242,6 @@ class App  // TODO: rename App -> ???
      */
     render()
     {
-        requestAnimationFrame( this.render.bind(this) );
-
         if ( this.orbitControls )
         {
             this.orbitControls.update();
@@ -1241,7 +1258,7 @@ class App  // TODO: rename App -> ???
             this.axisCamera.lookAt( this.axisScene.position );
         }
 
-        if ( !this.layerNamesMade && !this.is3DLayer )
+        if ( !this.layerNamesMade && !this.is3DLayer && this.brain )
         {
             this.brain.make_layer_names();
             this.layerNamesMade = true;

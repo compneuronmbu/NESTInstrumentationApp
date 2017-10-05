@@ -521,6 +521,7 @@ class Controls
         // If we didn't click on a layer, it will cause problems further down
         if ( app.layerSelected === "" )
         {
+            this.boxInFocus.removeBox();
             this.resetButtons();
             return;
         }
@@ -694,27 +695,32 @@ class Controls
             this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
             this.mouseMoved = true;
+            requestAnimationFrame( app.render.bind(app) );
         }
         if ( this.make_selection_box )
         {
             // If we are making a box, update the marquee
             this.updateMarquee( event.clientX, event.clientY );
+            requestAnimationFrame( app.render.bind(app) );
         }
         else if ( this.resizeSideInFocus !== undefined )
         {
             // If we have selected one of the resize points, update the size of
             // the box.
             this.resizeBox( event.clientX, event.clientY );
+            requestAnimationFrame( app.render.bind(app) );
         }
         else if ( this.rotationPoint !== undefined )
         {
             // If we have selected one of the rotation points, rotate the selection.
             this.rotateBox( event.clientX, event.clientY );
+            requestAnimationFrame( app.render.bind(app) );
         }
         else if ( this.make_connection )
         {
             // If we are making a connection, update the connection line
             this.updateLine( event.clientX, event.clientY );
+            requestAnimationFrame( app.render.bind(app) );
         }
         else if ( this.deviceInFocus != undefined && this.mouseDown )
         {
@@ -722,6 +728,7 @@ class Controls
             if ( this.deviceInFocus )
             {
                 this.updateDevicePosition( event.clientX, event.clientY );
+                requestAnimationFrame( app.render.bind(app) );
             }
         }
     }
@@ -777,6 +784,7 @@ class Controls
             app.resetVisibility();
         }
         this.resetButtons();
+        requestAnimationFrame( app.render.bind(app) );
     }
 
     /**
@@ -838,6 +846,7 @@ class Controls
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "translate" );
         }
+        requestAnimationFrame( app.render.bind(app) );
     }
 
     /**
@@ -857,6 +866,7 @@ class Controls
         {
             app.brain && app.brain.updateLayerNamePosition( labels[ i ] );
         }
+        requestAnimationFrame( app.render.bind(app) );
     }
 };
 

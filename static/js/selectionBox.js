@@ -139,6 +139,12 @@ class SelectionBox
 
         }
         points.geometry.attributes.customColor.needsUpdate = true;
+        console.log(this.nSelected);
+        if (this.nSelected === 0)  // nothing selected
+        {
+            this.layerName = "";
+            return;
+        }
 
         if ( this.nSelected != nSelectedOld )
         {
@@ -237,30 +243,33 @@ class SelectionBox
     {
         app.scene.remove( this.box );
 
-        var points = app.layer_points[ this.layerName ].points;
-        var colors = points.geometry.getAttribute( "customColor" ).array;
-
-        var nSelectedOld = this.nSelected;
-
-        var oldPointIDs = this.selectedPointIDs;
-
-        var colorID;
-
-        for ( var i = 0; i < oldPointIDs.length; ++i )
+        if ( this.layerName )
         {
-            colorID = oldPointIDs[ i ];
+            var points = app.layer_points[ this.layerName ].points;
+            var colors = points.geometry.getAttribute( "customColor" ).array;
 
-            colors[ colorID ] = app.color.r;
-            colors[ colorID + 1 ] = app.color.g;
-            colors[ colorID + 2 ] = app.color.b;
+            var nSelectedOld = this.nSelected;
 
-            this.nSelected -= 1
-        }
-        points.geometry.attributes.customColor.needsUpdate = true;
+            var oldPointIDs = this.selectedPointIDs;
 
-        if ( this.nSelected != nSelectedOld )
-        {
-            app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            var colorID;
+
+            for ( var i = 0; i < oldPointIDs.length; ++i )
+            {
+                colorID = oldPointIDs[ i ];
+
+                colors[ colorID ] = app.color.r;
+                colors[ colorID + 1 ] = app.color.g;
+                colors[ colorID + 2 ] = app.color.b;
+
+                this.nSelected -= 1
+            }
+            points.geometry.attributes.customColor.needsUpdate = true;
+
+            if ( this.nSelected != nSelectedOld )
+            {
+                app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            }
         }
     }
 
