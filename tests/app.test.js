@@ -370,6 +370,7 @@ test('Test makeConnections', () => {
         return {html: jest.fn()}
     }
     app.$.ajax = jest.fn();
+    app.$.ajax.mockReturnValue({done: jest.fn()});
     app.getConnections = jest.fn();
     app.modelParameters = MODELPARAMETERS;
     app.deviceBoxMap = {
