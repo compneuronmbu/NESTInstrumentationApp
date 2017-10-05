@@ -860,9 +860,9 @@ var TransformControls = function ( camera, domElement )
                 {
                     point.applyMatrix4( tempMatrix.getInverse( worldRotationMatrix ) );
 
-                    if ( scope.axis === "X" ) scope.object.scale.x = oldScale.x * ( 1 + point.x / oldScale.x );
-                    if ( scope.axis === "Y" ) scope.object.scale.y = oldScale.y * ( 1 + point.y / oldScale.y );
-                    if ( scope.axis === "Z" ) scope.object.scale.z = oldScale.z * ( 1 + point.z / oldScale.z );
+                    if ( scope.axis === "X" ) scope.object.scale.x = oldScale.x * ( 1 + 10*point.x / oldScale.x );
+                    if ( scope.axis === "Y" ) scope.object.scale.y = oldScale.y * ( 1 + 10*point.y / oldScale.y );
+                    if ( scope.axis === "Z" ) scope.object.scale.z = oldScale.z * ( 1 + 10*point.z / oldScale.z );
                 }
             }
         }

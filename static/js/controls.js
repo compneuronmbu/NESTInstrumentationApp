@@ -38,6 +38,7 @@ class Controls
         this.domElement.addEventListener( 'mousemove', this.onMouseMove.bind( this ), false );
         this.domElement.addEventListener( 'mousedown', this.onMouseDown.bind( this ), false );
         this.domElement.addEventListener( 'mouseup', this.onMouseUp.bind( this ), false );
+        this.domElement.addEventListener( 'wheel', this.onMouseWheel.bind(this), false );
 
         window.addEventListener( 'keydown', this.onKeyDown.bind( this ), false );
         window.addEventListener( 'keyup', this.onKeyUp.bind( this ), false );
@@ -785,6 +786,19 @@ class Controls
         }
         this.resetButtons();
         requestAnimationFrame( app.render.bind(app) );
+    }
+
+        /**
+     * Event handler for mouse wheel.
+     *
+     * @event
+     */
+    onMouseWheel( event )
+    {
+        if ( app.orbitControls )
+        {
+            requestAnimationFrame( app.render.bind(app) );
+        }
     }
 
     /**
