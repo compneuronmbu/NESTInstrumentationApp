@@ -917,7 +917,7 @@ class App  // TODO: rename App -> ???
         var dlObject = {
             projections: projections
         };
-        var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject ) );
+        var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
         var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
         dlAnchorElem.setAttribute( "href", jsonStr );
         dlAnchorElem.setAttribute( "download", filename + ".json" );
