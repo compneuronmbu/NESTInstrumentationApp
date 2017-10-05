@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import sys
 import pprint
 import subprocess as sp
 import gevent
@@ -13,6 +12,7 @@ import nest_utils as nu
 
 VERSION = sp.check_output(["git", "describe"]).strip()
 app = flask.Flask(__name__)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
 interface = None
 busy = False
 BUSY_ERRORCODE = 418
