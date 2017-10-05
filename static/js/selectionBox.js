@@ -1452,7 +1452,7 @@ class SelectionBox3D
 
         var selectionInfo = {
             name: nameArray,
-            selection: selectionBox,
+            selection: { "ll": this.ll, "ur": this.ur }, //selectionBox,
             azimuthAngle: this.azimuthAngle,
             polarAngle: this.polarAngle,
             neuronType: selectedNeuronType,
