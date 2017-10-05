@@ -4,6 +4,7 @@ import __builtin__  # for Python 3: builtins as __builtin__
 import os
 import sys
 import threading
+import time
 import atexit
 import contextlib
 import nett_python as nett
@@ -49,7 +50,6 @@ class observe_slot(threading.Thread):
         self.slot = slot
         self.msg = message_type
         self.last_message = None
-        self.state = False
         self.last_message = None
         self.callback = callback
         self.daemon = True
@@ -63,14 +63,6 @@ class observe_slot(threading.Thread):
         """
         return self.last_message
 
-    def set_state(self, state):
-        """
-        Sets the state.
-
-        :param state: State to set
-        """
-        self.state = state
-
     def run(self):
         """
         Runs the thread.
@@ -83,7 +75,6 @@ class observe_slot(threading.Thread):
                 self.last_message = self.msg
                 if self.callback is not None:
                     self.callback(self.msg)
-            self.state = not self.state
             self.last_message = self.msg
 
 
@@ -163,6 +154,16 @@ class NESTInterface(object):
         self.reset_complete_signal()
         yield
         self.wait_until_client_finishes(timeout)
+
+    def get_valid_msg_value(self, observer):
+        timeout = 10
+        n = 0
+        while observer.get_last_message() is None:
+            time.sleep(0.1)
+            n += 1
+            if n == timeout:
+                return -1
+        return observer.get_last_message().value
 
     def start_nest_client(self):
         """
@@ -294,11 +295,8 @@ class NESTInterface(object):
         self.print('Sending get Nconnections')
         with self.wait_for_client():
             self.send_to_client('get_nconnections')
-        # TODO: There is an elusive bug here where get_last_message() will
-        # sometimes return None. Running the testsuite a few times should
-        # replicate it.
         nconnections = int(
-            self.observe_slot_nconnections.get_last_message().value)
+            self.get_valid_msg_value(self.observe_slot_nconnections))
         self.print("Nconnections: {}".format(nconnections))
         return nconnections
 
