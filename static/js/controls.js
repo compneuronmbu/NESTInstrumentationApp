@@ -850,6 +850,13 @@ class Controls
         app.camera.aspect = app.container.clientWidth / app.container.clientHeight;
         app.camera.updateProjectionMatrix();
         app.renderer.setSize( app.container.clientWidth, app.container.clientHeight );
+
+        // 2D label positions
+        var labels = app.$("[id$='_label']"); 
+        for (var i = 0; i < labels.length; ++i)
+        {
+            app.brain && app.brain.updateLayerNamePosition( labels[ i ] );
+        }
     }
 };
 

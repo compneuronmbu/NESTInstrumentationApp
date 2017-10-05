@@ -231,7 +231,7 @@ class App  // TODO: rename App -> ???
         this.$.getJSON( JSONstring, function( data )
         {
             this.modelParameters = data;
-            Brain( this.camera, this.scene );
+            this.brain = new Brain();
         }.bind(this) );
 
         // Define orbit controls system here, because we need to know if we have
@@ -1243,7 +1243,7 @@ class App  // TODO: rename App -> ???
 
         if ( !this.layerNamesMade && !this.is3DLayer )
         {
-            make_layer_names();
+            this.brain.make_layer_names();
             this.layerNamesMade = true;
         }
     }

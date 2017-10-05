@@ -1,12 +1,17 @@
 /**
  * Makes neuron layers
  */
-var Brain = function( camera, scene )
+class Brain
 {
+    constructor()
+    {
+        this.initLayers();
+    }
+
     /**
      * Creates the layers.
      */
-    function initLayers()
+    initLayers()
     {
         var layers = app.modelParameters.layers;
         var number_of_layers = 0;
@@ -59,7 +64,7 @@ var Brain = function( camera, scene )
                     // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
                     // but then I think we would have to rewrite some of the code below.
                     app.layer_points[ layers[ layer ].name ] = {
-                        points: initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center, layers[layer].neuronType ),
+                        points: this.initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center, layers[layer].neuronType ),
                         offsets:
                             {
                                 x: offsett_x,
@@ -67,7 +72,7 @@ var Brain = function( camera, scene )
                             },
                         extent: layers[layer].extent, 
                         center: layers[layer].center,
-                        noElements: getNumberOfElements(layers[layer].elements)
+                        noElements: this.getNumberOfElements(layers[layer].elements)
                     };
 
                     if ( !app.is3DLayer )
@@ -120,15 +125,15 @@ var Brain = function( camera, scene )
             ].join( "\n" )
         } );
 
-        camera.position.set(  0, 0, no_rows + 1.5  );
+        app.camera.position.set(  0, 0, no_rows + 1.5  );
 
-        makeModelNameLists();
-        app.is3DLayer && makeBorderLines();
+        this.makeModelNameLists();
+        app.is3DLayer && this.makeBorderLines();
 
         // if undefined, make a requestAnimationFrame function (mostly for testsuite)
         if (window.requestAnimationFrame === undefined) {
           let targetTime = 0
-          requestAnimationFrame = function (callbackFun) {
+          window.requestAnimationFrame = function (callbackFun) {
             const currentTime = +new Date()
             const timeoutCb = function () { callbackFun(+new Date()) }
             return window.setTimeout(timeoutCb, Math.max(targetTime + 16, currentTime) - currentTime)
@@ -141,7 +146,7 @@ var Brain = function( camera, scene )
     /**
      * Creates the points representing nodes.
      */
-    function initPoints( neurons, offsett_x, offsett_y, extent, center, neuronType )
+    initPoints( neurons, offsett_x, offsett_y, extent, center, neuronType )
     {
         var geometry = new app.THREE.BufferGeometry();
 
@@ -232,9 +237,9 @@ var Brain = function( camera, scene )
             ].join( "\n" )
         } );
 
-        points = new app.THREE.Points( geometry, material );
+        var points = new app.THREE.Points( geometry, material );
 
-        scene.add( points );
+        app.scene.add( points );
 
         return points;
     }
@@ -242,7 +247,7 @@ var Brain = function( camera, scene )
     /**
      * Creates legends for the layers.
      */
-    make_layer_names = function()
+    make_layer_names()
     {
         console.log( "Making layer names" );
 
@@ -255,17 +260,17 @@ var Brain = function( camera, scene )
         {
             if ( app.layer_points.hasOwnProperty( layer_name ) )
             {
-                center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
-                bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
+                // center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
+                // bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
 
-                name_pos = {
-                    x: center.x,
-                    y: center.y + bounding_radius - 0.1,
-                    z: center.z
-                };
+                // name_pos = {
+                    // x: center.x,
+                    // y: center.y + bounding_radius - 0.1,
+                    // z: center.z
+                // };
 
-                screenCenter = app.toScreenXY( name_pos );
-                screenCenter.y = app.container.clientHeight - screenCenter.y;
+                // screenCenter = app.toScreenXY( name_pos );
+                // screenCenter.y = app.container.clientHeight - screenCenter.y;
 
                 var text = document.createElement( 'div' );
                 text.className = 'unselectable';
@@ -276,12 +281,53 @@ var Brain = function( camera, scene )
                 text.style.color = "white";
                 text.style.fontSize = 18 + 'px'
                 text.innerHTML = layer_name;
-                text.style.top = screenCenter.y + 'px';
+                // text.style.top = screenCenter.y + 'px';
                 document.body.appendChild( text );
                 // adjust the position to align the center with the center of the layer
-                text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
+                // text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
+                this.updateLayerNamePosition(text)
             }
         }
+    }
+
+    /**
+     * Updates the position of 2D layer name in layerNameNode.
+     */
+    updateLayerNamePosition(layerNameNode)
+    {
+        var center;
+        var bounding_radius;
+        var name_pos;
+        var screenCenter;
+
+        var layer_name = layerNameNode.id.substr(0, layerNameNode.id.indexOf('_'))
+
+        center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
+        bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
+
+        name_pos = {
+            x: center.x,
+            y: center.y + bounding_radius - 0.1,
+            z: center.z
+        };
+
+        screenCenter = app.toScreenXY( name_pos );
+        screenCenter.y = app.container.clientHeight - screenCenter.y;
+
+        // var text = document.createElement( 'div' );
+        // text.className = 'unselectable';
+        // text.id = layer_name + '_label';
+        // text.style.position = 'absolute';
+        // text.style.width = 100;
+        // text.style.height = 100;
+        // text.style.color = "white";
+        // text.style.fontSize = 18 + 'px'
+        // text.innerHTML = layer_name;
+        layerNameNode.style.top = screenCenter.y + 'px';
+        // document.body.appendChild( text );
+
+        // adjust the position to align the center with the center of the layer
+        layerNameNode.style.left = screenCenter.x - parseFloat( app.$( '#' + layerNameNode.id ).width() ) / 2.0 + 'px';
     }
 
     /**
@@ -290,7 +336,7 @@ var Brain = function( camera, scene )
     * elements is an array or string. If it is a string, number of elements equals 1. If we have
     * an array, it can consist of strings and numbers.
     */
-    function getNumberOfElements(elements)
+    getNumberOfElements(elements)
     {
         if ( typeof elements === "string" )
         {
@@ -321,7 +367,7 @@ var Brain = function( camera, scene )
     /**
      * Fills a list with names of models and synapse models.
      */
-    function makeModelNameLists()
+    makeModelNameLists()
     {
         var nModels = app.modelParameters.models;
         app.synModels = app.modelParameters.syn_models;
@@ -339,7 +385,7 @@ var Brain = function( camera, scene )
         app.synapseNeuronModelCallback([app.neuronModels, app.synModels]);
     }
 
-    function makeBorderLines()
+    makeBorderLines()
     {
         for ( var layer in app.layer_points )
         {
@@ -361,8 +407,8 @@ var Brain = function( camera, scene )
         }
     }
 
-    initLayers();
-};
+} // end of class Brain
+
 
 // Try exporting Brain for testing
 try

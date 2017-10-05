@@ -53,7 +53,7 @@ beforeEach( () => {
 test( 'Test GUI init', () => {
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
-    brain( app.camera, app.scene );
+    app.brain = new brain( app.camera, app.scene );
     GUI.makeGUI();
 } );
 
@@ -61,7 +61,7 @@ test('Test GUI callbacks', () => {
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
     GUI.makeGUI();
-    brain(app.camera, app.scene);
+    app.brain = new brain(app.camera, app.scene);
 
     expect(document.getElementById('reactroot').style.display).toBe("none");
     app.setShowGUI(true);

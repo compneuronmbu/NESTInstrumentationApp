@@ -31,7 +31,7 @@ beforeEach( () => {
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
     app.is3DLayer = MODELPARAMETERS.is3DLayer;
-    brain( app.camera, app.scene );
+    app.brain = new brain( app.camera, app.scene );
 
     app.camera.position.set( 0, 0, 2.5 );
     app.camera.aspect = app.renderer.getSize().width / app.renderer.getSize().height;

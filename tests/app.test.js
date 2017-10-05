@@ -120,8 +120,8 @@ test('Test makeBrainRepresentation', () => {
     }
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
-    brain(app.camera, app.scene);
-    make_layer_names();
+    app.brain = new brain(app.camera, app.scene);
+    app.brain.make_layer_names();
     expect(app.scene.children.length).toBe(2);
 });
 
@@ -257,7 +257,7 @@ test('Test getGIDPoint', () => {
     }
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS
-    brain(app.camera, app.scene);
+    app.brain = new brain(app.camera, app.scene);
     expect(app.getGIDPoint( 2 )).toMatchObject({layer: "Excitatory", pointIndex: 0});
     expect(app.getGIDPoint( 1601 )).toMatchObject({layer: "Excitatory", pointIndex: 4797});
     expect(app.getGIDPoint( 1603 )).toMatchObject({layer: "Inhibitory", pointIndex: 0});
@@ -274,7 +274,7 @@ test('Test colorFromVm and colorFromSpike', () => {
     }
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS
-    brain(app.camera, app.scene);
+    app.brain = new brain(app.camera, app.scene);
 
     var points = app.layer_points[ "Excitatory" ].points;
     var colorRef = points.geometry.getAttribute( "customColor" ).array;
@@ -567,7 +567,7 @@ test('Test loadFromJSON', () => {
     app.camera.aspect = app.renderer.getSize().width / app.renderer.getSize().height;
     app.camera.updateProjectionMatrix();
     app.modelParameters = MODELPARAMETERS
-    brain(app.camera, app.scene);
+    app.brain = new brain(app.camera, app.scene);
     
     var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]}}}'
     app.loadFromJSON(textJSON);
@@ -654,6 +654,11 @@ test('Test makeStimulationDevice and makeRecordingDevice', () => {
 test('Test render', () => {
     // Only checks that nothing crashes
     app.THREE = require('three');  // import THREE into the app
+    app.brain = function()
+    {
+        return {html: jest.fn()}
+    }
+    app.brain.make_layer_names = jest.fn();
     app.camera = new app.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
     app.camera2 = new app.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
     app.scene2 = new app.THREE.Scene();
