@@ -1,4 +1,120 @@
 /**
+ * Represents a connection line between a selection and a device.
+ *
+ * @param {Object} ll Lower left coordinates.
+ * @param {Object} ur Upper right coordinates.
+ * @param {Bool} is3D If we are in the 2D or 3D version of the app.
+ */
+class ConnectionLine
+{
+    constructor( ll, ur, is3D )
+    {
+        this.CURVE_SEGMENTS = 100;
+        this.ll = ll;
+        this.ur = ur;
+        this.is3D = is3D;
+        this.target = "";
+    }
+
+    /**
+     * Creates a line representing a connection, that is to be connected to a
+     * device.
+     */
+    makeLine()
+    {
+        var curveZPos = this.is3D ? ( this.ll.z + this.ur.z ) / 2.0 : 0;
+        this.curve = new app.THREE.CatmullRomCurve3( [
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, curveZPos ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, curveZPos ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, curveZPos ),
+            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, curveZPos )
+        ] );
+        this.curve.type = 'chordal';
+        var curveGeometry = new app.THREE.Geometry();
+        curveGeometry.vertices = this.curve.getPoints( this.CURVE_SEGMENTS );
+        this.curveMaterial = new app.THREE.LineBasicMaterial(
+        {
+            color: 0xffca28,
+            linewidth: 3
+        } );
+        this.curveObject = new app.THREE.Line( curveGeometry, this.curveMaterial );
+    }
+
+    /**
+     * Given the mouse position and current box dimensions, 
+     * updates the connection line.
+     */
+    updateLine(newEndPos, radius)
+    {
+        var centreX = ( this.ll.x + this.ur.x ) / 2;
+        var direction = 1;
+        var endLength = 0.015;
+
+        var endPos = ( newEndPos === undefined ) ? this.curve.points[ 3 ] : newEndPos;
+        if ( endPos.x < centreX )
+        {
+            this.curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ll.x : this.ur.x;
+        }
+        else
+        {
+            this.curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ur.x : this.ll.x;
+            direction = -1;
+        }
+
+        this.curve.points[ 0 ].y = ( this.ll.y + this.ur.y ) / 2;
+        this.curve.points[ 1 ].x = this.curve.points[ 0 ].x + direction * -endLength;
+        this.curve.points[ 1 ].y = this.curve.points[ 0 ].y;
+        if (this.is3D)
+        {
+            this.curve.points[ 1 ].z = this.curve.points[ 0 ].z;
+            this.curve.points[ 0 ].z = ( this.ll.z + this.ur.z ) / 2;
+        }
+
+        if ( newEndPos !== undefined )
+        {
+            this.curve.points[ 3 ].x = newEndPos.x + direction * radius;
+            this.curve.points[ 3 ].y = newEndPos.y;
+            this.curve.points[ 2 ].x = this.curve.points[ 3 ].x + direction * endLength;
+            this.curve.points[ 2 ].y = this.curve.points[ 3 ].y;
+            if (this.is3D)
+            {
+                this.curve.points[ 3 ].z = newEndPos.z;
+                this.curve.points[ 2 ].z = this.curve.points[ 3 ].z;
+            }
+        }
+
+        for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
+        {
+            // console.log(this.curve.getPoint( i / ( this.CURVE_SEGMENTS ) ));
+            this.curveObject.geometry.vertices[ i ].copy( this.curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
+        }
+        this.curveObject.geometry.verticesNeedUpdate = true;
+    }
+
+    /**
+     * Updates the start position of all lines of this selection box.
+     */
+    updateLineStart(ll, ur)
+    {
+        this.ll = ll;
+        this.ur = ur;
+        this.updateLine( undefined, 0 );
+    }
+
+    /**
+     * Updates the end positions of lines connecting to a specific target device.
+     */
+    updateLineEnd( newPos, target, radius = 0 )
+    {
+        if ( this.target === target )
+        {
+            this.updateLine( newPos, radius );
+        }
+    }
+}
+
+
+/**
  * Represents a selection of neurons in 2D space.
  *
  * @param {Object} ll Lower left coordinates.
@@ -34,12 +150,10 @@ class SelectionBox
 
         this.currentCurve;
         this.currentCurveObject;
-        this.curves = [];
+        this.lines = [];
 
         this.selectedPointIDs = [];
         this.nSelected = 0;
-
-        this.CURVE_SEGMENTS = 100;
 
         this.makeBox();
         this.getLayerName();
@@ -281,29 +395,13 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        this.currentCurve = new app.THREE.CatmullRomCurve3( [
-            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 ),
-            new app.THREE.Vector3( selectionBounds.ur.x, ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2.0, 0.0 )
-        ] );
-        this.currentCurve.type = 'chordal';
-        var curveGeometry = new app.THREE.Geometry();
-        curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
-        var curveMaterial = new app.THREE.LineBasicMaterial(
-        {
-            color: 0xffca28,
-            linewidth: 3
-        } );
-        this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
+        var line = new ConnectionLine(selectionBounds.ll, selectionBounds.ur, false);
+        line.makeLine();
+        this.currentCurveObject = line.curveObject;
+        this.currentCurve = line.curve;
         app.scene.add( this.currentCurveObject );
 
-        this.curves.push(
-        {
-            curveObject: this.currentCurveObject,
-            curve: this.currentCurve,
-            target: ""
-        } );
+        this.lines.push(line);
     }
 
     /**
@@ -311,49 +409,7 @@ class SelectionBox
      */
     setLineTarget( device )
     {
-        this.curves[ this.curves.length - 1 ].target = device;
-    }
-
-    /**
-     * Updates the endpoint of a line.
-     */
-    updateLine( newEndPos, curveIndex, radius )
-    {
-        var curveObject = this.curves[ curveIndex ].curveObject;
-        var curve = this.curves[ curveIndex ].curve;
-
-        var selectionBounds = this.getSelectionBounds();
-        var centreX = ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2;
-        var direction = 1;
-        var endLength = 0.015;
-
-        var endPos = ( newEndPos === undefined ) ? curve.points[ 3 ] : newEndPos;
-        if ( endPos.x < centreX )
-        {
-            curve.points[ 0 ].x = ( selectionBounds.ll.x < selectionBounds.ur.x ) ? selectionBounds.ll.x : selectionBounds.ur.x;
-        }
-        else
-        {
-            curve.points[ 0 ].x = ( selectionBounds.ll.x < selectionBounds.ur.x ) ? selectionBounds.ur.x : selectionBounds.ll.x;
-            direction = -1;
-        }
-
-        curve.points[ 0 ].y = ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2;
-        curve.points[ 1 ].x = curve.points[ 0 ].x + direction * -endLength;
-        curve.points[ 1 ].y = curve.points[ 0 ].y;
-
-        if ( newEndPos !== undefined )
-        {
-            curve.points[ 3 ].x = newEndPos.x + direction * radius;
-            curve.points[ 3 ].y = newEndPos.y;
-            curve.points[ 2 ].x = curve.points[ 3 ].x + direction * endLength;
-            curve.points[ 2 ].y = curve.points[ 3 ].y;
-        }
-        for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
-        {
-            curveObject.geometry.vertices[ i ].copy( curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
-        }
-        curveObject.geometry.verticesNeedUpdate = true;
+        this.lines[ this.lines.length - 1 ].target = device;
     }
 
     /**
@@ -361,9 +417,10 @@ class SelectionBox
      */
     updateLineStart()
     {
-        for ( var i in this.curves )
+        var selectionBounds = this.getSelectionBounds();
+        for (var i = 0; i < this.lines.length; ++i)
         {
-            this.updateLine( undefined, i, 0 );
+            this.lines[i].updateLineStart(selectionBounds.ll, selectionBounds.ur);
         }
     }
 
@@ -372,12 +429,9 @@ class SelectionBox
      */
     updateLineEnd( newPos, target, radius = 0 )
     {
-        for ( var i in this.curves )
+        for (var i = 0; i < this.lines.length; ++i)
         {
-            if ( this.curves[ i ].target === target )
-            {
-                this.updateLine( newPos, i, radius );
-            }
+            this.lines[i].updateLineEnd(newPos, target, radius);
         }
     }
 
@@ -412,31 +466,33 @@ class SelectionBox
     removeLine()
     {
         app.scene.remove( this.currentCurveObject );
-        this.curves.pop();
+        this.lines.pop();
     }
 
     /**
      * Removes all lines, or optionally a line connected to a specific target
      * device.
+     *
+     * @param {String} target Optional target device.
      */
     removeLines( target = "" )
     {
-        for ( var i = 0; i < this.curves.length; ++i )
+        for ( var i = 0; i < this.lines.length; ++i )
         {
             if ( target === "" )
             {
-                app.scene.remove( this.curves[ i ].curveObject );
+                app.scene.remove( this.lines[ i ].curveObject );
             }
-            else if ( target === this.curves[ i ].target )
+            else if ( target === this.lines[ i ].target )
             {
-                app.scene.remove( this.curves[ i ].curveObject );
-                this.curves.splice( i, 1 );
+                app.scene.remove( this.lines[ i ].curveObject );
+                this.lines.splice( i, 1 );
                 break;
             }
         }
         if ( target === "" )
         {
-            this.curves = [];
+            this.lines = [];
         }
     }
 
@@ -883,12 +939,10 @@ class SelectionBox3D
 
         this.currentCurve;
         this.currentCurveObject;
-        this.curves = [];
+        this.lines = [];
 
         this.selectedPoints = {};
         // this.nSelected = 0;
-
-        this.CURVE_SEGMENTS = 100;
 
         this.makeBox();
         this.box.scale.set( scale.x, scale.y, scale.z );
@@ -1012,6 +1066,7 @@ class SelectionBox3D
         this.setInactive();
         app.scene.remove( this.borderBox );
 
+        var points;
         var colorID;
         var colors;
         var oldPoints = this.selectedPoints;
@@ -1252,77 +1307,15 @@ class SelectionBox3D
      */
     makeLine()
     {
-        console.log("makeLine");
-        this.currentCurve = new app.THREE.CatmullRomCurve3( [
-            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
-            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
-            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 ),
-            new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, ( this.ll.z + this.ur.z ) / 2.0 )
-        ] );
-        this.currentCurve.type = 'chordal';
-        var curveGeometry = new app.THREE.Geometry();
-        curveGeometry.vertices = this.currentCurve.getPoints( this.CURVE_SEGMENTS );
-        var curveMaterial = new app.THREE.LineBasicMaterial(
-        {
-            color: 0xffca28,
-            linewidth: 3
-        } );
-        this.currentCurveObject = new app.THREE.Line( curveGeometry, curveMaterial );
+        var line = new ConnectionLine(this.ll, this.ur, false);
+        line.makeLine();
+        this.currentCurveObject = line.curveObject;
+        this.currentCurve = line.curve;
         app.scene.add( this.currentCurveObject );
 
-        this.curves.push(
-        {
-            curveObject: this.currentCurveObject,
-            curve: this.currentCurve,
-            target: ""
-        } );
+        this.lines.push(line);
 
         app.enableOrbitControls( false );
-    }
-
-    /*
-     * Updates the endpoint of a line.
-     */
-    updateLine( newEndPos, curveIndex, radius )
-    {
-        var curveObject = this.curves[ curveIndex ].curveObject;
-        var curve = this.curves[ curveIndex ].curve;
-
-        var centreX = ( this.ll.x + this.ur.x ) / 2;
-        var direction = 1;
-        var endLength = 0.015;
-
-        var endPos = ( newEndPos === undefined ) ? curve.points[ 3 ] : newEndPos;
-        if ( endPos.x < centreX )
-        {
-            curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ll.x : this.ur.x;
-        }
-        else
-        {
-            curve.points[ 0 ].x = ( this.ll.x < this.ur.x ) ? this.ur.x : this.ll.x;
-            direction = -1;
-        }
-
-        curve.points[ 0 ].y = ( this.ll.y + this.ur.y ) / 2;
-        curve.points[ 0 ].z = ( this.ll.z + this.ur.z ) / 2;
-        curve.points[ 1 ].x = curve.points[ 0 ].x + direction * -endLength;
-        curve.points[ 1 ].y = curve.points[ 0 ].y;
-        curve.points[ 1 ].z = curve.points[ 0 ].z;
-
-        if ( newEndPos !== undefined )
-        {
-            curve.points[ 3 ].x = newEndPos.x + direction * radius;
-            curve.points[ 3 ].y = newEndPos.y;
-            curve.points[ 3 ].z = newEndPos.z;
-            curve.points[ 2 ].x = curve.points[ 3 ].x + direction * endLength;
-            curve.points[ 2 ].y = curve.points[ 3 ].y;
-            curve.points[ 2 ].z = curve.points[ 3 ].z;
-        }
-        for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
-        {
-            curveObject.geometry.vertices[ i ].copy( curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
-        }
-        curveObject.geometry.verticesNeedUpdate = true;
     }
 
     /*
@@ -1330,9 +1323,9 @@ class SelectionBox3D
      */
     updateLineStart()
     {
-        for ( var i in this.curves )
+        for (var i = 0; i < this.lines.length; ++i)
         {
-            this.updateLine( undefined, i, 0 );
+            this.lines[i].updateLineStart(this.ll, this.ur);
         }
     }
 
@@ -1341,12 +1334,9 @@ class SelectionBox3D
      */
     updateLineEnd( newPos, target, radius = 0 )
     {
-        for ( var i in this.curves )
+        for (var i = 0; i < this.lines.length; ++i)
         {
-            if ( this.curves[ i ].target === target )
-            {
-                this.updateLine( newPos, i, radius );
-            }
+            this.lines[i].updateLineEnd(newPos, target, radius);
         }
     }
 
@@ -1356,7 +1346,7 @@ class SelectionBox3D
     removeLine()
     {
         app.scene.remove( this.currentCurveObject );
-        this.curves.pop();
+        this.lines.pop();
     }
 
     /*
@@ -1365,22 +1355,22 @@ class SelectionBox3D
      */
     removeLines( target = "" )
     {
-        for ( var i = 0; i < this.curves.length; ++i )
+        for ( var i = 0; i < this.lines.length; ++i )
         {
             if ( target === "" )
             {
-                app.scene.remove( this.curves[ i ].curveObject );
+                app.scene.remove( this.lines[ i ].curveObject );
             }
-            else if ( target === this.curves[ i ].target )
+            else if ( target === this.lines[ i ].target )
             {
-                app.scene.remove( this.curves[ i ].curveObject );
-                this.curves.splice( i, 1 );
+                app.scene.remove( this.lines[ i ].curveObject );
+                this.lines.splice( i, 1 );
                 break;
             }
         }
         if ( target === "" )
         {
-            this.curves = [];
+            this.lines = [];
         }
     }
 
@@ -1389,7 +1379,7 @@ class SelectionBox3D
      */
     setLineTarget( device )
     {
-        this.curves[ this.curves.length - 1 ].target = device;
+        this.lines[ this.lines.length - 1 ].target = device;
     }
 
     /*

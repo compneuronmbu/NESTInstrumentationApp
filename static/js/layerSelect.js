@@ -1242,6 +1242,7 @@ class App  // TODO: rename App -> ???
      */
     render()
     {
+        console.log('Rendering..')
         if ( this.orbitControls )
         {
             this.orbitControls.update();

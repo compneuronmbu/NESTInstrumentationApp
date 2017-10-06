@@ -696,7 +696,7 @@ class Controls
             this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
             this.mouseMoved = true;
-            requestAnimationFrame( app.render.bind(app) );
+            this.mouseDown && requestAnimationFrame( app.render.bind(app) );
         }
         if ( this.make_selection_box )
         {
@@ -824,6 +824,7 @@ class Controls
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "scale" );
         }
+        requestAnimationFrame( app.render.bind(app) );
     }
 
     /**

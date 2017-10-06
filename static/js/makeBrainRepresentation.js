@@ -104,7 +104,13 @@ class Brain
             success: function( data )
             {
                 document.getElementById("loadingOverlay").style.display = "none";
+                // Render to show the points
                 requestAnimationFrame( app.render.bind(app) );
+                // Rendering again after some time because the compiled shaders
+                // may be slow to initialize propperly.
+                setTimeout(function(){
+                    requestAnimationFrame( app.render.bind(app) );
+                }, 1000);
             },
             dataType: "json"
         } );

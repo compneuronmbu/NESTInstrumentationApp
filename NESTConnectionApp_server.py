@@ -245,8 +245,5 @@ if __name__ == '__main__':
 
     #print('Serving on https://127.0.0.1:8443/NESTConnectionApp')
     server = gevent.pywsgi.WSGIServer(('', 7000), app, keyfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.key', certfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.pem')
-    #server = gevent.pywsgi.WSGIServer(('', 7000), app, keyfile='server.key', certfile='server.crt')
-    #server = gevent.pywsgi.WSGIServer(('', 7000), app, certfile='~/certs/fsd-cloud42_zam_kfa-juelich_de.pem')
-    #print('Serving on http://127.0.0.1:5000/NESTConnectionApp')
-    #server = gevent.pywsgi.WSGIServer(("", 7000), app)
+    # server = gevent.pywsgi.WSGIServer(("", 7000), app)
     server.serve_forever()
