@@ -212,6 +212,13 @@ class App  // TODO: rename App -> ???
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
         }
+        else if ( target.id === "hillTononi3D" )
+        {
+            console.log("Hill-Tononi 3D!");
+            JSONstring = "/static/examples/hill_tononi_3D_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+        }
         else if ( target.id === 'loadOwn' )
         {
             console.log("Custom made model!");
