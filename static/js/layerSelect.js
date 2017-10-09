@@ -279,12 +279,13 @@ class App  // TODO: rename App -> ???
                 this.modelParameters = result;
                 console.log(result)
                 this.is3DLayer = this.modelParameters.is3DLayer;
-                Brain( this.camera, this.scene );
+                this.brain = new Brain();
                 // Hide buttons after clicking on it.
                 this.$("#modelButtons").css( { display: "none" } );
                 this.$("#startButtons").html( "Reload page to display model buttons again." );
                 this.initHelp();
             } catch(e) {
+                console.log(e.message)
                 window.alert("Please upload a correct JSON file");
             }
         }.bind(this)
