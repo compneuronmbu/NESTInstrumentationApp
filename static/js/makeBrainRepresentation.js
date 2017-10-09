@@ -29,22 +29,16 @@ class Brain
             }
         }
 
-        if ( number_of_layers > 12 )
-        {
-            window.alert( "Please reconsider the number of layers. The app is constructed to properly display at most 12 layers." );
-        }
-
         var offsett_x;
         var offsett_y;
+        var no_rows = Math.round( Math.sqrt( number_of_layers ) );
         if ( app.is3DLayer )
         {
             offsett_x = 0.0;
             offsett_y = 0.0;
-            var no_rows = 1;
         }
         else
         {
-            var no_rows = Math.round( Math.sqrt( number_of_layers ) );
             var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
             offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;

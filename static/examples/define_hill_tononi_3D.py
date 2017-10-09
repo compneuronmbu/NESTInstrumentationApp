@@ -129,170 +129,281 @@ def make_layers():
     # Generate all the positions first to avoid overlapping.
     #quasi_rand_pos = sl.i4_sobol_generate(3, P.NE + P.NI, seed())
     total_number = params['Np'] * params['Np']
-    quasi_rand_pos = sl.i4_sobol_generate(3, 8*total_number, seed())
+    quasi_rand_pos = sl.i4_sobol_generate(3, 21*total_number, seed())
     print("Number of points: {}".format(len(quasi_rand_pos[0])))
 
-    quasi_rand_Vp_h_23 = [quasi_rand_pos[0][:total_number],
-                          quasi_rand_pos[1][:total_number],
-                          quasi_rand_pos[2][:total_number]]
-    quasi_rand_Vp_h_4 = [quasi_rand_pos[0][total_number:2*total_number],
-                         quasi_rand_pos[1][total_number:2*total_number],
-                         quasi_rand_pos[2][total_number:2*total_number]]
-    quasi_rand_Vp_h_56 = [quasi_rand_pos[0][2*total_number:3*total_number],
-                          quasi_rand_pos[1][2*total_number:3*total_number],
-                          quasi_rand_pos[2][2*total_number:3*total_number]]
-    quasi_rand_Vp_v_23 = [quasi_rand_pos[0][3*total_number:4*total_number],
-                          quasi_rand_pos[1][3*total_number:4*total_number],
-                          quasi_rand_pos[2][3*total_number:4*total_number]]
-    quasi_rand_Vp_v_4 = [quasi_rand_pos[0][4*total_number:5*total_number],
-                         quasi_rand_pos[1][4*total_number:5*total_number],
-                         quasi_rand_pos[2][4*total_number:5*total_number]]
-    quasi_rand_Vp_v_56 = [quasi_rand_pos[0][5*total_number:6*total_number],
-                          quasi_rand_pos[1][5*total_number:6*total_number],
-                          quasi_rand_pos[2][5*total_number:6*total_number]]
-    quasi_rand_Tp = [quasi_rand_pos[0][6*total_number:7*total_number],
-                     quasi_rand_pos[1][6*total_number:7*total_number],
-                     quasi_rand_pos[2][6*total_number:7*total_number]]
-    quasi_rand_Rp = [quasi_rand_pos[0][7*total_number:8*total_number],
-                     quasi_rand_pos[1][7*total_number:8*total_number],
-                     quasi_rand_pos[2][7*total_number:8*total_number]]
+    quasi_rand_Vp_h_23_ex = [quasi_rand_pos[0][:2*total_number],
+                             quasi_rand_pos[1][:2*total_number],
+                             quasi_rand_pos[2][:2*total_number]]
+    quasi_rand_Vp_h_23_in = [quasi_rand_pos[0][2*total_number:3*total_number],
+                             quasi_rand_pos[1][2*total_number:3*total_number],
+                             quasi_rand_pos[2][2*total_number:3*total_number]]
 
-    dxVp_h = 1.0 / float( total_number )
-    Vp_h_x_start_pos = - ( ( 1.0 - dxVp_h ) / 2.0 ) + 0.6
-    Vp_h_x_end_pos = ( 1.0 - dxVp_h ) / 2.0 + 0.6
+    quasi_rand_Vp_h_4_ex = [quasi_rand_pos[0][3*total_number:5*total_number],
+                            quasi_rand_pos[1][3*total_number:5*total_number],
+                            quasi_rand_pos[2][3*total_number:5*total_number]]
+    quasi_rand_Vp_h_4_in = [quasi_rand_pos[0][5*total_number:6*total_number],
+                            quasi_rand_pos[1][5*total_number:6*total_number],
+                            quasi_rand_pos[2][5*total_number:6*total_number]]
 
-    dyVp_h_23 = 0.5 / float( total_number )
-    Vp_h_23_y_start_pos = - ( ( 0.5 - dyVp_h_23 ) / 2.0 ) + 0.9
-    Vp_h_23_y_end_pos = ( 0.5 - dyVp_h_23 ) / 2.0 + 0.9
+    quasi_rand_Vp_h_56_ex = [quasi_rand_pos[0][6*total_number:8*total_number],
+                             quasi_rand_pos[1][6*total_number:8*total_number],
+                             quasi_rand_pos[2][6*total_number:8*total_number]]
+    quasi_rand_Vp_h_56_in = [quasi_rand_pos[0][8*total_number:9*total_number],
+                             quasi_rand_pos[1][8*total_number:9*total_number],
+                             quasi_rand_pos[2][8*total_number:9*total_number]]
+
+    quasi_rand_Vp_v_23_ex = [quasi_rand_pos[0][9*total_number:11*total_number],
+                             quasi_rand_pos[1][9*total_number:11*total_number],
+                             quasi_rand_pos[2][9*total_number:11*total_number]]
+    quasi_rand_Vp_v_23_in = [quasi_rand_pos[0][11*total_number:12*total_number],
+                             quasi_rand_pos[1][11*total_number:12*total_number],
+                             quasi_rand_pos[2][11*total_number:12*total_number]]
+
+    quasi_rand_Vp_v_4_ex = [quasi_rand_pos[0][12*total_number:14*total_number],
+                            quasi_rand_pos[1][12*total_number:14*total_number],
+                            quasi_rand_pos[2][12*total_number:14*total_number]]
+    quasi_rand_Vp_v_4_in = [quasi_rand_pos[0][14*total_number:15*total_number],
+                            quasi_rand_pos[1][14*total_number:15*total_number],
+                            quasi_rand_pos[2][14*total_number:15*total_number]]
+
+    quasi_rand_Vp_v_56_ex = [quasi_rand_pos[0][15*total_number:17*total_number],
+                             quasi_rand_pos[1][15*total_number:17*total_number],
+                             quasi_rand_pos[2][15*total_number:17*total_number]]
+    quasi_rand_Vp_v_56_in = [quasi_rand_pos[0][17*total_number:18*total_number],
+                             quasi_rand_pos[1][17*total_number:18*total_number],
+                             quasi_rand_pos[2][17*total_number:18*total_number]]
+
+    quasi_rand_Tp_relay = [quasi_rand_pos[0][18*total_number:19*total_number],
+                           quasi_rand_pos[1][18*total_number:19*total_number],
+                           quasi_rand_pos[2][18*total_number:19*total_number]]
+    quasi_rand_Tp_inter = [quasi_rand_pos[0][19*total_number:20*total_number],
+                           quasi_rand_pos[1][19*total_number:20*total_number],
+                           quasi_rand_pos[2][19*total_number:20*total_number]]
+
+    quasi_rand_Rp = [quasi_rand_pos[0][20*total_number:21*total_number],
+                     quasi_rand_pos[1][20*total_number:21*total_number],
+                     quasi_rand_pos[2][20*total_number:21*total_number]]
+
+    dxVp_h_ex = 1.0 / float( 2*total_number )
+    Vp_h_ex_x_start_pos = - ( ( 1.0 - dxVp_h_ex ) / 2.0 ) + 0.6
+    Vp_h_ex_x_end_pos = ( 1.0 - dxVp_h_ex ) / 2.0 + 0.6
+
+    dyVp_h_23_ex = 0.5 / float( 2*total_number )
+    Vp_h_23_ex_y_start_pos = - ( ( 0.5 - dyVp_h_23_ex ) / 2.0 ) + 1.1
+    Vp_h_23_ex_y_end_pos = ( 0.5 - dyVp_h_23_ex ) / 2.0 + 1.1
     
-    dyVp_h_4 = 0.3 / float( total_number )
-    Vp_h_4_y_start_pos = - ( ( 0.3 - dyVp_h_4 ) / 2.0 ) + 0.5
-    Vp_h_4_y_end_pos = ( 0.3 - dyVp_h_4 ) / 2.0 + 0.5
+    dyVp_h_4_ex = 0.5 / float( 2*total_number )
+    Vp_h_4_ex_y_start_pos = - ( ( 0.5 - dyVp_h_4_ex ) / 2.0 ) + 0.6
+    Vp_h_4_ex_y_end_pos = ( 0.5 - dyVp_h_4_ex ) / 2.0 + 0.6
 
-    dyVp_h_56 = 0.7 / float( total_number )
-    Vp_h_56_y_start_pos = - ( ( 0.7 - dyVp_h_56 ) / 2.0 ) - 0.
-    Vp_h_56_y_end_pos = ( 0.7 - dyVp_h_56 ) / 2.0 - 0.
+    dyVp_h_56_ex = 0.5 / float( 2*total_number )
+    Vp_h_56_ex_y_start_pos = - ( ( 0.5 - dyVp_h_56_ex ) / 2.0 ) + 0.1
+    Vp_h_56_ex_y_end_pos = ( 0.5 - dyVp_h_56_ex ) / 2.0 + 0.1
 
-    dzVp_h = 1.0 / float( total_number )
-    Vp_h_z_start_pos = - ( ( 1.0 - dzVp_h ) / 2.0 )
-    Vp_h_z_end_pos = ( 1.0 - dzVp_h ) / 2.0
+    dzVp_h_ex = 1.0 / float( 2*total_number )
+    Vp_h_ex_z_start_pos = - ( ( 1.0 - dzVp_h_ex ) / 2.0 )
+    Vp_h_ex_z_end_pos = ( 1.0 - dzVp_h_ex ) / 2.0
 
-    # dzVp_h_23 = 0.5 / float( total_number )
-    # Vp_h_23_z_start_pos = - ( ( 0.5 - dzVp_h_23 ) / 2.0 ) + 0.9
-    # Vp_h_23_z_end_pos = ( 0.5 - dzVp_h_23 ) / 2.0 + 0.9
+    Vp_h_23_ex_pos = [Vp_h_ex_x_start_pos + quasi_rand_Vp_h_23_ex[0] * (Vp_h_ex_x_end_pos - Vp_h_ex_x_start_pos),
+                      Vp_h_23_ex_y_start_pos + quasi_rand_Vp_h_23_ex[1] * (Vp_h_23_ex_y_end_pos - Vp_h_23_ex_y_start_pos),
+                      Vp_h_ex_z_start_pos + quasi_rand_Vp_h_23_ex[2] * (Vp_h_ex_z_end_pos - Vp_h_ex_z_start_pos)]
+    Vp_h_4_ex_pos = [Vp_h_ex_x_start_pos + quasi_rand_Vp_h_4_ex[0] * (Vp_h_ex_x_end_pos - Vp_h_ex_x_start_pos),
+                     Vp_h_4_ex_y_start_pos + quasi_rand_Vp_h_4_ex[1] * (Vp_h_4_ex_y_end_pos - Vp_h_4_ex_y_start_pos),
+                     Vp_h_ex_z_start_pos + quasi_rand_Vp_h_4_ex[2] * (Vp_h_ex_z_end_pos - Vp_h_ex_z_start_pos)]
+    Vp_h_56_ex_pos = [Vp_h_ex_x_start_pos + quasi_rand_Vp_h_56_ex[0] * (Vp_h_ex_x_end_pos - Vp_h_ex_x_start_pos),
+                      Vp_h_56_ex_y_start_pos + quasi_rand_Vp_h_56_ex[1] * (Vp_h_56_ex_y_end_pos - Vp_h_56_ex_y_start_pos),
+                      Vp_h_ex_z_start_pos + quasi_rand_Vp_h_56_ex[2] * (Vp_h_ex_z_end_pos - Vp_h_ex_z_start_pos)]
+
+    Vp_h_23_ex_positions = [[Vp_h_23_ex_pos[0][i],
+                             Vp_h_23_ex_pos[1][i],
+                             Vp_h_23_ex_pos[2][i]] for i in range(2*total_number)]
+    Vp_h_4_ex_positions = [[Vp_h_4_ex_pos[0][i],
+                            Vp_h_4_ex_pos[1][i],
+                            Vp_h_4_ex_pos[2][i]] for i in range(2*total_number)]
+    Vp_h_56_ex_positions = [[Vp_h_56_ex_pos[0][i],
+                             Vp_h_56_ex_pos[1][i],
+                             Vp_h_56_ex_pos[2][i]] for i in range(2*total_number)]
+
+
+
+    dxVp_h_in = 1.0 / float( 1*total_number )
+    Vp_h_in_x_start_pos = - ( ( 1.0 - dxVp_h_in ) / 2.0 ) + 0.6
+    Vp_h_in_x_end_pos = ( 1.0 - dxVp_h_in ) / 2.0 + 0.6
+
+    dyVp_h_23_in = 0.5 / float( 1*total_number )
+    Vp_h_23_in_y_start_pos = - ( ( 0.5 - dyVp_h_23_in ) / 2.0 ) + 1.1
+    Vp_h_23_in_y_end_pos = ( 0.5 - dyVp_h_23_in ) / 2.0 + 1.1
     
-    # dzVp_h_4 = 0.3 / float( total_number )
-    # Vp_h_4_z_start_pos = - ( ( 0.3 - dzVp_h_4 ) / 2.0 ) + 0.5
-    # Vp_h_4_z_end_pos = ( 0.3 - dzVp_h_4 ) / 2.0 + 0.5
+    dyVp_h_4_in = 0.5 / float( 1*total_number )
+    Vp_h_4_in_y_start_pos = - ( ( 0.5 - dyVp_h_4_in ) / 2.0 ) + 0.6
+    Vp_h_4_in_y_end_pos = ( 0.5 - dyVp_h_4_in ) / 2.0 + 0.6
 
-    # dzVp_h_56 = 0.7 / float( total_number )
-    # Vp_h_56_z_start_pos = - ( ( 0.7 - dzVp_h_56 ) / 2.0 ) - 0.
-    # Vp_h_56_z_end_pos = ( 0.7 - dzVp_h_56 ) / 2.0 - 0.
+    dyVp_h_56_in = 0.5 / float( 1*total_number )
+    Vp_h_56_in_y_start_pos = - ( ( 0.5 - dyVp_h_56_in ) / 2.0 ) + 0.1
+    Vp_h_56_in_y_end_pos = ( 0.5 - dyVp_h_56_in ) / 2.0 + 0.1
 
-    Vp_h_23_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_23[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                   Vp_h_23_y_start_pos + quasi_rand_Vp_h_23[1] * (Vp_h_23_y_end_pos - Vp_h_23_y_start_pos),
-                   Vp_h_z_start_pos + quasi_rand_Vp_h_23[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
-    Vp_h_4_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_4[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                  Vp_h_4_y_start_pos + quasi_rand_Vp_h_4[1] * (Vp_h_4_y_end_pos - Vp_h_4_y_start_pos),
-                  Vp_h_z_start_pos + quasi_rand_Vp_h_4[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
-    Vp_h_56_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_56[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                   Vp_h_56_y_start_pos + quasi_rand_Vp_h_56[1] * (Vp_h_56_y_end_pos - Vp_h_56_y_start_pos),
-                   Vp_h_z_start_pos + quasi_rand_Vp_h_56[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
+    dzVp_h_in = 1.0 / float( 1*total_number )
+    Vp_h_in_z_start_pos = - ( ( 1.0 - dzVp_h_in ) / 2.0 )
+    Vp_h_in_z_end_pos = ( 1.0 - dzVp_h_in ) / 2.0
 
+    Vp_h_23_in_pos = [Vp_h_in_x_start_pos + quasi_rand_Vp_h_23_in[0] * (Vp_h_in_x_end_pos - Vp_h_in_x_start_pos),
+                      Vp_h_23_in_y_start_pos + quasi_rand_Vp_h_23_in[1] * (Vp_h_23_in_y_end_pos - Vp_h_23_in_y_start_pos),
+                      Vp_h_in_z_start_pos + quasi_rand_Vp_h_23_in[2] * (Vp_h_in_z_end_pos - Vp_h_in_z_start_pos)]
+    Vp_h_4_in_pos = [Vp_h_in_x_start_pos + quasi_rand_Vp_h_4_in[0] * (Vp_h_in_x_end_pos - Vp_h_in_x_start_pos),
+                     Vp_h_4_in_y_start_pos + quasi_rand_Vp_h_4_in[1] * (Vp_h_4_in_y_end_pos - Vp_h_4_in_y_start_pos),
+                     Vp_h_in_z_start_pos + quasi_rand_Vp_h_4_in[2] * (Vp_h_in_z_end_pos - Vp_h_in_z_start_pos)]
+    Vp_h_56_in_pos = [Vp_h_in_x_start_pos + quasi_rand_Vp_h_56_in[0] * (Vp_h_in_x_end_pos - Vp_h_in_x_start_pos),
+                      Vp_h_56_in_y_start_pos + quasi_rand_Vp_h_56_in[1] * (Vp_h_56_in_y_end_pos - Vp_h_56_in_y_start_pos),
+                      Vp_h_in_z_start_pos + quasi_rand_Vp_h_56_in[2] * (Vp_h_in_z_end_pos - Vp_h_in_z_start_pos)]
 
-    Vp_h_23_positions = [[Vp_h_23_pos[0][i],
-                          Vp_h_23_pos[1][i],
-                          Vp_h_23_pos[2][i]] for i in range(total_number)]
-    Vp_h_4_positions = [[Vp_h_4_pos[0][i],
-                         Vp_h_4_pos[1][i],
-                         Vp_h_4_pos[2][i]] for i in range(total_number)]
-    Vp_h_56_positions = [[Vp_h_56_pos[0][i],
-                          Vp_h_56_pos[1][i],
-                          Vp_h_56_pos[2][i]] for i in range(total_number)]
-
-    dxVp_v = 1.0 / float( total_number )
-    Vp_v_x_start_pos = - ( ( 1.0 - dxVp_v ) / 2.0 ) - 0.6
-    Vp_v_x_end_pos = ( 1.0 - dxVp_v ) / 2.0 - 0.6
-
-    dyVp_v_23 = 0.5 / float( total_number )
-    Vp_v_23_y_start_pos = - ( ( 0.5 - dyVp_v_23 ) / 2.0 ) + 0.9
-    Vp_v_23_y_end_pos = ( 0.5 - dyVp_v_23 ) / 2.0 + 0.9
-
-    dyVp_v_4 = 0.3 / float( total_number )
-    Vp_v_4_y_start_pos = - ( ( 0.3 - dyVp_v_4 ) / 2.0 ) + 0.5
-    Vp_v_4_y_end_pos = ( 0.3 - dyVp_v_4 ) / 2.0 + 0.5
-
-    dyVp_v_56 = 0.7 / float( total_number )
-    Vp_v_56_y_start_pos = - ( ( 0.7 - dyVp_v_56 ) / 2.0 ) - 0.0
-    Vp_v_56_y_end_pos = ( 0.7 - dyVp_v_56 ) / 2.0 - 0.0
-
-    dzVp_v = 1.0 / float( total_number )
-    Vp_v_z_start_pos = - ( ( 1.0 - dzVp_v ) / 2.0 )
-    Vp_v_z_end_pos = ( 1.0 - dzVp_v ) / 2.0
-
-    # dzVp_v_23 = 0.5 / float( total_number )
-    # Vp_v_23_z_start_pos = - ( ( 0.5 - dzVp_v_23 ) / 2.0 ) + 0.9
-    # Vp_v_23_z_end_pos = ( 0.5 - dzVp_v_23 ) / 2.0 + 0.9
-
-    # dzVp_v_4 = 0.3 / float( total_number )
-    # Vp_v_4_z_start_pos = - ( ( 0.3 - dzVp_v_4 ) / 2.0 ) + 0.5
-    # Vp_v_4_z_end_pos = ( 0.3 - dzVp_v_4 ) / 2.0 + 0.5
-
-    # dzVp_v_56 = 0.7 / float( total_number )
-    # Vp_v_56_z_start_pos = - ( ( 0.7 - dzVp_v_56 ) / 2.0 ) - 0.0
-    # Vp_v_56_z_end_pos = ( 0.7 - dzVp_v_56 ) / 2.0 - 0.0
-
-
-    Vp_v_23_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_23[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                   Vp_v_23_y_start_pos + quasi_rand_Vp_v_23[1] * (Vp_v_23_y_end_pos - Vp_v_23_y_start_pos),
-                   Vp_v_z_start_pos + quasi_rand_Vp_v_23[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
-    Vp_v_4_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_4[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                  Vp_v_4_y_start_pos + quasi_rand_Vp_v_4[1] * (Vp_v_4_y_end_pos - Vp_v_4_y_start_pos),
-                  Vp_v_z_start_pos + quasi_rand_Vp_v_4[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
-    Vp_v_56_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_56[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                   Vp_v_56_y_start_pos + quasi_rand_Vp_v_56[1] * (Vp_v_56_y_end_pos - Vp_v_56_y_start_pos),
-                   Vp_v_z_start_pos + quasi_rand_Vp_v_56[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
-
-
-    Vp_v_23_positions = [[Vp_v_23_pos[0][i],
-                          Vp_v_23_pos[1][i],
-                          Vp_v_23_pos[2][i]] for i in range(total_number)]
-    Vp_v_4_positions = [[Vp_v_4_pos[0][i],
-                         Vp_v_4_pos[1][i],
-                         Vp_v_4_pos[2][i]] for i in range(total_number)]
-    Vp_v_56_positions = [[Vp_v_56_pos[0][i],
-                          Vp_v_56_pos[1][i],
-                          Vp_v_56_pos[2][i]] for i in range(total_number)]
+    Vp_h_23_in_positions = [[Vp_h_23_in_pos[0][i],
+                             Vp_h_23_in_pos[1][i],
+                             Vp_h_23_in_pos[2][i]] for i in range(1*total_number)]
+    Vp_h_4_in_positions = [[Vp_h_4_in_pos[0][i],
+                            Vp_h_4_in_pos[1][i],
+                            Vp_h_4_in_pos[2][i]] for i in range(1*total_number)]
+    Vp_h_56_in_positions = [[Vp_h_56_in_pos[0][i],
+                             Vp_h_56_in_pos[1][i],
+                             Vp_h_56_in_pos[2][i]] for i in range(1*total_number)]
 
 
 
-    dxTp = 1.0 / float( total_number )
-    Tp_x_start_pos = - ( ( 1.0 - dxTp ) / 2.0 )
-    Tp_x_end_pos = ( 1.0 - dxTp ) / 2.0
+    dxVp_v_ex = 1.0 / float( 2*total_number )
+    Vp_v_ex_x_start_pos = - ( ( 1.0 - dxVp_v_ex ) / 2.0 ) - 0.6
+    Vp_v_ex_x_end_pos = ( 1.0 - dxVp_v_ex ) / 2.0 - 0.6
 
-    dyTp = 0.5 / float( total_number )
-    Tp_y_start_pos = - ( ( 0.5 - dyTp ) / 2.0 ) - 1.1
-    Tp_y_end_pos = ( 0.5 - dyTp ) / 2.0 - 1.1
+    dyVp_v_23_ex = 0.5 / float( 2*total_number )
+    Vp_v_23_ex_y_start_pos = - ( ( 0.5 - dyVp_v_23_ex ) / 2.0 ) + 1.1
+    Vp_v_23_ex_y_end_pos = ( 0.5 - dyVp_v_23_ex ) / 2.0 + 1.1
 
-    dzTp = 1. / float( total_number )
-    Tp_z_start_pos = - ( ( 1.0 - dzTp ) / 2.0 )
-    Tp_z_end_pos = ( 1.0 - dzTp ) / 2.0
+    dyVp_v_4_ex = 0.5 / float( 2*total_number )
+    Vp_v_4_ex_y_start_pos = - ( ( 0.5 - dyVp_v_4_ex ) / 2.0 ) + 0.6
+    Vp_v_4_ex_y_end_pos = ( 0.5 - dyVp_v_4_ex ) / 2.0 + 0.6
 
-    Tp_pos = [Tp_x_start_pos + quasi_rand_Tp[0] * (Tp_x_end_pos - Tp_x_start_pos),
-              Tp_y_start_pos + quasi_rand_Tp[1] * (Tp_y_end_pos - Tp_y_start_pos),
-              Tp_z_start_pos + quasi_rand_Tp[2] * (Tp_z_end_pos - Tp_z_start_pos)]
+    dyVp_v_56_ex = 0.5 / float( 2*total_number )
+    Vp_v_56_ex_y_start_pos = - ( ( 0.5 - dyVp_v_56_ex ) / 2.0 ) + 0.1
+    Vp_v_56_ex_y_end_pos = ( 0.5 - dyVp_v_56_ex ) / 2.0 + 0.1
 
-    Tp_positions = [[Tp_pos[0][i],
-                     Tp_pos[1][i],
-                     Tp_pos[2][i]] for i in range(total_number)]
+    dzVp_v_ex = 1.0 / float( 2*total_number )
+    Vp_v_ex_z_start_pos = - ( ( 1.0 - dzVp_v_ex ) / 2.0 )
+    Vp_v_ex_z_end_pos = ( 1.0 - dzVp_v_ex ) / 2.0
+
+    Vp_v_23_ex_pos = [Vp_v_ex_x_start_pos + quasi_rand_Vp_v_23_ex[0] * (Vp_v_ex_x_end_pos - Vp_v_ex_x_start_pos),
+                      Vp_v_23_ex_y_start_pos + quasi_rand_Vp_v_23_ex[1] * (Vp_v_23_ex_y_end_pos - Vp_v_23_ex_y_start_pos),
+                      Vp_v_ex_z_start_pos + quasi_rand_Vp_v_23_ex[2] * (Vp_v_ex_z_end_pos - Vp_v_ex_z_start_pos)]
+    Vp_v_4_ex_pos = [Vp_v_ex_x_start_pos + quasi_rand_Vp_v_4_ex[0] * (Vp_v_ex_x_end_pos - Vp_v_ex_x_start_pos),
+                     Vp_v_4_ex_y_start_pos + quasi_rand_Vp_v_4_ex[1] * (Vp_v_4_ex_y_end_pos - Vp_v_4_ex_y_start_pos),
+                     Vp_v_ex_z_start_pos + quasi_rand_Vp_v_4_ex[2] * (Vp_v_ex_z_end_pos - Vp_v_ex_z_start_pos)]
+    Vp_v_56_ex_pos = [Vp_v_ex_x_start_pos + quasi_rand_Vp_v_56_ex[0] * (Vp_v_ex_x_end_pos - Vp_v_ex_x_start_pos),
+                      Vp_v_56_ex_y_start_pos + quasi_rand_Vp_v_56_ex[1] * (Vp_v_56_ex_y_end_pos - Vp_v_56_ex_y_start_pos),
+                      Vp_v_ex_z_start_pos + quasi_rand_Vp_v_56_ex[2] * (Vp_v_ex_z_end_pos - Vp_v_ex_z_start_pos)]
+
+    Vp_v_23_ex_positions = [[Vp_v_23_ex_pos[0][i],
+                             Vp_v_23_ex_pos[1][i],
+                             Vp_v_23_ex_pos[2][i]] for i in range(2*total_number)]
+    Vp_v_4_ex_positions = [[Vp_v_4_ex_pos[0][i],
+                            Vp_v_4_ex_pos[1][i],
+                            Vp_v_4_ex_pos[2][i]] for i in range(2*total_number)]
+    Vp_v_56_ex_positions = [[Vp_v_56_ex_pos[0][i],
+                             Vp_v_56_ex_pos[1][i],
+                             Vp_v_56_ex_pos[2][i]] for i in range(2*total_number)]
+
+
+
+    dxVp_v_in = 1.0 / float( 1*total_number )
+    Vp_v_in_x_start_pos = - ( ( 1.0 - dxVp_v_in ) / 2.0 ) - 0.6
+    Vp_v_in_x_end_pos = ( 1.0 - dxVp_v_in ) / 2.0 - 0.6
+
+    dyVp_v_23_in = 0.5 / float( 1*total_number )
+    Vp_v_23_in_y_start_pos = - ( ( 0.5 - dyVp_v_23_in ) / 2.0 ) + 1.1
+    Vp_v_23_in_y_end_pos = ( 0.5 - dyVp_v_23_in ) / 2.0 + 1.1
+
+    dyVp_v_4_in = 0.5 / float( 1*total_number )
+    Vp_v_4_in_y_start_pos = - ( ( 0.5 - dyVp_v_4_in ) / 2.0 ) + 0.6
+    Vp_v_4_in_y_end_pos = ( 0.5 - dyVp_v_4_in ) / 2.0 + 0.6
+
+    dyVp_v_56_in = 0.5 / float( 1*total_number )
+    Vp_v_56_in_y_start_pos = - ( ( 0.5 - dyVp_v_56_in ) / 2.0 ) + 0.1
+    Vp_v_56_in_y_end_pos = ( 0.5 - dyVp_v_56_in ) / 2.0 + 0.1
+
+    dzVp_v_in = 1.0 / float( 1*total_number )
+    Vp_v_in_z_start_pos = - ( ( 1.0 - dzVp_v_in ) / 2.0 )
+    Vp_v_in_z_end_pos = ( 1.0 - dzVp_v_in ) / 2.0
+
+    Vp_v_23_in_pos = [Vp_v_in_x_start_pos + quasi_rand_Vp_v_23_in[0] * (Vp_v_in_x_end_pos - Vp_v_in_x_start_pos),
+                      Vp_v_23_in_y_start_pos + quasi_rand_Vp_v_23_in[1] * (Vp_v_23_in_y_end_pos - Vp_v_23_in_y_start_pos),
+                      Vp_v_in_z_start_pos + quasi_rand_Vp_v_23_in[2] * (Vp_v_in_z_end_pos - Vp_v_in_z_start_pos)]
+    Vp_v_4_in_pos = [Vp_v_in_x_start_pos + quasi_rand_Vp_v_4_in[0] * (Vp_v_in_x_end_pos - Vp_v_in_x_start_pos),
+                     Vp_v_4_in_y_start_pos + quasi_rand_Vp_v_4_in[1] * (Vp_v_4_in_y_end_pos - Vp_v_4_in_y_start_pos),
+                     Vp_v_in_z_start_pos + quasi_rand_Vp_v_4_in[2] * (Vp_v_in_z_end_pos - Vp_v_in_z_start_pos)]
+    Vp_v_56_in_pos = [Vp_v_in_x_start_pos + quasi_rand_Vp_v_56_in[0] * (Vp_v_in_x_end_pos - Vp_v_in_x_start_pos),
+                      Vp_v_56_in_y_start_pos + quasi_rand_Vp_v_56_in[1] * (Vp_v_56_in_y_end_pos - Vp_v_56_in_y_start_pos),
+                      Vp_v_in_z_start_pos + quasi_rand_Vp_v_56_in[2] * (Vp_v_in_z_end_pos - Vp_v_in_z_start_pos)]
+
+    Vp_v_23_in_positions = [[Vp_v_23_in_pos[0][i],
+                             Vp_v_23_in_pos[1][i],
+                             Vp_v_23_in_pos[2][i]] for i in range(1*total_number)]
+    Vp_v_4_in_positions = [[Vp_v_4_in_pos[0][i],
+                            Vp_v_4_in_pos[1][i],
+                            Vp_v_4_in_pos[2][i]] for i in range(1*total_number)]
+    Vp_v_56_in_positions = [[Vp_v_56_in_pos[0][i],
+                             Vp_v_56_in_pos[1][i],
+                             Vp_v_56_in_pos[2][i]] for i in range(1*total_number)]
+
+
+
+    dxTp_relay = 1.0 / float( total_number )
+    Tp_relay_x_start_pos = - ( ( 1.0 - dxTp_relay ) / 2.0 )
+    Tp_relay_x_end_pos = ( 1.0 - dxTp_relay ) / 2.0
+
+    dyTp_relay = 0.5 / float( total_number )
+    Tp_relay_y_start_pos = - ( ( 0.5 - dyTp_relay ) / 2.0 ) - 0.7
+    Tp_relay_y_end_pos = ( 0.5 - dyTp_relay ) / 2.0 - 0.7
+
+    dzTp_relay = 1. / float( total_number )
+    Tp_relay_z_start_pos = - ( ( 1.0 - dzTp_relay ) / 2.0 )
+    Tp_relay_z_end_pos = ( 1.0 - dzTp_relay ) / 2.0
+
+    Tp_relay_pos = [Tp_relay_x_start_pos + quasi_rand_Tp_relay[0] * (Tp_relay_x_end_pos - Tp_relay_x_start_pos),
+                    Tp_relay_y_start_pos + quasi_rand_Tp_relay[1] * (Tp_relay_y_end_pos - Tp_relay_y_start_pos),
+                    Tp_relay_z_start_pos + quasi_rand_Tp_relay[2] * (Tp_relay_z_end_pos - Tp_relay_z_start_pos)]
+
+    Tp_relay_positions = [[Tp_relay_pos[0][i],
+                           Tp_relay_pos[1][i],
+                           Tp_relay_pos[2][i]] for i in range(total_number)]
+
+
+
+    dxTp_inter = 1.0 / float( total_number )
+    Tp_inter_x_start_pos = - ( ( 1.0 - dxTp_inter ) / 2.0 )
+    Tp_inter_x_end_pos = ( 1.0 - dxTp_inter ) / 2.0
+
+    dyTp_inter = 0.5 / float( total_number )
+    Tp_inter_y_start_pos = - ( ( 0.5 - dyTp_inter ) / 2.0 ) - 0.7
+    Tp_inter_y_end_pos = ( 0.5 - dyTp_inter ) / 2.0 - 0.7
+
+    dzTp_inter = 1. / float( total_number )
+    Tp_inter_z_start_pos = - ( ( 1.0 - dzTp_inter ) / 2.0 )
+    Tp_inter_z_end_pos = ( 1.0 - dzTp_inter ) / 2.0
+
+    Tp_inter_pos = [Tp_inter_x_start_pos + quasi_rand_Tp_inter[0] * (Tp_inter_x_end_pos - Tp_inter_x_start_pos),
+                    Tp_inter_y_start_pos + quasi_rand_Tp_inter[1] * (Tp_inter_y_end_pos - Tp_inter_y_start_pos),
+                    Tp_inter_z_start_pos + quasi_rand_Tp_inter[2] * (Tp_inter_z_end_pos - Tp_inter_z_start_pos)]
+
+    Tp_inter_positions = [[Tp_inter_pos[0][i],
+                           Tp_inter_pos[1][i],
+                           Tp_inter_pos[2][i]] for i in range(total_number)]
+
+
 
     dxRp = 1.0 / float( total_number )
     Rp_x_start_pos = - ( ( 1.0 - dxRp ) / 2.0 )
     Rp_x_end_pos = ( 1.0 - dxRp ) / 2.0
 
     dyRp = 0.5 / float( total_number )
-    Rp_y_start_pos = - ( ( 0.5 - dyRp ) / 2.0 ) - 1.6
-    Rp_y_end_pos = ( 0.5 - dyRp ) / 2.0 - 1.6
+    Rp_y_start_pos = - ( ( 0.5 - dyRp ) / 2.0 ) - 1.2
+    Rp_y_end_pos = ( 0.5 - dyRp ) / 2.0 - 1.2
 
     dzRp = 1.0 / float( total_number )
     Rp_z_start_pos = - ( ( 1.0 - dzRp ) / 2.0 )
@@ -313,55 +424,108 @@ def make_layers():
 #                   # 'center': [3, -1], # For testing purposes
 #                   'edge_wrap': True}
 
-    layerPropsPVp_h_23 = {'positions': Vp_h_23_positions,
-                       #'extent': [1., 1., 1.],
-                       'center': [0.6, 0.9, 0.0],
-                       'edge_wrap': True}
-    layerPropsPVp_h_4 = {'positions': Vp_h_4_positions,
-                       #'extent': [1., 1., 1.],
-                       'center': [0.6, 0.5, 0.0],
-                       'edge_wrap': True}
-    layerPropsPVp_h_56 = {'positions': Vp_h_56_positions,
-                       #'extent': [1., 1., 1.],
-                       'center': [0.6, 0.0, 0.0],
-                       'edge_wrap': True}
+    layerPropsPVp_h_23_ex = {'positions': Vp_h_23_ex_positions,
+                             'neuronType': 'excitatory',
+                             #'extent': [1., 1., 1.],
+                             'center': [0.6, 1.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_h_23_in = {'positions': Vp_h_23_in_positions,
+                             'neuronType': 'inhibitory',
+                             #'extent': [1., 1., 1.],
+                             'center': [0.6, 1.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_h_4_ex = {'positions': Vp_h_4_ex_positions,
+                            'neuronType': 'excitatory',
+                            #'extent': [1., 1., 1.],
+                            'center': [0.6, 0.6, 0.0],
+                            'edge_wrap': True}
+    layerPropsPVp_h_4_in = {'positions': Vp_h_4_in_positions,
+                            'neuronType': 'inhibitory',
+                            #'extent': [1., 1., 1.],
+                            'center': [0.6, 0.6, 0.0],
+                            'edge_wrap': True}
+    layerPropsPVp_h_56_ex = {'positions': Vp_h_56_ex_positions,
+                             'neuronType': 'excitatory',
+                             #'extent': [1., 1., 1.],
+                             'center': [0.6, 0.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_h_56_in = {'positions': Vp_h_56_in_positions,
+                             'neuronType': 'inhibitory',
+                             #'extent': [1., 1., 1.],
+                             'center': [0.6, 0.1, 0.0],
+                             'edge_wrap': True}
 
-    layerPropsPVp_v_23 = {'positions': Vp_v_23_positions,
-                       #'extent': [4., 4., 4.],
-                       'center': [-0.6, 0.9, 0.0],
-                       'edge_wrap': True}
-    layerPropsPVp_v_4 = {'positions': Vp_v_4_positions,
-                       #'extent': [4., 4., 4.],
-                       'center': [-0.6, 0.5, 0.0],
-                       'edge_wrap': True}
-    layerPropsPVp_v_56 = {'positions': Vp_v_56_positions,
-                       #'extent': [4., 4., 4.],
-                       'center': [-0.6, 0.0, 0.0],
-                       'edge_wrap': True}
+    layerPropsPVp_v_23_ex = {'positions': Vp_v_23_ex_positions,
+                             'neuronType': 'excitatory',
+                             #'extent': [4., 4., 4.],
+                             'center': [-0.6, 1.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_v_23_in = {'positions': Vp_v_23_in_positions,
+                             'neuronType': 'inhibitory',
+                             #'extent': [4., 4., 4.],
+                             'center': [-0.6, 1.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_v_4_ex = {'positions': Vp_v_4_ex_positions,
+                            'neuronType': 'excitatory',
+                            #'extent': [4., 4., 4.],
+                            'center': [-0.6, 0.6, 0.0],
+                            'edge_wrap': True}
+    layerPropsPVp_v_4_in = {'positions': Vp_v_4_in_positions,
+                            'neuronType': 'inhibitory',
+                            #'extent': [4., 4., 4.],
+                            'center': [-0.6, 0.6, 0.0],
+                            'edge_wrap': True}
+    layerPropsPVp_v_56_ex = {'positions': Vp_v_56_ex_positions,
+                             'neuronType': 'excitatory',
+                             #'extent': [4., 4., 4.],
+                             'center': [-0.6, 0.1, 0.0],
+                             'edge_wrap': True}
+    layerPropsPVp_v_56_in = {'positions': Vp_v_56_in_positions,
+                             'neuronType': 'inhibitory',
+                             #'extent': [4., 4., 4.],
+                             'center': [-0.6, 0.1, 0.0],
+                             'edge_wrap': True}
 
-    layerPropsPTp = {'positions': Tp_positions,
-                       #'extent': [4., 4., 4.],
-                       'center': [0., -1.1, 0.],
-                       'edge_wrap': True}
+    layerPropsPTp_relay = {'positions': Tp_relay_positions,
+                           #'extent': [4., 4., 4.],
+                           'center': [0., -0.7, 0.],
+                           'edge_wrap': True}
+    layerPropsPTp_inter = {'positions': Tp_inter_positions,
+                           #'extent': [4., 4., 4.],
+                           'center': [0., -0.7, 0.],
+                           'edge_wrap': True}
     layerPropsPRp = {'positions': Rp_positions,
-                       #'extent': [4., 4., 4.],
-                       'center': [0., -1.6, 0.],
-                       'edge_wrap': True}
+                     #'extent': [4., 4., 4.],
+                     'center': [0., -1.2, 0.],
+                     'edge_wrap': True}
 
-    layers = [('Tp', modified_copy(layerPropsPTp, {'elements': ['Relay', 'Inter']})),
+    layers = [('Tp_relay', modified_copy(layerPropsPTp_relay, {'elements': 'Inter'})),
+              ('Tp_inter', modified_copy(layerPropsPTp_inter, {'elements': 'Inter'})),
               ('Rp', modified_copy(layerPropsPRp, {'elements': 'RpNeuron'})),
-              ('Vp_h_23', modified_copy(layerPropsPVp_h_23, {'elements':
-                                             ['L23pyr', 2, 'L23in', 1]})),
-              ('Vp_h_4', modified_copy(layerPropsPVp_h_4, {'elements':
-                                             ['L4pyr', 2, 'L4in', 1]})),
-              ('Vp_h_56', modified_copy(layerPropsPVp_h_56, {'elements':
-                                             ['L56pyr', 2, 'L56in', 1]})),
-              ('Vp_v_23', modified_copy(layerPropsPVp_v_23, {'elements':
-                                             ['L23pyr', 2, 'L23in', 1]})),
-              ('Vp_v_4', modified_copy(layerPropsPVp_v_4, {'elements':
-                                             ['L4pyr', 2, 'L4in', 1]})),
-              ('Vp_v_56', modified_copy(layerPropsPVp_v_56, {'elements':
-                                             ['L56pyr', 2, 'L56in', 1]}))]
+              ('Vp_h_23_ex', modified_copy(layerPropsPVp_h_23_ex, {'elements':
+                                                                   'L23pyr'})),
+              ('Vp_h_23_in', modified_copy(layerPropsPVp_h_23_in, {'elements':
+                                                                   'L23in'})),
+              ('Vp_h_4_ex', modified_copy(layerPropsPVp_h_4_ex, {'elements':
+                                                                 'L4pyr'})),
+              ('Vp_h_4_in', modified_copy(layerPropsPVp_h_4_in, {'elements':
+                                                                 'L4in'})),
+              ('Vp_h_56_ex', modified_copy(layerPropsPVp_h_56_ex, {'elements':
+                                                                   'L56pyr'})),
+              ('Vp_h_56_in', modified_copy(layerPropsPVp_h_56_in, {'elements':
+                                                                   'L56in'})),
+              ('Vp_v_23_ex', modified_copy(layerPropsPVp_v_23_ex, {'elements':
+                                                                   'L23pyr'})),
+              ('Vp_v_23_in', modified_copy(layerPropsPVp_v_23_in, {'elements':
+                                                                   'L23in'})),
+              ('Vp_v_4_ex', modified_copy(layerPropsPVp_v_4_ex, {'elements':
+                                                                 'L4pyr'})),
+              ('Vp_v_4_in', modified_copy(layerPropsPVp_v_4_in, {'elements':
+                                                                 'L4in'})),
+              ('Vp_v_56_ex', modified_copy(layerPropsPVp_v_56_ex, {'elements':
+                                                                   'L56pyr'})),
+              ('Vp_v_56_in', modified_copy(layerPropsPVp_v_56_in, {'elements':
+                                                                   'L56in'}))]
 
     return layers, models, syn_models
 
@@ -383,7 +547,7 @@ def make_connections():
 
     horIntraBase = {"connection_type": "divergent",
                     "synapse_model": "AMPA",
-                    "mask": {"circular": {"radius": 12.0 * dpcP}},
+                    "mask": {"spherical": {"radius": 12.0 * dpcP}},
                     "kernel": {"gaussian": {"p_center": 0.05, "sigma": 7.5 * dpcP}},
                     "weights": 1.0,
                     "delays": {"uniform": {"min": 1.75, "max": 2.25}}}
@@ -392,9 +556,9 @@ def make_connections():
                  {"sources": {"model": "L23pyr"}, "targets": {"model": "L23pyr"}, 'synapse_model': 'NMDA'},
                  {"sources": {"model": "L23pyr"}, "targets": {"model": "L23in" }},
                  {"sources": {"model": "L4pyr" }, "targets": {"model": "L4pyr" },
-                  "mask"   : {"circular": {"radius": 7.0 * dpcP}}},
+                  "mask"   : {"spherical": {"radius": 7.0 * dpcP}}},
                  {"sources": {"model": "L4pyr" }, "targets": {"model": "L4in"  },
-                  "mask"   : {"circular": {"radius": 7.0 * dpcP}}},
+                  "mask"   : {"spherical": {"radius": 7.0 * dpcP}}},
                  {"sources": {"model": "L56pyr"}, "targets": {"model": "L56pyr" }},
                  {"sources": {"model": "L56pyr"}, "targets": {"model": "L56in"  }}]:
         ndict = horIntraBase.copy()
@@ -403,7 +567,7 @@ def make_connections():
         
     verIntraBase = {"connection_type": "divergent",
                     "synapse_model": "AMPA",
-                    "mask": {"circular": {"radius": 2.0 * dpcP}},
+                    "mask": {"spherical": {"radius": 2.0 * dpcP}},
                     "kernel": {"gaussian": {"p_center": 1.0, "sigma": 7.5 * dpcP}},
                     "weights": 2.0,
                     "delays": {"uniform": {"min": 1.75, "max": 2.25}}}
@@ -423,7 +587,7 @@ def make_connections():
 
     intraInhBase = {"connection_type": "divergent",
                     "synapse_model": "GABA_A",
-                    "mask": {"circular": {"radius": 7.0 * dpcP}},
+                    "mask": {"spherical": {"radius": 7.0 * dpcP}},
                     "kernel": {"gaussian": {"p_center": 0.25, "sigma": 7.5 * dpcP}},
                     "weights": 1.0,
                     "delays": {"uniform": {"min": 1.75, "max": 2.25}}}
@@ -441,7 +605,7 @@ def make_connections():
 
     intraInhBaseB = {"connection_type": "divergent",
                      "synapse_model": "GABA_B",
-                     "mask": {"circular": {"radius": 1.0 * dpcP}},
+                     "mask": {"spherical": {"radius": 1.0 * dpcP}},
                      "kernel": 0.3,
                      "weights": 1.0,
                      "delays": {"uniform": {"min": 1.75, "max": 2.25}}}
@@ -456,7 +620,7 @@ def make_connections():
         
     corThalBase = {"connection_type": "divergent",
                    "synapse_model": "AMPA",
-                   "mask": {"circular": {"radius": 5.0 * dpcP}},
+                   "mask": {"spherical": {"radius": 5.0 * dpcP}},
                    "kernel": {"gaussian": {"p_center": 0.5, "sigma": 7.5 * dpcP}},
                    "weights": 1.0,
                    "delays": {"uniform": {"min": 7.5, "max": 8.5}}}
@@ -496,16 +660,16 @@ def make_connections():
                    "delays": {"uniform": {"min": 2.75, "max": 3.25}}}
 
     #! Horizontally tuned
-    thalCorRect.update({"mask": {"rectangular": {"lower_left" : [-4.05*dpcP, -1.05*dpcP],
-                                                 "upper_right": [ 4.05*dpcP,  1.05*dpcP]}}})
+    thalCorRect.update({"mask": {"box": {"lower_left" : [-4.05*dpcP, -1.05*dpcP, -4.05*dpcP],
+                                         "upper_right": [ 4.05*dpcP,  1.05*dpcP,  4.05*dpcP]}}})
     for conn in [{"targets": {"model": "L4pyr" }, "kernel": 0.5},
                  {"targets": {"model": "L56pyr"}, "kernel": 0.3}]:
         thalCorRect.update(conn)
         allconns.append(['Tp','Vp_h', thalCorRect.copy()])
 
     #! Vertically tuned
-    thalCorRect.update({"mask": {"rectangular": {"lower_left" : [-1.05*dpcP, -4.05*dpcP],
-                                                 "upper_right": [ 1.05*dpcP,  4.05*dpcP]}}})
+    thalCorRect.update({"mask": {"box": {"lower_left" : [-1.05*dpcP, -4.05*dpcP, -1.05*dpcP],
+                                         "upper_right": [ 1.05*dpcP,  4.05*dpcP,  1.05*dpcP]}}})
     for conn in [{"targets": {"model": "L4pyr" }, "kernel": 0.5},
                  {"targets": {"model": "L56pyr"}, "kernel": 0.3}]:
         thalCorRect.update(conn)
@@ -516,7 +680,7 @@ def make_connections():
                    "sources": {"model": "Relay"},
                    "synapse_model": "AMPA",
                    "weights": 5.0,
-                   "mask": {"circular": {"radius": 5.0 * dpcP}},
+                   "mask": {"spherical": {"radius": 5.0 * dpcP}},
                    "kernel": {"gaussian": {"p_center": 0.1, "sigma": 7.5 * dpcP}},
                    "delays": {"uniform": {"min": 2.75, "max": 3.25}}}
     
@@ -532,36 +696,36 @@ def make_connections():
 
     for src, tgt, conn in [('Tp', 'Rp', {"sources": {"model": "Relay"},
                                          "synapse_model": "AMPA",
-                                         "mask": {"circular": {"radius": 2.0 * dpcP}},
+                                         "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "kernel": {"gaussian": {"p_center": 1.0, "sigma": 7.5 * dpcP}},
                                          "weights": 2.0}),
                            ('Tp', 'Tp', {"sources": {"model": "Inter"},
                                          "targets": {"model": "Relay"}, "synapse_model": "GABA_A",
-                                         "mask": {"circular": {"radius": 2.0 * dpcP}},
+                                         "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.25, "sigma": 7.5 * dpcP}}}),
                            ('Tp', 'Tp', {"sources": {"model": "Inter"},
                                          "targets": {"model": "Inter"}, "synapse_model": "GABA_A",
-                                         "mask": {"circular": {"radius": 2.0 * dpcP}},
+                                         "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.25, "sigma": 7.5 * dpcP}}}),
                            ('Rp', 'Tp', {"targets": {"model": "Relay"},
-                                         "mask": {"circular": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
+                                         "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.15, "sigma": 7.5 * dpcP}}}),
                            ('Rp', 'Tp', {"targets": {"model": "Relay"},
-                                         "mask": {"circular": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
+                                         "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.05, "sigma": 7.5 * dpcP}}}),
                            ('Rp', 'Tp', {"targets": {"model": "Inter"},
-                                         "mask": {"circular": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
+                                         "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.15, "sigma": 7.5 * dpcP}}}),
                            ('Rp', 'Tp', {"targets": {"model": "Inter"},
-                                         "mask": {"circular": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
+                                         "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.05, "sigma": 7.5 * dpcP}}}),
-                           ('Rp', 'Rp', {"mask": {"circular": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
+                           ('Rp', 'Rp', {"mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.5, "sigma": 7.5 * dpcP}}})]:
         thal = thalBase.copy()
@@ -579,9 +743,9 @@ def make_connections():
             # find correct spatial-to-grid factor, depends on target (no Gaussian convergent conns.)
             lam = dpcS if conn[1][:2] in ('Ts', 'Rs', 'Vs') else dpcP
 
-            # get mask size, assume here all are circular, radius is r * lam
-            assert("circular" in cdict["mask"])
-            r = cdict["mask"]["circular"]["radius"] / lam
+            # get mask size, assume here all are spherical, radius is r * lam
+            assert("spherical" in cdict["mask"])
+            r = cdict["mask"]["spherical"]["radius"] / lam
 
             # get current sigma, which is w * lam
             sig = kern["gaussian"]["sigma"]
@@ -598,7 +762,7 @@ def make_connections():
     for conn in allconns:
         cdict = conn[2]
         mask = cdict["mask"]
-        if "circular" in mask:
+        if "spherical" in mask:
 
             # find correct spatial-to-grid factor
             if cdict["connection_type"] == "divergent":
@@ -607,13 +771,13 @@ def make_connections():
                 lam = dpcS if conn[0][:2] in ('Ts', 'Rs', 'Vs') else dpcP
 
             # radius in grid units
-            r = mask["circular"]["radius"] / lam
+            r = mask["spherical"]["radius"] / lam
 
             # corner dislocation from center for edge length 2r+1, in spatial units
             d = 0.5 * (2*r+1) * lam
 
             # new mask
-            cdict["mask"]={'rectangular': {'lower_left': [-d, -d], 'upper_right': [d, d]}}
+            cdict["mask"]={'box': {'lower_left': [-d, -d, -d], 'upper_right': [d, d, d]}}
         
     return allconns
 
