@@ -27,6 +27,7 @@ class Controls
         this.boxInFocus;
         this.resizeSideInFocus;
         this.deviceInFocus;
+        this.lineInFocus;
         this.rotationPoint;
 
         this.curveObject;
@@ -136,6 +137,7 @@ class Controls
     getMouseIntersecting( mouseX, mouseY, objects )
     {
         this.raycaster = new app.THREE.Raycaster();
+        this.raycaster.linePrecision = 0.05;
         var rect = this.domElement.getBoundingClientRect();
         var mouse = new app.THREE.Vector2();
         mouse.x = ( ( mouseX - rect.left ) / rect.width ) * 2 - 1;
@@ -147,7 +149,6 @@ class Controls
         {
             return [];
         }
-        
         return this.raycaster.intersectObjects( objects );
     }
 
@@ -353,6 +354,29 @@ class Controls
         return selectedBox;
     }
 
+    /*
+     * Selects a connection line if any are being clicked at.
+     */
+    selectLine()
+    {
+        var selectedLine = undefined;
+        var lines = app.getConnectionLines();
+        app.tmpLine = lines[0];
+        var lineIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+                    app.mouseDownCoords.y,
+                    lines );
+        if ( lineIntersects.length > 0 )
+        {
+            selectedLine = lineIntersects[0].object.parentObject;
+        }
+        if ( selectedLine !== undefined )
+        {
+            this.lineInFocus = selectedLine;
+            this.lineInFocus.setActive();
+        }
+        
+    }
+
     /**
      * Given the mouse position, updates the marquee dimensions.
      */
@@ -523,6 +547,7 @@ class Controls
         if ( app.layerSelected === "" )
         {
             this.boxInFocus.removeBox();
+            this.boxInFocus = undefined;
             this.resetButtons();
             return;
         }
@@ -653,6 +678,10 @@ class Controls
 
             this.deviceInFocus = undefined;
             this.removeOutline();
+            if( this.lineInFocus !== undefined)
+            {
+                this.lineInFocus.setInactive();
+            }
 
             if ( this.boxInFocus !== undefined )
             {
@@ -676,9 +705,16 @@ class Controls
             }
             else
             {
-                console.log( "Select box" )
                 // If neither of the above, check if we click on a box.
-                this.selectBox()
+                this.selectBox();
+                console.log(this.boxInFocus)
+                if ( this.boxInFocus !== undefined && !this.nothingClicked )
+                {
+                    return;
+                }
+                // If no box was selected, check if we click on a line.
+                this.selectLine();
+                console.log(this.lineInFocus);
             }
         }
     }
@@ -841,14 +877,19 @@ class Controls
                 {
                     this.deleteBox();
                 }
-                else if ( this.deviceInFocus != undefined )
+                else if ( this.deviceInFocus !== undefined )
                 {
                     this.deleteDevice();
+                }
+                else if ( this.lineInFocus !== undefined )
+                {
+                    this.lineInFocus.remove();
                 }
                 break;
             case 16:  // shift key
                 console.log("shift up");
                 this.shiftDown = false;
+                console.log(app.deviceBoxMap);
                 break;
             case 82:  // R key
                 this.boxInFocus

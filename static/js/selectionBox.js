@@ -7,13 +7,16 @@
  */
 class ConnectionLine
 {
-    constructor( ll, ur, is3D )
+    constructor( ll, ur, is3D, parent )
     {
         this.CURVE_SEGMENTS = 100;
+        this.LINECOLOUR = 0xffca28;
+        this.ACTIVECOLOUR = 0x28FFCC;
         this.ll = ll;
         this.ur = ur;
         this.is3D = is3D;
         this.target = "";
+        this.parent = parent;
     }
 
     /**
@@ -30,14 +33,15 @@ class ConnectionLine
             new app.THREE.Vector3( this.ur.x, ( this.ll.y + this.ur.y ) / 2.0, curveZPos )
         ] );
         this.curve.type = 'chordal';
-        var curveGeometry = new app.THREE.Geometry();
-        curveGeometry.vertices = this.curve.getPoints( this.CURVE_SEGMENTS );
+        this.curveGeometry = new app.THREE.Geometry();
+        this.curveGeometry.vertices = this.curve.getPoints( this.CURVE_SEGMENTS );
         this.curveMaterial = new app.THREE.LineBasicMaterial(
         {
-            color: 0xffca28,
+            color: this.LINECOLOUR,
             linewidth: 3
         } );
-        this.curveObject = new app.THREE.Line( curveGeometry, this.curveMaterial );
+        this.curveObject = new app.THREE.Line( this.curveGeometry, this.curveMaterial );
+        this.curveObject.parentObject = this;
     }
 
     /**
@@ -110,6 +114,32 @@ class ConnectionLine
         {
             this.updateLine( newPos, radius );
         }
+    }
+
+    /**
+     * Marks the connection line as active by changing the colour.
+     */
+    setActive()
+    {
+        this.curveMaterial.color.set( this.ACTIVECOLOUR );
+    }
+
+    /**
+     * Marks the connection line as inactive by resetting the colour.
+     */
+    setInactive()
+    {
+        this.curveMaterial.color.set( this.LINECOLOUR );
+    }
+
+    /**
+     * Removes the registered connection and removes the connection line.
+     */
+    remove()
+    {
+        var index = app.deviceBoxMap[ this.target ].connectees.indexOf( this.parent );
+        app.deviceBoxMap[ this.target ].connectees.splice( index, 1 );
+        this.parent.removeLines( this.target );
     }
 }
 
@@ -395,7 +425,7 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        var line = new ConnectionLine(selectionBounds.ll, selectionBounds.ur, false);
+        var line = new ConnectionLine(selectionBounds.ll, selectionBounds.ur, false, this);
         line.makeLine();
         this.currentCurveObject = line.curveObject;
         this.currentCurve = line.curve;
@@ -1307,7 +1337,7 @@ class SelectionBox3D
      */
     makeLine()
     {
-        var line = new ConnectionLine(this.ll, this.ur, false);
+        var line = new ConnectionLine(this.ll, this.ur, false, this);
         line.makeLine();
         this.currentCurveObject = line.curveObject;
         this.currentCurve = line.curve;

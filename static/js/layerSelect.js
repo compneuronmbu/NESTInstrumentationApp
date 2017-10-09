@@ -1219,6 +1219,28 @@ class App  // TODO: rename App -> ???
     }
 
     /**
+     * Gets all connection lines.
+     *
+     * @returns {Array} ConnectionLine objects.
+     */
+    getConnectionLines()
+    {
+        var lineObjects = [];
+        for ( var i in this.selectionBoxArray )
+        {
+            for (var j = 0; j < this.selectionBoxArray[ i ].lines.length; ++j)
+            {
+                var line = this.selectionBoxArray[ i ].lines[ j ].curveObject;
+                // Make sure boundingBox and boundingSphere are updated
+                line.parentObject.curveGeometry.boundingSphere = null;
+                line.parentObject.curveGeometry.boundingBox = null;
+                lineObjects.push( line );
+            }
+        }
+        return lineObjects;
+    }
+
+    /**
      * Makes all points visible.
      */
     resetVisibility()
