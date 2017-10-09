@@ -1431,26 +1431,6 @@ class SelectionBox3D
         var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         var selectedShape = this.selectedShape;
 
-        // Extent and center needs to be the same for all layers.
-        var extent = app.layer_points[ Object.keys( app.layer_points )[ 0 ] ].extent;
-        var center = app.layer_points[ Object.keys( app.layer_points )[ 0 ] ].center;
-
-        // We currently do not have a offset in 3D.
-        var selectionBox = {
-            "ll":
-            {
-                x: this.ll.x * extent[ 0 ] + center[ 0 ],
-                y: this.ll.y * extent[ 1 ] + center[ 1 ],
-                z: this.ll.z * extent[ 2 ] + center[ 2 ]
-            },
-            "ur":
-            {
-                x: this.ur.x * extent[ 0 ] + center[ 0 ],
-                y: this.ur.y * extent[ 1 ] + center[ 1 ],
-                z: this.ur.z * extent[ 2 ] + center[ 2 ]
-            }
-        };
-
         var nameArray = [];
         var noNeuronPointsDict = {}
         for ( var layerName in app.layer_points )
@@ -1461,7 +1441,7 @@ class SelectionBox3D
 
         var selectionInfo = {
             name: nameArray,
-            selection: { "ll": this.ll, "ur": this.ur }, //selectionBox,
+            selection: { "ll": this.ll, "ur": this.ur },
             azimuthAngle: this.azimuthAngle,
             polarAngle: this.polarAngle,
             neuronType: selectedNeuronType,
