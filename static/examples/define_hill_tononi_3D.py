@@ -157,34 +157,47 @@ def make_layers():
                      quasi_rand_pos[1][7*total_number:8*total_number],
                      quasi_rand_pos[2][7*total_number:8*total_number]]
 
-    dxyVp_h = 1.0 / float( total_number )
-    Vp_h_x_start_pos = - ( ( 1.0 - dxyVp_h ) / 2.0 )
-    Vp_h_x_end_pos = ( 1.0 - dxyVp_h ) / 2.0
+    dxVp_h = 1.0 / float( total_number )
+    Vp_h_x_start_pos = - ( ( 1.0 - dxVp_h ) / 2.0 ) + 0.6
+    Vp_h_x_end_pos = ( 1.0 - dxVp_h ) / 2.0 + 0.6
 
-    Vp_h_y_start_pos = - ( ( 1.0 - dxyVp_h ) / 2.0 ) - 0.6
-    Vp_h_y_end_pos = ( 1.0 - dxyVp_h ) / 2.0 - 0.6
-
-    dzVp_h_23 = 0.5 / float( total_number )
-    Vp_h_23_z_start_pos = - ( ( 0.5 - dzVp_h_23 ) / 2.0 ) + 0.9
-    Vp_h_23_z_end_pos = ( 0.5 - dzVp_h_23 ) / 2.0 + 0.9
+    dyVp_h_23 = 0.5 / float( total_number )
+    Vp_h_23_y_start_pos = - ( ( 0.5 - dyVp_h_23 ) / 2.0 ) + 0.9
+    Vp_h_23_y_end_pos = ( 0.5 - dyVp_h_23 ) / 2.0 + 0.9
     
-    dzVp_h_4 = 0.3 / float( total_number )
-    Vp_h_4_z_start_pos = - ( ( 0.3 - dzVp_h_4 ) / 2.0 ) + 0.5
-    Vp_h_4_z_end_pos = ( 0.3 - dzVp_h_4 ) / 2.0 + 0.5
+    dyVp_h_4 = 0.3 / float( total_number )
+    Vp_h_4_y_start_pos = - ( ( 0.3 - dyVp_h_4 ) / 2.0 ) + 0.5
+    Vp_h_4_y_end_pos = ( 0.3 - dyVp_h_4 ) / 2.0 + 0.5
 
-    dzVp_h_56 = 0.7 / float( total_number )
-    Vp_h_56_z_start_pos = - ( ( 0.7 - dzVp_h_56 ) / 2.0 ) - 0.
-    Vp_h_56_z_end_pos = ( 0.7 - dzVp_h_56 ) / 2.0 - 0.
+    dyVp_h_56 = 0.7 / float( total_number )
+    Vp_h_56_y_start_pos = - ( ( 0.7 - dyVp_h_56 ) / 2.0 ) - 0.
+    Vp_h_56_y_end_pos = ( 0.7 - dyVp_h_56 ) / 2.0 - 0.
+
+    dzVp_h = 1.0 / float( total_number )
+    Vp_h_z_start_pos = - ( ( 1.0 - dzVp_h ) / 2.0 )
+    Vp_h_z_end_pos = ( 1.0 - dzVp_h ) / 2.0
+
+    # dzVp_h_23 = 0.5 / float( total_number )
+    # Vp_h_23_z_start_pos = - ( ( 0.5 - dzVp_h_23 ) / 2.0 ) + 0.9
+    # Vp_h_23_z_end_pos = ( 0.5 - dzVp_h_23 ) / 2.0 + 0.9
+    
+    # dzVp_h_4 = 0.3 / float( total_number )
+    # Vp_h_4_z_start_pos = - ( ( 0.3 - dzVp_h_4 ) / 2.0 ) + 0.5
+    # Vp_h_4_z_end_pos = ( 0.3 - dzVp_h_4 ) / 2.0 + 0.5
+
+    # dzVp_h_56 = 0.7 / float( total_number )
+    # Vp_h_56_z_start_pos = - ( ( 0.7 - dzVp_h_56 ) / 2.0 ) - 0.
+    # Vp_h_56_z_end_pos = ( 0.7 - dzVp_h_56 ) / 2.0 - 0.
 
     Vp_h_23_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_23[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                   Vp_h_y_start_pos + quasi_rand_Vp_h_23[1] * (Vp_h_y_end_pos - Vp_h_y_start_pos),
-                   Vp_h_23_z_start_pos + quasi_rand_Vp_h_23[2] * (Vp_h_23_z_end_pos - Vp_h_23_z_start_pos)]
+                   Vp_h_23_y_start_pos + quasi_rand_Vp_h_23[1] * (Vp_h_23_y_end_pos - Vp_h_23_y_start_pos),
+                   Vp_h_z_start_pos + quasi_rand_Vp_h_23[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
     Vp_h_4_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_4[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                   Vp_h_y_start_pos + quasi_rand_Vp_h_4[1] * (Vp_h_y_end_pos - Vp_h_y_start_pos),
-                   Vp_h_4_z_start_pos + quasi_rand_Vp_h_4[2] * (Vp_h_4_z_end_pos - Vp_h_4_z_start_pos)]
+                  Vp_h_4_y_start_pos + quasi_rand_Vp_h_4[1] * (Vp_h_4_y_end_pos - Vp_h_4_y_start_pos),
+                  Vp_h_z_start_pos + quasi_rand_Vp_h_4[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
     Vp_h_56_pos = [Vp_h_x_start_pos + quasi_rand_Vp_h_56[0] * (Vp_h_x_end_pos - Vp_h_x_start_pos),
-                   Vp_h_y_start_pos + quasi_rand_Vp_h_56[1] * (Vp_h_y_end_pos - Vp_h_y_start_pos),
-                   Vp_h_56_z_start_pos + quasi_rand_Vp_h_56[2] * (Vp_h_56_z_end_pos - Vp_h_56_z_start_pos)]
+                   Vp_h_56_y_start_pos + quasi_rand_Vp_h_56[1] * (Vp_h_56_y_end_pos - Vp_h_56_y_start_pos),
+                   Vp_h_z_start_pos + quasi_rand_Vp_h_56[2] * (Vp_h_z_end_pos - Vp_h_z_start_pos)]
 
 
     Vp_h_23_positions = [[Vp_h_23_pos[0][i],
@@ -197,35 +210,48 @@ def make_layers():
                           Vp_h_56_pos[1][i],
                           Vp_h_56_pos[2][i]] for i in range(total_number)]
 
-    dxyVp_v = 1.0 / float( total_number )
-    Vp_v_x_start_pos = - ( ( 1.0 - dxyVp_v ) / 2.0 )
-    Vp_v_x_end_pos = ( 1.0 - dxyVp_v ) / 2.0
+    dxVp_v = 1.0 / float( total_number )
+    Vp_v_x_start_pos = - ( ( 1.0 - dxVp_v ) / 2.0 ) - 0.6
+    Vp_v_x_end_pos = ( 1.0 - dxVp_v ) / 2.0 - 0.6
 
-    Vp_v_y_start_pos = - ( ( 1.0 - dxyVp_v ) / 2.0 ) + 0.6
-    Vp_v_y_end_pos = ( 1.0 - dxyVp_v ) / 2.0 + 0.6
+    dyVp_v_23 = 0.5 / float( total_number )
+    Vp_v_23_y_start_pos = - ( ( 0.5 - dyVp_v_23 ) / 2.0 ) + 0.9
+    Vp_v_23_y_end_pos = ( 0.5 - dyVp_v_23 ) / 2.0 + 0.9
 
-    dzVp_v_23 = 0.5 / float( total_number )
-    Vp_v_23_z_start_pos = - ( ( 0.5 - dzVp_v_23 ) / 2.0 ) + 0.9
-    Vp_v_23_z_end_pos = ( 0.5 - dzVp_v_23 ) / 2.0 + 0.9
+    dyVp_v_4 = 0.3 / float( total_number )
+    Vp_v_4_y_start_pos = - ( ( 0.3 - dyVp_v_4 ) / 2.0 ) + 0.5
+    Vp_v_4_y_end_pos = ( 0.3 - dyVp_v_4 ) / 2.0 + 0.5
 
-    dzVp_v_4 = 0.3 / float( total_number )
-    Vp_v_4_z_start_pos = - ( ( 0.3 - dzVp_v_4 ) / 2.0 ) + 0.5
-    Vp_v_4_z_end_pos = ( 0.3 - dzVp_v_4 ) / 2.0 + 0.5
+    dyVp_v_56 = 0.7 / float( total_number )
+    Vp_v_56_y_start_pos = - ( ( 0.7 - dyVp_v_56 ) / 2.0 ) - 0.0
+    Vp_v_56_y_end_pos = ( 0.7 - dyVp_v_56 ) / 2.0 - 0.0
 
-    dzVp_v_56 = 0.7 / float( total_number )
-    Vp_v_56_z_start_pos = - ( ( 0.7 - dzVp_v_56 ) / 2.0 ) - 0.0
-    Vp_v_56_z_end_pos = ( 0.7 - dzVp_v_56 ) / 2.0 - 0.0
+    dzVp_v = 1.0 / float( total_number )
+    Vp_v_z_start_pos = - ( ( 1.0 - dzVp_v ) / 2.0 )
+    Vp_v_z_end_pos = ( 1.0 - dzVp_v ) / 2.0
+
+    # dzVp_v_23 = 0.5 / float( total_number )
+    # Vp_v_23_z_start_pos = - ( ( 0.5 - dzVp_v_23 ) / 2.0 ) + 0.9
+    # Vp_v_23_z_end_pos = ( 0.5 - dzVp_v_23 ) / 2.0 + 0.9
+
+    # dzVp_v_4 = 0.3 / float( total_number )
+    # Vp_v_4_z_start_pos = - ( ( 0.3 - dzVp_v_4 ) / 2.0 ) + 0.5
+    # Vp_v_4_z_end_pos = ( 0.3 - dzVp_v_4 ) / 2.0 + 0.5
+
+    # dzVp_v_56 = 0.7 / float( total_number )
+    # Vp_v_56_z_start_pos = - ( ( 0.7 - dzVp_v_56 ) / 2.0 ) - 0.0
+    # Vp_v_56_z_end_pos = ( 0.7 - dzVp_v_56 ) / 2.0 - 0.0
 
 
     Vp_v_23_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_23[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                   Vp_v_y_start_pos + quasi_rand_Vp_v_23[1] * (Vp_v_y_end_pos - Vp_v_y_start_pos),
-                   Vp_v_23_z_start_pos + quasi_rand_Vp_v_23[2] * (Vp_v_23_z_end_pos - Vp_v_23_z_start_pos)]
+                   Vp_v_23_y_start_pos + quasi_rand_Vp_v_23[1] * (Vp_v_23_y_end_pos - Vp_v_23_y_start_pos),
+                   Vp_v_z_start_pos + quasi_rand_Vp_v_23[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
     Vp_v_4_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_4[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                   Vp_v_y_start_pos + quasi_rand_Vp_v_4[1] * (Vp_v_y_end_pos - Vp_v_y_start_pos),
-                   Vp_v_4_z_start_pos + quasi_rand_Vp_v_4[2] * (Vp_v_4_z_end_pos - Vp_v_4_z_start_pos)]
+                  Vp_v_4_y_start_pos + quasi_rand_Vp_v_4[1] * (Vp_v_4_y_end_pos - Vp_v_4_y_start_pos),
+                  Vp_v_z_start_pos + quasi_rand_Vp_v_4[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
     Vp_v_56_pos = [Vp_v_x_start_pos + quasi_rand_Vp_v_56[0] * (Vp_v_x_end_pos - Vp_v_x_start_pos),
-                   Vp_v_y_start_pos + quasi_rand_Vp_v_56[1] * (Vp_v_y_end_pos - Vp_v_y_start_pos),
-                   Vp_v_56_z_start_pos + quasi_rand_Vp_v_56[2] * (Vp_v_56_z_end_pos - Vp_v_56_z_start_pos)]
+                   Vp_v_56_y_start_pos + quasi_rand_Vp_v_56[1] * (Vp_v_56_y_end_pos - Vp_v_56_y_start_pos),
+                   Vp_v_z_start_pos + quasi_rand_Vp_v_56[2] * (Vp_v_z_end_pos - Vp_v_z_start_pos)]
 
 
     Vp_v_23_positions = [[Vp_v_23_pos[0][i],
@@ -240,16 +266,17 @@ def make_layers():
 
 
 
-    dxyTp = 1.0 / float( total_number )
-    Tp_x_start_pos = - ( ( 1.0 - dxyTp ) / 2.0 )
-    Tp_x_end_pos = ( 1.0 - dxyTp ) / 2.0
+    dxTp = 1.0 / float( total_number )
+    Tp_x_start_pos = - ( ( 1.0 - dxTp ) / 2.0 )
+    Tp_x_end_pos = ( 1.0 - dxTp ) / 2.0
 
-    Tp_y_start_pos = - ( ( 1.0 - dxyTp ) / 2.0 )
-    Tp_y_end_pos = ( 1.0 - dxyTp ) / 2.0
+    dyTp = 0.5 / float( total_number )
+    Tp_y_start_pos = - ( ( 0.5 - dyTp ) / 2.0 ) - 1.1
+    Tp_y_end_pos = ( 0.5 - dyTp ) / 2.0 - 1.1
 
-    dzTp = 0.5 / float( total_number )
-    Tp_z_start_pos = - ( ( 0.5 - dzTp ) / 2.0 ) - 1.1
-    Tp_z_end_pos = ( 0.5 - dzTp ) / 2.0 - 1.1
+    dzTp = 1. / float( total_number )
+    Tp_z_start_pos = - ( ( 1.0 - dzTp ) / 2.0 )
+    Tp_z_end_pos = ( 1.0 - dzTp ) / 2.0
 
     Tp_pos = [Tp_x_start_pos + quasi_rand_Tp[0] * (Tp_x_end_pos - Tp_x_start_pos),
               Tp_y_start_pos + quasi_rand_Tp[1] * (Tp_y_end_pos - Tp_y_start_pos),
@@ -259,16 +286,17 @@ def make_layers():
                      Tp_pos[1][i],
                      Tp_pos[2][i]] for i in range(total_number)]
 
-    dxyRp = 1.0 / float( total_number )
-    Rp_x_start_pos = - ( ( 1.0 - dxyRp ) / 2.0 )
-    Rp_x_end_pos = ( 1.0 - dxyRp ) / 2.0
+    dxRp = 1.0 / float( total_number )
+    Rp_x_start_pos = - ( ( 1.0 - dxRp ) / 2.0 )
+    Rp_x_end_pos = ( 1.0 - dxRp ) / 2.0
 
-    Rp_y_start_pos = - ( ( 1.0 - dxyRp ) / 2.0 )
-    Rp_y_end_pos = ( 1.0 - dxyRp ) / 2.0
+    dyRp = 0.5 / float( total_number )
+    Rp_y_start_pos = - ( ( 0.5 - dyRp ) / 2.0 ) - 1.6
+    Rp_y_end_pos = ( 0.5 - dyRp ) / 2.0 - 1.6
 
-    dzRp = 0.5 / float( total_number )
-    Rp_z_start_pos = - ( ( 0.5 - dzRp ) / 2.0 ) - 1.6
-    Rp_z_end_pos = ( 0.5 - dzRp ) / 2.0 - 1.6
+    dzRp = 1.0 / float( total_number )
+    Rp_z_start_pos = - ( ( 1.0 - dzRp ) / 2.0 )
+    Rp_z_end_pos = ( 1.0 - dzRp ) / 2.0
 
     Rp_pos = [Rp_x_start_pos + quasi_rand_Rp[0] * (Rp_x_end_pos - Rp_x_start_pos),
               Rp_y_start_pos + quasi_rand_Rp[1] * (Rp_y_end_pos - Rp_y_start_pos),
@@ -287,37 +315,37 @@ def make_layers():
 
     layerPropsPVp_h_23 = {'positions': Vp_h_23_positions,
                        #'extent': [1., 1., 1.],
-                       'center': [0., -0.6, 0.9],
+                       'center': [0.6, 0.9, 0.0],
                        'edge_wrap': True}
     layerPropsPVp_h_4 = {'positions': Vp_h_4_positions,
                        #'extent': [1., 1., 1.],
-                       'center': [0., -0.6, 0.5],
+                       'center': [0.6, 0.5, 0.0],
                        'edge_wrap': True}
     layerPropsPVp_h_56 = {'positions': Vp_h_56_positions,
                        #'extent': [1., 1., 1.],
-                       'center': [0., -0.6, 0.0],
+                       'center': [0.6, 0.0, 0.0],
                        'edge_wrap': True}
 
     layerPropsPVp_v_23 = {'positions': Vp_v_23_positions,
                        #'extent': [4., 4., 4.],
-                       'center': [0., 0.6, 0.9],
+                       'center': [-0.6, 0.9, 0.0],
                        'edge_wrap': True}
     layerPropsPVp_v_4 = {'positions': Vp_v_4_positions,
                        #'extent': [4., 4., 4.],
-                       'center': [0., 0.6, 0.5],
+                       'center': [-0.6, 0.5, 0.0],
                        'edge_wrap': True}
     layerPropsPVp_v_56 = {'positions': Vp_v_56_positions,
                        #'extent': [4., 4., 4.],
-                       'center': [0., 0.6, 0.],
+                       'center': [-0.6, 0.0, 0.0],
                        'edge_wrap': True}
 
     layerPropsPTp = {'positions': Tp_positions,
                        #'extent': [4., 4., 4.],
-                       'center': [0., 0., -1.1],
+                       'center': [0., -1.1, 0.],
                        'edge_wrap': True}
     layerPropsPRp = {'positions': Rp_positions,
                        #'extent': [4., 4., 4.],
-                       'center': [0., 0., -1.6],
+                       'center': [0., -1.6, 0.],
                        'edge_wrap': True}
 
     layers = [('Tp', modified_copy(layerPropsPTp, {'elements': ['Relay', 'Inter']})),

@@ -212,6 +212,13 @@ class App  // TODO: rename App -> ???
             // Hide buttons after clicking on one.
             $("#modelButtons").css( { display: "none" } );
         }
+        else if ( target.id === "hillTononi3D" )
+        {
+            console.log("Hill-Tononi 3D!");
+            JSONstring = "/static/examples/hill_tononi_3D_converted.json";
+            // Hide buttons after clicking on one.
+            $("#modelButtons").css( { display: "none" } );
+        }
         else if ( target.id === 'loadOwn' )
         {
             console.log("Custom made model!");
@@ -279,12 +286,13 @@ class App  // TODO: rename App -> ???
                 this.modelParameters = result;
                 console.log(result)
                 this.is3DLayer = this.modelParameters.is3DLayer;
-                Brain( this.camera, this.scene );
+                this.brain = new Brain();
                 // Hide buttons after clicking on it.
                 this.$("#modelButtons").css( { display: "none" } );
                 this.$("#startButtons").html( "Reload page to display model buttons again." );
                 this.initHelp();
             } catch(e) {
+                console.log(e.message)
                 window.alert("Please upload a correct JSON file");
             }
         }.bind(this)
