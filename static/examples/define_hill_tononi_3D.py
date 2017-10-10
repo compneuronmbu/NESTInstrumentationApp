@@ -185,25 +185,29 @@ def make_layers():
                      quasi_rand_pos[1][20*total_number:21*total_number],
                      quasi_rand_pos[2][20*total_number:21*total_number]]
 
-    dxVp_h_ex = 1.0 / float( 2*total_number )
-    Vp_h_ex_x_start_pos = - ( ( 1.0 - dxVp_h_ex ) / 2.0 ) + 0.6
-    Vp_h_ex_x_end_pos = ( 1.0 - dxVp_h_ex ) / 2.0 + 0.6
+    x_extent = 1.0
+    y_extent = 0.5
+    z_extent = 1.0
 
-    dyVp_h_23_ex = 0.5 / float( 2*total_number )
-    Vp_h_23_ex_y_start_pos = - ( ( 0.5 - dyVp_h_23_ex ) / 2.0 ) + 1.1
-    Vp_h_23_ex_y_end_pos = ( 0.5 - dyVp_h_23_ex ) / 2.0 + 1.1
+    dxVp_h_ex = x_extent / float( 1*total_number )
+    Vp_h_ex_x_start_pos = - ( ( x_extent - dxVp_h_ex ) / 2.0 ) + 0.6
+    Vp_h_ex_x_end_pos = ( x_extent - dxVp_h_ex ) / 2.0 + 0.6
+
+    dyVp_h_23_ex = y_extent / float( 1*total_number )
+    Vp_h_23_ex_y_start_pos = - ( ( y_extent - dyVp_h_23_ex ) / 2.0 ) + 1.1
+    Vp_h_23_ex_y_end_pos = ( y_extent - dyVp_h_23_ex ) / 2.0 + 1.1
     
-    dyVp_h_4_ex = 0.5 / float( 2*total_number )
-    Vp_h_4_ex_y_start_pos = - ( ( 0.5 - dyVp_h_4_ex ) / 2.0 ) + 0.6
-    Vp_h_4_ex_y_end_pos = ( 0.5 - dyVp_h_4_ex ) / 2.0 + 0.6
+    dyVp_h_4_ex = y_extent / float( 1*total_number )
+    Vp_h_4_ex_y_start_pos = - ( ( y_extent - dyVp_h_4_ex ) / 2.0 ) + 0.6
+    Vp_h_4_ex_y_end_pos = ( y_extent - dyVp_h_4_ex ) / 2.0 + 0.6
 
-    dyVp_h_56_ex = 0.5 / float( 2*total_number )
-    Vp_h_56_ex_y_start_pos = - ( ( 0.5 - dyVp_h_56_ex ) / 2.0 ) + 0.1
-    Vp_h_56_ex_y_end_pos = ( 0.5 - dyVp_h_56_ex ) / 2.0 + 0.1
+    dyVp_h_56_ex = y_extent / float( 1*total_number )
+    Vp_h_56_ex_y_start_pos = - ( ( y_extent - dyVp_h_56_ex ) / 2.0 ) + 0.1
+    Vp_h_56_ex_y_end_pos = ( y_extent - dyVp_h_56_ex ) / 2.0 + 0.1
 
-    dzVp_h_ex = 1.0 / float( 2*total_number )
-    Vp_h_ex_z_start_pos = - ( ( 1.0 - dzVp_h_ex ) / 2.0 )
-    Vp_h_ex_z_end_pos = ( 1.0 - dzVp_h_ex ) / 2.0
+    dzVp_h_ex = z_extent / float( 1*total_number )
+    Vp_h_ex_z_start_pos = - ( ( z_extent - dzVp_h_ex ) / 2.0 )
+    Vp_h_ex_z_end_pos = ( z_extent - dzVp_h_ex ) / 2.0
 
     Vp_h_23_ex_pos = [Vp_h_ex_x_start_pos + quasi_rand_Vp_h_23_ex[0] * (Vp_h_ex_x_end_pos - Vp_h_ex_x_start_pos),
                       Vp_h_23_ex_y_start_pos + quasi_rand_Vp_h_23_ex[1] * (Vp_h_23_ex_y_end_pos - Vp_h_23_ex_y_start_pos),
@@ -227,25 +231,25 @@ def make_layers():
 
 
 
-    dxVp_h_in = 1.0 / float( 1*total_number )
-    Vp_h_in_x_start_pos = - ( ( 1.0 - dxVp_h_in ) / 2.0 ) + 0.6
-    Vp_h_in_x_end_pos = ( 1.0 - dxVp_h_in ) / 2.0 + 0.6
+    dxVp_h_in = x_extent / float( 1*total_number )
+    Vp_h_in_x_start_pos = - ( ( x_extent - dxVp_h_in ) / 2.0 ) + 0.6
+    Vp_h_in_x_end_pos = ( x_extent - dxVp_h_in ) / 2.0 + 0.6
 
-    dyVp_h_23_in = 0.5 / float( 1*total_number )
-    Vp_h_23_in_y_start_pos = - ( ( 0.5 - dyVp_h_23_in ) / 2.0 ) + 1.1
-    Vp_h_23_in_y_end_pos = ( 0.5 - dyVp_h_23_in ) / 2.0 + 1.1
+    dyVp_h_23_in = y_extent / float( 1*total_number )
+    Vp_h_23_in_y_start_pos = - ( ( y_extent - dyVp_h_23_in ) / 2.0 ) + 1.1
+    Vp_h_23_in_y_end_pos = ( y_extent - dyVp_h_23_in ) / 2.0 + 1.1
     
-    dyVp_h_4_in = 0.5 / float( 1*total_number )
-    Vp_h_4_in_y_start_pos = - ( ( 0.5 - dyVp_h_4_in ) / 2.0 ) + 0.6
-    Vp_h_4_in_y_end_pos = ( 0.5 - dyVp_h_4_in ) / 2.0 + 0.6
+    dyVp_h_4_in = y_extent / float( 1*total_number )
+    Vp_h_4_in_y_start_pos = - ( ( y_extent - dyVp_h_4_in ) / 2.0 ) + 0.6
+    Vp_h_4_in_y_end_pos = ( y_extent - dyVp_h_4_in ) / 2.0 + 0.6
 
-    dyVp_h_56_in = 0.5 / float( 1*total_number )
-    Vp_h_56_in_y_start_pos = - ( ( 0.5 - dyVp_h_56_in ) / 2.0 ) + 0.1
-    Vp_h_56_in_y_end_pos = ( 0.5 - dyVp_h_56_in ) / 2.0 + 0.1
+    dyVp_h_56_in = y_extent / float( 1*total_number )
+    Vp_h_56_in_y_start_pos = - ( ( y_extent - dyVp_h_56_in ) / 2.0 ) + 0.1
+    Vp_h_56_in_y_end_pos = ( y_extent - dyVp_h_56_in ) / 2.0 + 0.1
 
-    dzVp_h_in = 1.0 / float( 1*total_number )
-    Vp_h_in_z_start_pos = - ( ( 1.0 - dzVp_h_in ) / 2.0 )
-    Vp_h_in_z_end_pos = ( 1.0 - dzVp_h_in ) / 2.0
+    dzVp_h_in = z_extent / float( 1*total_number )
+    Vp_h_in_z_start_pos = - ( ( z_extent - dzVp_h_in ) / 2.0 )
+    Vp_h_in_z_end_pos = ( z_extent - dzVp_h_in ) / 2.0
 
     Vp_h_23_in_pos = [Vp_h_in_x_start_pos + quasi_rand_Vp_h_23_in[0] * (Vp_h_in_x_end_pos - Vp_h_in_x_start_pos),
                       Vp_h_23_in_y_start_pos + quasi_rand_Vp_h_23_in[1] * (Vp_h_23_in_y_end_pos - Vp_h_23_in_y_start_pos),
@@ -269,25 +273,25 @@ def make_layers():
 
 
 
-    dxVp_v_ex = 1.0 / float( 2*total_number )
-    Vp_v_ex_x_start_pos = - ( ( 1.0 - dxVp_v_ex ) / 2.0 ) - 0.6
-    Vp_v_ex_x_end_pos = ( 1.0 - dxVp_v_ex ) / 2.0 - 0.6
+    dxVp_v_ex = x_extent / float( 1*total_number )
+    Vp_v_ex_x_start_pos = - ( ( x_extent - dxVp_v_ex ) / 2.0 ) - 0.6
+    Vp_v_ex_x_end_pos = ( x_extent - dxVp_v_ex ) / 2.0 - 0.6
 
-    dyVp_v_23_ex = 0.5 / float( 2*total_number )
-    Vp_v_23_ex_y_start_pos = - ( ( 0.5 - dyVp_v_23_ex ) / 2.0 ) + 1.1
-    Vp_v_23_ex_y_end_pos = ( 0.5 - dyVp_v_23_ex ) / 2.0 + 1.1
+    dyVp_v_23_ex = y_extent / float( 1*total_number )
+    Vp_v_23_ex_y_start_pos = - ( ( y_extent - dyVp_v_23_ex ) / 2.0 ) + 1.1
+    Vp_v_23_ex_y_end_pos = ( y_extent - dyVp_v_23_ex ) / 2.0 + 1.1
 
-    dyVp_v_4_ex = 0.5 / float( 2*total_number )
-    Vp_v_4_ex_y_start_pos = - ( ( 0.5 - dyVp_v_4_ex ) / 2.0 ) + 0.6
-    Vp_v_4_ex_y_end_pos = ( 0.5 - dyVp_v_4_ex ) / 2.0 + 0.6
+    dyVp_v_4_ex = y_extent / float( 1*total_number )
+    Vp_v_4_ex_y_start_pos = - ( ( y_extent - dyVp_v_4_ex ) / 2.0 ) + 0.6
+    Vp_v_4_ex_y_end_pos = ( y_extent - dyVp_v_4_ex ) / 2.0 + 0.6
 
-    dyVp_v_56_ex = 0.5 / float( 2*total_number )
-    Vp_v_56_ex_y_start_pos = - ( ( 0.5 - dyVp_v_56_ex ) / 2.0 ) + 0.1
-    Vp_v_56_ex_y_end_pos = ( 0.5 - dyVp_v_56_ex ) / 2.0 + 0.1
+    dyVp_v_56_ex = y_extent / float( 1*total_number )
+    Vp_v_56_ex_y_start_pos = - ( ( y_extent - dyVp_v_56_ex ) / 2.0 ) + 0.1
+    Vp_v_56_ex_y_end_pos = ( y_extent - dyVp_v_56_ex ) / 2.0 + 0.1
 
-    dzVp_v_ex = 1.0 / float( 2*total_number )
-    Vp_v_ex_z_start_pos = - ( ( 1.0 - dzVp_v_ex ) / 2.0 )
-    Vp_v_ex_z_end_pos = ( 1.0 - dzVp_v_ex ) / 2.0
+    dzVp_v_ex = z_extent / float( 1*total_number )
+    Vp_v_ex_z_start_pos = - ( ( z_extent - dzVp_v_ex ) / 2.0 )
+    Vp_v_ex_z_end_pos = ( z_extent - dzVp_v_ex ) / 2.0
 
     Vp_v_23_ex_pos = [Vp_v_ex_x_start_pos + quasi_rand_Vp_v_23_ex[0] * (Vp_v_ex_x_end_pos - Vp_v_ex_x_start_pos),
                       Vp_v_23_ex_y_start_pos + quasi_rand_Vp_v_23_ex[1] * (Vp_v_23_ex_y_end_pos - Vp_v_23_ex_y_start_pos),
@@ -311,25 +315,25 @@ def make_layers():
 
 
 
-    dxVp_v_in = 1.0 / float( 1*total_number )
-    Vp_v_in_x_start_pos = - ( ( 1.0 - dxVp_v_in ) / 2.0 ) - 0.6
-    Vp_v_in_x_end_pos = ( 1.0 - dxVp_v_in ) / 2.0 - 0.6
+    dxVp_v_in = x_extent / float( 1*total_number )
+    Vp_v_in_x_start_pos = - ( ( x_extent - dxVp_v_in ) / 2.0 ) - 0.6
+    Vp_v_in_x_end_pos = ( x_extent - dxVp_v_in ) / 2.0 - 0.6
 
-    dyVp_v_23_in = 0.5 / float( 1*total_number )
-    Vp_v_23_in_y_start_pos = - ( ( 0.5 - dyVp_v_23_in ) / 2.0 ) + 1.1
-    Vp_v_23_in_y_end_pos = ( 0.5 - dyVp_v_23_in ) / 2.0 + 1.1
+    dyVp_v_23_in = y_extent / float( 1*total_number )
+    Vp_v_23_in_y_start_pos = - ( ( y_extent - dyVp_v_23_in ) / 2.0 ) + 1.1
+    Vp_v_23_in_y_end_pos = ( y_extent - dyVp_v_23_in ) / 2.0 + 1.1
 
-    dyVp_v_4_in = 0.5 / float( 1*total_number )
-    Vp_v_4_in_y_start_pos = - ( ( 0.5 - dyVp_v_4_in ) / 2.0 ) + 0.6
-    Vp_v_4_in_y_end_pos = ( 0.5 - dyVp_v_4_in ) / 2.0 + 0.6
+    dyVp_v_4_in = y_extent / float( 1*total_number )
+    Vp_v_4_in_y_start_pos = - ( ( y_extent - dyVp_v_4_in ) / 2.0 ) + 0.6
+    Vp_v_4_in_y_end_pos = ( y_extent - dyVp_v_4_in ) / 2.0 + 0.6
 
-    dyVp_v_56_in = 0.5 / float( 1*total_number )
-    Vp_v_56_in_y_start_pos = - ( ( 0.5 - dyVp_v_56_in ) / 2.0 ) + 0.1
-    Vp_v_56_in_y_end_pos = ( 0.5 - dyVp_v_56_in ) / 2.0 + 0.1
+    dyVp_v_56_in = y_extent / float( 1*total_number )
+    Vp_v_56_in_y_start_pos = - ( ( y_extent - dyVp_v_56_in ) / 2.0 ) + 0.1
+    Vp_v_56_in_y_end_pos = ( y_extent - dyVp_v_56_in ) / 2.0 + 0.1
 
-    dzVp_v_in = 1.0 / float( 1*total_number )
-    Vp_v_in_z_start_pos = - ( ( 1.0 - dzVp_v_in ) / 2.0 )
-    Vp_v_in_z_end_pos = ( 1.0 - dzVp_v_in ) / 2.0
+    dzVp_v_in = z_extent / float( 1*total_number )
+    Vp_v_in_z_start_pos = - ( ( z_extent - dzVp_v_in ) / 2.0 )
+    Vp_v_in_z_end_pos = ( z_extent - dzVp_v_in ) / 2.0
 
     Vp_v_23_in_pos = [Vp_v_in_x_start_pos + quasi_rand_Vp_v_23_in[0] * (Vp_v_in_x_end_pos - Vp_v_in_x_start_pos),
                       Vp_v_23_in_y_start_pos + quasi_rand_Vp_v_23_in[1] * (Vp_v_23_in_y_end_pos - Vp_v_23_in_y_start_pos),
@@ -353,17 +357,17 @@ def make_layers():
 
 
 
-    dxTp_relay = 1.0 / float( total_number )
-    Tp_relay_x_start_pos = - ( ( 1.0 - dxTp_relay ) / 2.0 )
-    Tp_relay_x_end_pos = ( 1.0 - dxTp_relay ) / 2.0
+    dxTp_relay = x_extent / float( total_number )
+    Tp_relay_x_start_pos = - ( ( x_extent - dxTp_relay ) / 2.0 )
+    Tp_relay_x_end_pos = ( x_extent - dxTp_relay ) / 2.0
 
-    dyTp_relay = 0.5 / float( total_number )
-    Tp_relay_y_start_pos = - ( ( 0.5 - dyTp_relay ) / 2.0 ) - 0.7
-    Tp_relay_y_end_pos = ( 0.5 - dyTp_relay ) / 2.0 - 0.7
+    dyTp_relay = y_extent / float( total_number )
+    Tp_relay_y_start_pos = - ( ( y_extent - dyTp_relay ) / 2.0 ) - 0.7
+    Tp_relay_y_end_pos = ( y_extent - dyTp_relay ) / 2.0 - 0.7
 
-    dzTp_relay = 1. / float( total_number )
-    Tp_relay_z_start_pos = - ( ( 1.0 - dzTp_relay ) / 2.0 )
-    Tp_relay_z_end_pos = ( 1.0 - dzTp_relay ) / 2.0
+    dzTp_relay =z_extent / float( total_number )
+    Tp_relay_z_start_pos = - ( ( z_extent - dzTp_relay ) / 2.0 )
+    Tp_relay_z_end_pos = ( z_extent - dzTp_relay ) / 2.0
 
     Tp_relay_pos = [Tp_relay_x_start_pos + quasi_rand_Tp_relay[0] * (Tp_relay_x_end_pos - Tp_relay_x_start_pos),
                     Tp_relay_y_start_pos + quasi_rand_Tp_relay[1] * (Tp_relay_y_end_pos - Tp_relay_y_start_pos),
@@ -375,17 +379,17 @@ def make_layers():
 
 
 
-    dxTp_inter = 1.0 / float( total_number )
-    Tp_inter_x_start_pos = - ( ( 1.0 - dxTp_inter ) / 2.0 )
-    Tp_inter_x_end_pos = ( 1.0 - dxTp_inter ) / 2.0
+    dxTp_inter = x_extent / float( total_number )
+    Tp_inter_x_start_pos = - ( ( x_extent - dxTp_inter ) / 2.0 )
+    Tp_inter_x_end_pos = ( x_extent - dxTp_inter ) / 2.0
 
-    dyTp_inter = 0.5 / float( total_number )
-    Tp_inter_y_start_pos = - ( ( 0.5 - dyTp_inter ) / 2.0 ) - 0.7
-    Tp_inter_y_end_pos = ( 0.5 - dyTp_inter ) / 2.0 - 0.7
+    dyTp_inter = y_extent / float( total_number )
+    Tp_inter_y_start_pos = - ( ( y_extent - dyTp_inter ) / 2.0 ) - 0.7
+    Tp_inter_y_end_pos = ( y_extent - dyTp_inter ) / 2.0 - 0.7
 
-    dzTp_inter = 1. / float( total_number )
-    Tp_inter_z_start_pos = - ( ( 1.0 - dzTp_inter ) / 2.0 )
-    Tp_inter_z_end_pos = ( 1.0 - dzTp_inter ) / 2.0
+    dzTp_inter = z_extent / float( total_number )
+    Tp_inter_z_start_pos = - ( ( z_extent - dzTp_inter ) / 2.0 )
+    Tp_inter_z_end_pos = ( z_extent - dzTp_inter ) / 2.0
 
     Tp_inter_pos = [Tp_inter_x_start_pos + quasi_rand_Tp_inter[0] * (Tp_inter_x_end_pos - Tp_inter_x_start_pos),
                     Tp_inter_y_start_pos + quasi_rand_Tp_inter[1] * (Tp_inter_y_end_pos - Tp_inter_y_start_pos),
@@ -397,17 +401,17 @@ def make_layers():
 
 
 
-    dxRp = 1.0 / float( total_number )
-    Rp_x_start_pos = - ( ( 1.0 - dxRp ) / 2.0 )
-    Rp_x_end_pos = ( 1.0 - dxRp ) / 2.0
+    dxRp = x_extent / float( total_number )
+    Rp_x_start_pos = - ( ( x_extent - dxRp ) / 2.0 )
+    Rp_x_end_pos = ( x_extent - dxRp ) / 2.0
 
-    dyRp = 0.5 / float( total_number )
-    Rp_y_start_pos = - ( ( 0.5 - dyRp ) / 2.0 ) - 1.2
-    Rp_y_end_pos = ( 0.5 - dyRp ) / 2.0 - 1.2
+    dyRp = y_extent / float( total_number )
+    Rp_y_start_pos = - ( ( y_extent - dyRp ) / 2.0 ) - 1.2
+    Rp_y_end_pos = ( y_extent - dyRp ) / 2.0 - 1.2
 
-    dzRp = 1.0 / float( total_number )
-    Rp_z_start_pos = - ( ( 1.0 - dzRp ) / 2.0 )
-    Rp_z_end_pos = ( 1.0 - dzRp ) / 2.0
+    dzRp = z_extent / float( total_number )
+    Rp_z_start_pos = - ( ( z_extent - dzRp ) / 2.0 )
+    Rp_z_end_pos = ( z_extent - dzRp ) / 2.0
 
     Rp_pos = [Rp_x_start_pos + quasi_rand_Rp[0] * (Rp_x_end_pos - Rp_x_start_pos),
               Rp_y_start_pos + quasi_rand_Rp[1] * (Rp_y_end_pos - Rp_y_start_pos),
@@ -426,76 +430,76 @@ def make_layers():
 
     layerPropsPVp_h_23_ex = {'positions': Vp_h_23_ex_positions,
                              'neuronType': 'excitatory',
-                             #'extent': [1., 1., 1.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [0.6, 1.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_h_23_in = {'positions': Vp_h_23_in_positions,
                              'neuronType': 'inhibitory',
-                             #'extent': [1., 1., 1.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [0.6, 1.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_h_4_ex = {'positions': Vp_h_4_ex_positions,
                             'neuronType': 'excitatory',
-                            #'extent': [1., 1., 1.],
+                            'extent': [x_extent, y_extent, z_extent],
                             'center': [0.6, 0.6, 0.0],
                             'edge_wrap': True}
     layerPropsPVp_h_4_in = {'positions': Vp_h_4_in_positions,
                             'neuronType': 'inhibitory',
-                            #'extent': [1., 1., 1.],
+                            'extent': [x_extent, y_extent, z_extent],
                             'center': [0.6, 0.6, 0.0],
                             'edge_wrap': True}
     layerPropsPVp_h_56_ex = {'positions': Vp_h_56_ex_positions,
                              'neuronType': 'excitatory',
-                             #'extent': [1., 1., 1.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [0.6, 0.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_h_56_in = {'positions': Vp_h_56_in_positions,
                              'neuronType': 'inhibitory',
-                             #'extent': [1., 1., 1.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [0.6, 0.1, 0.0],
                              'edge_wrap': True}
 
     layerPropsPVp_v_23_ex = {'positions': Vp_v_23_ex_positions,
                              'neuronType': 'excitatory',
-                             #'extent': [4., 4., 4.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [-0.6, 1.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_v_23_in = {'positions': Vp_v_23_in_positions,
                              'neuronType': 'inhibitory',
-                             #'extent': [4., 4., 4.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [-0.6, 1.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_v_4_ex = {'positions': Vp_v_4_ex_positions,
                             'neuronType': 'excitatory',
-                            #'extent': [4., 4., 4.],
+                            'extent': [x_extent, y_extent, z_extent],
                             'center': [-0.6, 0.6, 0.0],
                             'edge_wrap': True}
     layerPropsPVp_v_4_in = {'positions': Vp_v_4_in_positions,
                             'neuronType': 'inhibitory',
-                            #'extent': [4., 4., 4.],
+                            'extent': [x_extent, y_extent, z_extent],
                             'center': [-0.6, 0.6, 0.0],
                             'edge_wrap': True}
     layerPropsPVp_v_56_ex = {'positions': Vp_v_56_ex_positions,
                              'neuronType': 'excitatory',
-                             #'extent': [4., 4., 4.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [-0.6, 0.1, 0.0],
                              'edge_wrap': True}
     layerPropsPVp_v_56_in = {'positions': Vp_v_56_in_positions,
                              'neuronType': 'inhibitory',
-                             #'extent': [4., 4., 4.],
+                             'extent': [x_extent, y_extent, z_extent],
                              'center': [-0.6, 0.1, 0.0],
                              'edge_wrap': True}
 
     layerPropsPTp_relay = {'positions': Tp_relay_positions,
-                           #'extent': [4., 4., 4.],
+                           'extent': [x_extent, y_extent, z_extent],
                            'center': [0., -0.7, 0.],
                            'edge_wrap': True}
     layerPropsPTp_inter = {'positions': Tp_inter_positions,
-                           #'extent': [4., 4., 4.],
+                           'extent': [x_extent, y_extent, z_extent],
                            'center': [0., -0.7, 0.],
                            'edge_wrap': True}
     layerPropsPRp = {'positions': Rp_positions,
-                     #'extent': [4., 4., 4.],
+                     'extent': [x_extent, y_extent, z_extent],
                      'center': [0., -1.2, 0.],
                      'edge_wrap': True}
 
@@ -538,6 +542,7 @@ def make_connections():
     
     # scaling parameters from grid elements to visual angle
     dpcP = params['visSize'] / (params['Np'] - 1)
+    # dpcP = 8.0 / (params['Np'] - 1)
 
     # ---------- PRIMARY PATHWAY ------------------------------------
 
@@ -638,19 +643,223 @@ def make_connections():
     allconns = []
 
     #! Cortico-cortical, same orientation
-    [allconns.append(['Vp_h','Vp_h',c]) for c in ccConnections]
-    [allconns.append(['Vp_v','Vp_v',c]) for c in ccConnections]
+    # [allconns.append(['Vp_h','Vp_h',c]) for c in ccConnections]
+    # [allconns.append(['Vp_v','Vp_v',c]) for c in ccConnections]
     
+    [allconns.append(['Vp_h_23_ex','Vp_h_23_ex',c]) for c in ccConnections] ####
+    
+    #[allconns.append(['Vp_h_23_ex','Vp_h_4_ex',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_23_ex','Vp_h_56_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_4_ex','Vp_h_23_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_4_ex','Vp_h_4_ex',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_h_4_ex','Vp_h_56_ex',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_56_ex','Vp_h_56_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_56_ex','Vp_h_23_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_56_ex','Vp_h_4_ex',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_h_23_in','Vp_h_23_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_h_23_in','Vp_h_4_in',c]) for c in ccConnections]
+    #[allconns.append(['Vp_h_23_in','Vp_h_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_4_in','Vp_h_4_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_h_4_in','Vp_h_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_56_in','Vp_h_56_in',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_h_23_in','Vp_h_23_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_4_in','Vp_h_4_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_56_in','Vp_h_56_ex',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_h_23_ex','Vp_h_23_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_h_23_ex','Vp_h_4_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_23_ex','Vp_h_56_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_4_ex','Vp_h_23_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_4_ex','Vp_h_4_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_h_4_ex','Vp_h_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_h_56_ex','Vp_h_56_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_56_ex','Vp_h_23_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_h_56_ex','Vp_h_4_in',c]) for c in ccConnections] ####
+
+
+
+    [allconns.append(['Vp_v_23_ex','Vp_v_23_ex',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_23_ex','Vp_v_4_ex',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_23_ex','Vp_v_56_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_4_ex','Vp_v_4_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_4_ex','Vp_v_23_ex',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_4_ex','Vp_v_56_ex',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_56_ex','Vp_v_56_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_56_ex','Vp_v_23_ex',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_56_ex','Vp_v_4_ex',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_v_23_in','Vp_v_23_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_23_in','Vp_v_4_in',c]) for c in ccConnections]
+    #[allconns.append(['Vp_v_23_in','Vp_v_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_4_in','Vp_v_4_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_4_in','Vp_v_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_56_in','Vp_v_56_in',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_v_23_in','Vp_v_23_ex',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_23_in','Vp_v_4_in',c]) for c in ccConnections]
+    #[allconns.append(['Vp_v_23_in','Vp_v_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_4_in','Vp_v_4_ex',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_4_in','Vp_v_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_56_in','Vp_v_56_ex',c]) for c in ccConnections] ####
+
+    [allconns.append(['Vp_v_23_ex','Vp_v_23_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_23_ex','Vp_v_4_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_23_ex','Vp_v_56_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_4_ex','Vp_v_4_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_4_ex','Vp_v_23_in',c]) for c in ccConnections] ####
+    #[allconns.append(['Vp_v_4_ex','Vp_v_56_in',c]) for c in ccConnections]
+    [allconns.append(['Vp_v_56_ex','Vp_v_56_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_56_ex','Vp_v_23_in',c]) for c in ccConnections] ####
+    [allconns.append(['Vp_v_56_ex','Vp_v_4_in',c]) for c in ccConnections] ####
+    
+
+
+
     #! Cortico-cortical, cross-orientation
-    [allconns.append(['Vp_h','Vp_v',c]) for c in ccxConnections]
-    [allconns.append(['Vp_v','Vp_h',c]) for c in ccxConnections]
+    # [allconns.append(['Vp_h','Vp_v',c]) for c in ccxConnections]
+    # [allconns.append(['Vp_v','Vp_h',c]) for c in ccxConnections]
+   
+    #[allconns.append(['Vp_h_23_ex','Vp_v_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_ex','Vp_v_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_ex','Vp_v_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_ex','Vp_v_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_ex','Vp_v_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_ex','Vp_v_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_h_4_ex','Vp_v_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_ex','Vp_v_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_ex','Vp_v_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_ex','Vp_v_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_ex','Vp_v_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_ex','Vp_v_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_h_56_ex','Vp_v_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_ex','Vp_v_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_ex','Vp_v_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_ex','Vp_v_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_ex','Vp_v_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_ex','Vp_v_56_in',c]) for c in ccxConnections]
+
+    [allconns.append(['Vp_h_23_in','Vp_v_23_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_h_23_in','Vp_v_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_in','Vp_v_56_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_h_23_in','Vp_v_23_in',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_h_23_in','Vp_v_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_23_in','Vp_v_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_h_4_in','Vp_v_23_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_h_4_in','Vp_v_4_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_h_4_in','Vp_v_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_4_in','Vp_v_23_in',c]) for c in ccxConnections]
+    [allconns.append(['Vp_h_4_in','Vp_v_4_in',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_h_4_in','Vp_v_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_h_56_in','Vp_v_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_in','Vp_v_4_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_h_56_in','Vp_v_56_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_h_56_in','Vp_v_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_h_56_in','Vp_v_4_in',c]) for c in ccxConnections]
+    [allconns.append(['Vp_h_56_in','Vp_v_56_in',c]) for c in ccxConnections] ####
+
+
+    #[allconns.append(['Vp_v_23_ex','Vp_h_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_ex','Vp_h_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_ex','Vp_h_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_ex','Vp_h_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_ex','Vp_h_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_ex','Vp_h_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_v_4_ex','Vp_h_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_ex','Vp_h_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_ex','Vp_h_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_ex','Vp_h_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_ex','Vp_h_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_ex','Vp_h_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_v_56_ex','Vp_h_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_ex','Vp_h_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_ex','Vp_h_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_ex','Vp_h_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_ex','Vp_h_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_ex','Vp_h_56_in',c]) for c in ccxConnections]
+
+    [allconns.append(['Vp_v_23_in','Vp_h_23_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_v_23_in','Vp_h_4_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_in','Vp_h_56_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_v_23_in','Vp_h_23_in',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_v_23_in','Vp_h_4_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_23_in','Vp_h_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_v_4_in','Vp_h_23_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_v_4_in','Vp_h_4_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_v_4_in','Vp_h_56_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_4_in','Vp_h_23_in',c]) for c in ccxConnections]
+    [allconns.append(['Vp_v_4_in','Vp_h_4_in',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_v_4_in','Vp_h_56_in',c]) for c in ccxConnections]
+
+    #[allconns.append(['Vp_v_56_in','Vp_h_23_ex',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_in','Vp_h_4_ex',c]) for c in ccxConnections]
+    [allconns.append(['Vp_v_56_in','Vp_h_56_ex',c]) for c in ccxConnections] ####
+    #[allconns.append(['Vp_v_56_in','Vp_h_23_in',c]) for c in ccxConnections]
+    #[allconns.append(['Vp_v_56_in','Vp_h_4_in',c]) for c in ccxConnections]
+    [allconns.append(['Vp_v_56_in','Vp_h_56_in',c]) for c in ccxConnections] ####
 
     #! Cortico-thalamic connections
-    [allconns.append(['Vp_h','Tp',c]) for c in ctConnections]
-    [allconns.append(['Vp_v','Tp',c]) for c in ctConnections]
+    # [allconns.append(['Vp_h','Tp',c]) for c in ctConnections]
+    # [allconns.append(['Vp_v','Tp',c]) for c in ctConnections]
 
-    [allconns.append(['Vp_h','Rp',c]) for c in [corRet]]
-    [allconns.append(['Vp_v','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_h_23_ex','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_4_ex','Tp_relay',c]) for c in ctConnections]
+    [allconns.append(['Vp_h_56_ex','Tp_relay',c]) for c in ctConnections] ####
+
+    #[allconns.append(['Vp_h_23_in','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_4_in','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_56_in','Tp_relay',c]) for c in ctConnections]
+
+    #[allconns.append(['Vp_h_23_ex','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_4_ex','Tp_inter',c]) for c in ctConnections]
+    [allconns.append(['Vp_h_56_ex','Tp_inter',c]) for c in ctConnections] ####
+
+    #[allconns.append(['Vp_h_23_in','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_4_in','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_h_56_in','Tp_inter',c]) for c in ctConnections]
+
+    #[allconns.append(['Vp_v_23_ex','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_4_ex','Tp_relay',c]) for c in ctConnections]
+    [allconns.append(['Vp_v_56_ex','Tp_relay',c]) for c in ctConnections] ####
+
+    #[allconns.append(['Vp_v_23_in','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_4_in','Tp_relay',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_56_in','Tp_relay',c]) for c in ctConnections]
+
+    #[allconns.append(['Vp_v_23_ex','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_4_ex','Tp_inter',c]) for c in ctConnections]
+    [allconns.append(['Vp_v_56_ex','Tp_inter',c]) for c in ctConnections] ####
+
+    #[allconns.append(['Vp_v_23_in','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_4_in','Tp_inter',c]) for c in ctConnections]
+    #[allconns.append(['Vp_v_56_in','Tp_inter',c]) for c in ctConnections]
+
+    # [allconns.append(['Vp_h','Rp',c]) for c in [corRet]]
+    # [allconns.append(['Vp_v','Rp',c]) for c in [corRet]]
+    
+    #[allconns.append(['Vp_h_23_ex','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_h_4_ex','Rp',c]) for c in [corRet]]
+    [allconns.append(['Vp_h_56_ex','Rp',c]) for c in [corRet]] ####
+
+    #[allconns.append(['Vp_h_23_in','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_h_4_in','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_h_56_in','Rp',c]) for c in [corRet]]
+
+    #[allconns.append(['Vp_v_23_ex','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_v_4_ex','Rp',c]) for c in [corRet]]
+    [allconns.append(['Vp_v_56_ex','Rp',c]) for c in [corRet]] ####
+
+    #[allconns.append(['Vp_v_23_in','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_v_4_in','Rp',c]) for c in [corRet]]
+    #[allconns.append(['Vp_v_56_in','Rp',c]) for c in [corRet]]
 
     #! Thalamo-cortical connections
     thalCorRect = {"connection_type": "convergent",
@@ -660,20 +869,48 @@ def make_connections():
                    "delays": {"uniform": {"min": 2.75, "max": 3.25}}}
 
     #! Horizontally tuned
-    thalCorRect.update({"mask": {"box": {"lower_left" : [-4.05*dpcP, -1.05*dpcP, -4.05*dpcP],
-                                         "upper_right": [ 4.05*dpcP,  1.05*dpcP,  4.05*dpcP]}}})
+    thalCorRect.update({"mask": {"box": {"lower_left" : [-0.5*dpcP, -0.25*dpcP, -0.5*dpcP],
+                                         "upper_right": [ 0.5*dpcP,  0.25*dpcP,  0.5*dpcP]}}})
+                                        #{"lower_left" : [-4.05*dpcP, -1.05*dpcP, -4.05*dpcP],
+                                        # "upper_right": [ 4.05*dpcP,  1.05*dpcP,  4.05*dpcP]}}})
     for conn in [{"targets": {"model": "L4pyr" }, "kernel": 0.5},
                  {"targets": {"model": "L56pyr"}, "kernel": 0.3}]:
         thalCorRect.update(conn)
-        allconns.append(['Tp','Vp_h', thalCorRect.copy()])
+        #allconns.append(['Tp','Vp_h', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_23_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_4_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_56_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_23_in', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_4_in', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_h_56_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_23_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_4_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_56_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_23_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_4_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_h_56_in', thalCorRect.copy()])
 
     #! Vertically tuned
-    thalCorRect.update({"mask": {"box": {"lower_left" : [-1.05*dpcP, -4.05*dpcP, -1.05*dpcP],
-                                         "upper_right": [ 1.05*dpcP,  4.05*dpcP,  1.05*dpcP]}}})
+    thalCorRect.update({"mask": {"box": {"lower_left" : [-0.25*dpcP, -0.5*dpcP, -0.25*dpcP],
+                                         "upper_right": [ 0.25*dpcP,  0.5*dpcP,  0.25*dpcP]}}})
+                                        #{"lower_left" : [-1.05*dpcP, -4.05*dpcP, -1.05*dpcP],
+                                         #"upper_right": [ 1.05*dpcP,  4.05*dpcP,  1.05*dpcP]}}})
     for conn in [{"targets": {"model": "L4pyr" }, "kernel": 0.5},
                  {"targets": {"model": "L56pyr"}, "kernel": 0.3}]:
         thalCorRect.update(conn)
-        allconns.append(['Tp','Vp_v', thalCorRect.copy()])
+        #allconns.append(['Tp','Vp_v', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_23_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_4_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_56_ex', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_23_in', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_4_in', thalCorRect.copy()])
+        allconns.append(['Tp_relay','Vp_v_56_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_23_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_4_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_56_ex', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_23_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_4_in', thalCorRect.copy()])
+        allconns.append(['Tp_inter','Vp_v_56_in', thalCorRect.copy()])
 
     #! Diffuse connections
     thalCorDiff = {"connection_type": "divergent",
@@ -687,41 +924,65 @@ def make_connections():
     for conn in [{"targets": {"model": "L4in" }},
                  {"targets": {"model": "L56in"}}]:
         thalCorDiff.update(conn)
-        allconns.append(['Tp','Vp_h', thalCorDiff.copy()])
-        allconns.append(['Tp','Vp_v', thalCorDiff.copy()])
+        #allconns.append(['Tp','Vp_h', thalCorDiff.copy()])
+        #allconns.append(['Tp','Vp_v', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_23_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_4_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_56_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_23_in', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_4_in', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_h_56_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_23_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_4_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_56_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_23_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_4_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_h_56_in', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_23_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_4_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_56_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_23_in', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_4_in', thalCorDiff.copy()])
+        allconns.append(['Tp_relay','Vp_v_56_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_23_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_4_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_56_ex', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_23_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_4_in', thalCorDiff.copy()])
+        allconns.append(['Tp_inter','Vp_v_56_in', thalCorDiff.copy()])
 
     #! Thalamic connections
     thalBase = {"connection_type": "divergent",
                 "delays": {"uniform": {"min": 1.75, "max": 2.25}}}
 
-    for src, tgt, conn in [('Tp', 'Rp', {"sources": {"model": "Relay"},
+    for src, tgt, conn in [('Tp_relay', 'Rp', {"sources": {"model": "Relay"},
                                          "synapse_model": "AMPA",
                                          "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "kernel": {"gaussian": {"p_center": 1.0, "sigma": 7.5 * dpcP}},
                                          "weights": 2.0}),
-                           ('Tp', 'Tp', {"sources": {"model": "Inter"},
+                           ('Tp_inter', 'Tp_relay', {"sources": {"model": "Inter"},
                                          "targets": {"model": "Relay"}, "synapse_model": "GABA_A",
                                          "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.25, "sigma": 7.5 * dpcP}}}),
-                           ('Tp', 'Tp', {"sources": {"model": "Inter"},
+                           ('Tp_inter', 'Tp_inter', {"sources": {"model": "Inter"},
                                          "targets": {"model": "Inter"}, "synapse_model": "GABA_A",
                                          "mask": {"spherical": {"radius": 2.0 * dpcP}},
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.25, "sigma": 7.5 * dpcP}}}),
-                           ('Rp', 'Tp', {"targets": {"model": "Relay"},
+                           ('Rp', 'Tp_relay', {"targets": {"model": "Relay"},
                                          "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.15, "sigma": 7.5 * dpcP}}}),
-                           ('Rp', 'Tp', {"targets": {"model": "Relay"},
+                           ('Rp', 'Tp_relay', {"targets": {"model": "Relay"},
                                          "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.05, "sigma": 7.5 * dpcP}}}),
-                           ('Rp', 'Tp', {"targets": {"model": "Inter"},
+                           ('Rp', 'Tp_inter', {"targets": {"model": "Inter"},
                                          "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_A",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.15, "sigma": 7.5 * dpcP}}}),
-                           ('Rp', 'Tp', {"targets": {"model": "Inter"},
+                           ('Rp', 'Tp_inter', {"targets": {"model": "Inter"},
                                          "mask": {"spherical": {"radius": 12.0 * dpcP}}, "synapse_model": "GABA_B",
                                          "weights": 1.0,
                                          "kernel": {"gaussian": {"p_center": 0.05, "sigma": 7.5 * dpcP}}}),
@@ -734,6 +995,7 @@ def make_connections():
 
     # Now fix Gaussians
     for conn in allconns:
+        #print(conn)
         cdict = conn[2]
         kern = cdict["kernel"]
         if isinstance(kern, dict) and "gaussian" in kern:
