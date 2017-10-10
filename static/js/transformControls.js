@@ -233,22 +233,6 @@ var TransformTranslate = function ()
         Z: [
             [ new THREE.Mesh( arrowGeometry, new TransformerMaterial( { color: 0x0000ff } ) ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ] ],
             [ new THREE.Line( lineZGeometry, new TransformerLineMaterial( { color: 0x0000ff } ) ) ]
-        ],
-
-        XYZ: [
-            [ new THREE.Mesh( new THREE.OctahedronGeometry( 0.1, 0 ), new TransformerMaterial( { color: 0xffffff, opacity: 0.25 } ) ), [ 0, 0, 0 ], [ 0, 0, 0 ] ]
-        ],
-
-        XY: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.29, 0.29 ), new TransformerMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.15, 0.15, 0 ] ]
-        ],
-
-        YZ: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.29, 0.29 ), new TransformerMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.15, 0.15 ], [ 0, Math.PI / 2, 0 ] ]
-        ],
-
-        XZ: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.29, 0.29 ), new TransformerMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.15, 0, 0.15 ], [ - Math.PI / 2, 0, 0 ] ]
         ]
 
     };
@@ -265,22 +249,6 @@ var TransformTranslate = function ()
 
         Z: [
             [ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), pickerMaterial ), [ 0, 0, 0.6 ], [ Math.PI / 2, 0, 0 ] ]
-        ],
-
-        XYZ: [
-            [ new THREE.Mesh( new THREE.OctahedronGeometry( 0.2, 0 ), pickerMaterial ) ]
-        ],
-
-        XY: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), pickerMaterial ), [ 0.2, 0.2, 0 ] ]
-        ],
-
-        YZ: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), pickerMaterial ), [ 0, 0.2, 0.2 ], [ 0, Math.PI / 2, 0 ] ]
-        ],
-
-        XZ: [
-            [ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.4, 0.4 ), pickerMaterial ), [ 0.2, 0, 0.2 ], [ - Math.PI / 2, 0, 0 ] ]
         ]
 
     };
@@ -726,6 +694,7 @@ var TransformControls = function ( camera, domElement )
         }
 
         _transformer[ _mode ].highlight( scope.axis );
+        requestAnimationFrame( app.render.bind(app) );
     };
 
     function onPointerHover( event )

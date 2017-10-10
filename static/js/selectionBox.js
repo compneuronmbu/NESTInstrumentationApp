@@ -70,8 +70,8 @@ class ConnectionLine
         this.curve.points[ 1 ].y = this.curve.points[ 0 ].y;
         if (this.is3D)
         {
+            this.curve.points[ 0 ].z = ( this.ll.z + this.ur.z ) / 2.0;
             this.curve.points[ 1 ].z = this.curve.points[ 0 ].z;
-            this.curve.points[ 0 ].z = ( this.ll.z + this.ur.z ) / 2;
         }
 
         if ( newEndPos !== undefined )
@@ -345,6 +345,7 @@ class SelectionBox
 
         this.box.position.copy( boxPosition );
         app.scene.add( this.box );
+        this.makeConnectionHandle();
     }
 
     /**
@@ -413,6 +414,87 @@ class SelectionBox
             if ( this.nSelected != nSelectedOld )
             {
                 app.$( "#infoselected" ).html( this.nSelected.toString() + " selected" );
+            }
+        }
+        this.removeConnectionHandle();
+    }
+
+    /**
+     * Makes a handle which we can use to create a connection to a device.
+     */
+    makeConnectionHandle()
+    {
+        var handleGeometry = new app.THREE.SphereGeometry( 0.025, 32, 32 );
+        var handleMaterial = new app.THREE.MeshBasicMaterial( { color: 0x28FFCC } );
+        handleMaterial.transparent = true;
+        handleMaterial.opacity = 0.5;
+        this.connectionHandle = new app.THREE.Mesh( handleGeometry, handleMaterial );
+        this.connectionHandle.rotation.set(0, 0, -1.55);
+        this.updateConnectionHandle();  // To set the position
+        app.scene.add( this.connectionHandle );
+        document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
+    }
+
+    /**
+     * Updates the position of the connection handle.
+     */
+    updateConnectionHandle()
+    {
+        this.connectionHandle.position.copy( this.box.position );
+    }
+
+    /**
+     * Shows the connection handle.
+     */
+    enableConnectionHandle()
+    {
+        if ( !this.connectionHandle.visible )
+        {
+            this.connectionHandle.visible = true;
+            document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
+        }
+    }
+
+    /**
+     * Hides the connection handle.
+     */
+    disableConnectionHandle()
+    {
+        this.connectionHandle.visible = false;
+        document.removeEventListener( "mousemove", this.onMouseMove );
+    }
+
+    /**
+     * Removes the connection handle.
+     */
+    removeConnectionHandle()
+    {
+        app.scene.remove( this.connectionHandle );
+        document.removeEventListener( "mousemove", this.onMouseMove );
+    }
+
+    /**
+     * Event handler for mouse movement.
+     *
+     * @event
+     */
+    onMouseMove(event)
+    {
+        var intersect = app.controls.getMouseIntersecting( event.clientX, event.clientY, [this.connectionHandle] );
+        if ( intersect.length > 0 )
+        {
+            if ( this.connectionHandle.material.opacity !== 1 )
+            {
+                this.connectionHandle.material.opacity = 1;
+                requestAnimationFrame( app.render.bind(app) );
+            }
+        }
+        else
+        {
+            if ( this.connectionHandle.material.opacity !== 0.5 )
+            {
+                this.connectionHandle.material.opacity = 0.5;
+                requestAnimationFrame( app.render.bind(app) );
             }
         }
     }
@@ -742,7 +824,7 @@ class SelectionBox
         {
             this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
         }
-/*
+        /*
         // TODO: I don't know what is prettiest.
         // Rotate points in case we have a tilted ellipse.
         var center = this.box.position;
@@ -921,6 +1003,7 @@ class SelectionBox
         this.removePoints();
         this.removeBox();
         this.removeLines();
+        this.removeConnectionHandle();
     }
 }
 
@@ -1004,6 +1087,7 @@ class SelectionBox3D
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
+        this.makeConnectionHandle();
     }
 
     /**
@@ -1053,6 +1137,77 @@ class SelectionBox3D
     }
 
     /**
+     * Updates the colours of points in the box, and position of the connection handle.
+     */
+    updateBox()
+    {
+        this.updateColors();
+        this.updateConnectionHandle();
+    }
+
+
+    /**
+     * Makes a handle which we can use to create a connection to a device.
+     */
+    makeConnectionHandle()
+    {
+        var handleGeometry = new app.THREE.SphereGeometry( 0.025, 32, 32 );
+        var handleMaterial = new app.THREE.MeshBasicMaterial( { color: 0x28FFCC } );
+        handleMaterial.depthTest = false;
+        handleMaterial.depthWrite = false;
+        handleMaterial.side = app.THREE.FrontSide;
+        handleMaterial.transparent = true;
+        handleMaterial.opacity = 0.5;
+        this.connectionHandle = new app.THREE.Mesh( handleGeometry, handleMaterial );
+        this.updateConnectionHandle();  // To set the position
+        app.scene.add( this.connectionHandle );
+        document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
+    }
+
+    /**
+     * Updates the position of the connection handle.
+     */
+    updateConnectionHandle()
+    {
+        this.connectionHandle.position.copy( this.box.position );
+    }
+
+    /**
+     * Removes the connection handle.
+     */
+    removeConnectionHandle()
+    {
+        app.scene.remove( this.connectionHandle );
+        document.removeEventListener( "mousemove", this.onMouseMove );
+    }
+
+    /**
+     * Event handler for mouse movement.
+     *
+     * @event
+     */
+    onMouseMove(event)
+    {
+        var intersect = app.controls.getMouseIntersecting( event.clientX, event.clientY, [this.connectionHandle] );
+        if ( intersect.length > 0 )
+        {
+            if ( this.connectionHandle.material.opacity !== 1 )
+            {
+                this.connectionHandle.material.opacity = 1;
+                requestAnimationFrame( app.render.bind(app) );
+            }
+        }
+        else
+        {
+            if ( this.connectionHandle.material.opacity !== 0.5 )
+            {
+                this.connectionHandle.material.opacity = 0.5;
+                requestAnimationFrame( app.render.bind(app) );
+            }
+        }
+    }
+
+    /**
      * Makes the selection box active by showing transformation controls and updating border lines colour.
      */
     setActive()
@@ -1060,6 +1215,8 @@ class SelectionBox3D
         this.transformControls.attach( this.box );
         this.setBorderLinesColor(this.activeColor);
         this.updateColors();
+        this.connectionHandle.visible = true;
+        document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
     }
 
     /**
@@ -1069,6 +1226,8 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
+        this.connectionHandle.visible = false;
+        document.removeEventListener( "mousemove", this.onMouseMove );
     }
     
     /*
@@ -1081,7 +1240,7 @@ class SelectionBox3D
         this.updateLLAndUR();
         //this.updateAzimuthAndPolarAngle();
         
-        if ( this.curves !== undefined )
+        if ( this.lines.length !== 0 )
         {
             this.updateLineStart();
         }
@@ -1337,7 +1496,7 @@ class SelectionBox3D
      */
     makeLine()
     {
-        var line = new ConnectionLine(this.ll, this.ur, false, this);
+        var line = new ConnectionLine(this.ll, this.ur, true, this);
         line.makeLine();
         this.currentCurveObject = line.curveObject;
         this.currentCurve = line.curve;
