@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# define_brunel_3D.py
+# define_Potjans_-Diesmann.py
 #
 # This file is part of the NEST Connection App.
 #
@@ -20,11 +20,11 @@
 # along with NEST Connection App.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Definition of spatially extended Brunel network.
+Definition of spatially extended Potjans-Diesmann network.
 This module provides layer and projections declarations suitable for
 use with the NEST Topology Module.
-It defines a Brunel-style network with neurons placed on a regular grid.
-Connectivity is probabilitstic from the entire network, i.e., connectivity
+It defines a Potjans-Diesmann-style network with neurons placed on a regular
+grid. Connectivity is probabilitstic from the entire network, i.e., connectivity
 is not structured spatially.
 """
 
@@ -44,7 +44,6 @@ class Parameters:
 
     populations =  {'L23E': 20683, 'L23I': 5834, 'L4E': 21915, 'L4I': 5479,
                     'L5E': 4850, 'L5I': 1065, 'L6E': 14395, 'L6I': 2948}
-    #N_full = [20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948]
 
     for layerName, n in populations.items():
         print(layerName, n)
@@ -85,33 +84,6 @@ class Parameters:
                   [0.0548, 0.0269, 0.0257, 0.0022, 0.06, 0.3158, 0.0086, 0.],
                   [0.0156, 0.0066, 0.0211, 0.0166, 0.0572, 0.0197, 0.0396, 0.2252],
                   [0.0364, 0.001, 0.0034, 0.0005, 0.0277, 0.008, 0.0658, 0.1443]]
-
-
-    #g = 5.0  # ratio inhibitory weight/excitatory weight
-    #eta = 2.0  # external rate relative to threshold rate
-    #epsilon = 0.1  # connection probability
-
-    #delay = 1.5  # synaptic delay in ms
-
-    #tauMem = 20.0  # time constant of membrane potential in ms
-    #theta = 20.0  # membrane threshold potential in mV
-
-    #J = 0.1  # postsynaptic amplitude in mV
-    #J_ex = J  # amplitude of excitatory postsynaptic potential
-    #J_in = -g * J_ex  # amplitude of inhibitory postsynaptic potential
-
-    #CE = int(epsilon * NE)  # number of excitatory synapses per neuron
-
-    #nu_th = theta / (J * CE * tauMem)
-    #nu_ex = eta * nu_th
-
-    #neuron_params = {"C_m": 1.0,
-    #                 "tau_m": tauMem,
-    #                 "t_ref": 2.0,
-    #                 "E_L": 0.0,
-    #                 "V_reset": 0.0,
-    #                 "V_m": 0.0,
-    #                 "V_th": theta}
 
 
 def seed():
@@ -191,11 +163,10 @@ def make_layers():
     y_extent = 0.5
     z_extent = 1.0
 
-    maxpop = max(P.populations['L23E'], P.populations['L23I'], P.populations['L4E'], P.populations['L4I'], P.populations['L5E'],P.populations['L5I'],P.populations['L6E'],P.populations['L6I'])
-
-    # TODO: Prøv ut felles dx, dy, dz ved å finne max og dele på det. Vi har forskjellige boksstørrelser i appen og det er irr.
-    # Også: Lag NESTInteractionApp collab, og put appen inn her. Det er den vi burde vise på posteren og i Glasgow.
-
+    maxpop = max(P.populations['L23E'], P.populations['L23I'],
+                 P.populations['L4E'], P.populations['L4I'],
+                 P.populations['L5E'], P.populations['L5I'],
+                 P.populations['L6E'], P.populations['L6I'])
 
     #-------------------------------------------------------------------------#
     #                               N23E                                      #
