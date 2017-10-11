@@ -181,6 +181,7 @@ class Controls
         {
             // This is done by select3DBox if we have a 3D model.
             this.boxInFocus.removePoints();
+            this.boxInFocus.disableConnectionHandle();
             this.boxInFocus = undefined;
         }
     }
@@ -239,13 +240,15 @@ class Controls
             if ( app.selectionBoxArray[ i ].withinBounds( mouseDownCorrected, app.selectionBoxArray[ i ] ) )
             {
                 this.boxInFocus = app.selectionBoxArray[ i ];
+                this.boxInFocus.enableConnectionHandle();
 
-                if ( this.boxInFocus.curveObject === undefined )
+                if ( this.clickedConnectionHandle() )
                 {
                     // Make conectee line
                     this.make_connection = true;
                     this.boxInFocus.makeLine();
                 }
+                
 
                 // SelectedFirstTime is used to turn the elliptical masks.
                 if( this.boxInFocus.selectedFirstTime )
@@ -306,9 +309,12 @@ class Controls
                 // For debugging
                 this.serverPrintGids();
             }
-            // Make conectee line
-            this.boxInFocus.makeLine();
-            this.make_connection = true;
+            if ( this.clickedConnectionHandle() )
+            {
+                // Make conectee line
+                this.make_connection = true;
+                this.boxInFocus.makeLine();
+            }
         }
         else
         {
@@ -352,6 +358,19 @@ class Controls
             }
         }
         return selectedBox;
+    }
+
+    /**
+     * Checks if we click on the connection handle of the box in focus.
+     *
+     * @returns {Bool} If we clicked on the connection handle.
+     */
+    clickedConnectionHandle()
+    {
+        var intersects = this.getMouseIntersecting( app.mouseDownCoords.x,
+            app.mouseDownCoords.y,
+            [ this.boxInFocus.connectionHandle ] );
+        return intersects.length > 0;
     }
 
     /*
@@ -445,6 +464,7 @@ class Controls
         this.boxInFocus.makeSelectionPoints();
         this.boxInFocus.updateColors();
         this.boxInFocus.updateLineStart();
+        this.boxInFocus.updateConnectionHandle();
     }
 
     /*
@@ -678,10 +698,7 @@ class Controls
 
             this.deviceInFocus = undefined;
             this.removeOutline();
-            if( this.lineInFocus !== undefined)
-            {
-                this.lineInFocus.setInactive();
-            }
+            this.lineInFocus && this.lineInFocus.setInactive();
 
             if ( this.boxInFocus !== undefined )
             {
@@ -730,7 +747,7 @@ class Controls
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
             this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
-            this.boxInFocus && this.translatingBox && this.boxInFocus.updateColors();
+            this.boxInFocus && this.translatingBox && this.boxInFocus.updateBox();
             this.mouseMoved = true;
             this.mouseDown && requestAnimationFrame( app.render.bind(app) );
         }
@@ -782,7 +799,7 @@ class Controls
 
         if ( this.make_selection_box )
         {
-            this.boxInFocus && this.boxInFocus.updateColors();
+            this.boxInFocus && this.translatingBox && this.boxInFocus.updateBox();
             this.makeSelectionBox();
         }
         else if ( this.resizeSideInFocus !== undefined )
@@ -833,6 +850,7 @@ class Controls
     {
         if ( app.orbitControls )
         {
+            this.boxInFocus && this.boxInFocus.transformControls.update();
             requestAnimationFrame( app.render.bind(app) );
         }
     }
