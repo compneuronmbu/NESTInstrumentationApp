@@ -63,24 +63,29 @@ class observe_slot(gevent.Greenlet):
         Handles the message received and calls the appropriate callback
         function in the client.
         """
-        msg_type = self.msg.value.split()[0]
-        msg_data = " ".join(self.msg.value.split()[1:])
-        if msg_type == 'reset':
-            self.client.handle_reset()
-        elif msg_type == 'projections':
-            self.client.handle_recv_projections(msg_data)
-        elif msg_type == 'make_network':
-            self.client.handle_make_network_specs(msg_data)
-        elif msg_type == 'get_gids':
-            self.client.handle_get_gids(msg_data)
-        elif msg_type == 'connect':
-            self.client.handle_connect()
-        elif msg_type == 'get_nconnections':
-            self.client.handle_get_nconnections()
-        elif msg_type == 'simulate':
-            self.client.handle_simulate(msg_data)
-        elif msg_type == 'ping':
-            self.client.handle_ping()
+        try:
+            msg_type = self.msg.value.split()[0]
+            msg_data = " ".join(self.msg.value.split()[1:])
+            if msg_type == 'reset':
+                self.client.handle_reset()
+            elif msg_type == 'projections':
+                self.client.handle_recv_projections(msg_data)
+            elif msg_type == 'make_network':
+                self.client.handle_make_network_specs(msg_data)
+            elif msg_type == 'get_gids':
+                self.client.handle_get_gids(msg_data)
+            elif msg_type == 'connect':
+                self.client.handle_connect()
+            elif msg_type == 'get_nconnections':
+                self.client.handle_get_nconnections()
+            elif msg_type == 'simulate':
+                self.client.handle_simulate(msg_data)
+            elif msg_type == 'ping':
+                self.client.handle_ping()
+        except Exception as exception:
+            print('An exception was raised:', exception)
+            self.client.send_status_message(exception)
+            self.client.send_complete_signal()
 
     def run(self):
         """
@@ -123,6 +128,8 @@ class NESTClient(object):
             nett.slot_out_float_message('nconnections'))
         self.slot_out_device_results = (
             nett.slot_out_string_message('device_results'))
+        self.slot_out_status_message = (
+            nett.slot_out_string_message('status_message'))
 
         self.slot_in_data = nett.slot_in_string_message()
         self.print('Connecting to data input stream..')
@@ -149,7 +156,8 @@ class NESTClient(object):
         Sends a signal to all slots in the server.
         """
         for slot, msg in [[self.slot_out_nconnections, fm.float_message()],
-                          [self.slot_out_device_results, sm.string_message()]]:
+                          [self.slot_out_device_results, sm.string_message()],
+                          [self.slot_out_status_message, sm.string_message()]]:
             slot.send(msg.SerializeToString())
         self.send_complete_signal()
 
@@ -306,6 +314,16 @@ class NESTClient(object):
         msg = sm.string_message()
         msg.value = json.dumps(self.get_device_results())
         self.slot_out_device_results.send(msg.SerializeToString())
+
+    def send_status_message(self, message):
+        """
+        Sends a message with the status to NESTInterface.
+
+        :param message: Message to send
+        """
+        msg = sm.string_message()
+        msg.value = str(message)
+        self.slot_out_status_message.send(msg.SerializeToString())
 
     def handle_recv_projections(self, projections):
         """

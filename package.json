@@ -29,6 +29,7 @@
     "jsdoc": "^3.5.4",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
+    "socket.io-client": "^2.0.3",
     "three": "^0.86.0"
   },
   "devDependencies": {

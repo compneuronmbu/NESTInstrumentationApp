@@ -90,11 +90,13 @@ class NESTInterface(object):
 
     def __init__(self, networkSpecs,
                  device_projections='[]',
-                 silent=False):
+                 silent=False,
+                 socketio=None):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
         self.device_results = '{}'
         self.silent = silent
+        self.socketio = socketio
 
         atexit.register(self.terminate_nest_client)
 
@@ -104,6 +106,7 @@ class NESTInterface(object):
         self.slot_in_nconnections = nett.slot_in_float_message()
         # self.slot_in_gids = nett.slot_in_string_message()
         self.slot_in_device_results = nett.slot_in_string_message()
+        self.slot_in_status_message = nett.slot_in_string_message()
 
         self.slot_in_complete.connect('tcp://127.0.0.1:8000', 'task_complete')
         self.slot_in_nconnections.connect('tcp://127.0.0.1:8000',
@@ -111,6 +114,8 @@ class NESTInterface(object):
         # self.slot_in_gids.connect('tcp://127.0.0.1:8000', 'GIDs')
         self.slot_in_device_results.connect('tcp://127.0.0.1:8000',
                                             'device_results')
+        self.slot_in_status_message.connect('tcp://127.0.0.1:8000',
+                                            'status_message')
 
         self.observe_slot_ready = observe_slot(self.slot_in_complete,
                                                fm.float_message(),
@@ -122,11 +127,16 @@ class NESTInterface(object):
             self.slot_in_device_results,
             sm.string_message(),
             self.handle_device_results)
+        self.observe_slot_status_message = observe_slot(
+            self.slot_in_status_message,
+            sm.string_message(),
+            self.handle_status_message)
 
         self.observe_slot_ready.start()
         self.observe_slot_nconnections.start()
         # self.observe_slot_gids.start()
         self.observe_slot_device_results.start()
+        self.observe_slot_status_message.start()
 
         self.event = threading.Event()
 
@@ -191,7 +201,8 @@ class NESTInterface(object):
         the first available opportunity.
         """
         threads = [self.observe_slot_ready, self.observe_slot_nconnections,
-                   self.observe_slot_device_results]
+                   self.observe_slot_device_results,
+                   self.observe_slot_status_message]
         for thread in threads:
             thread.ceased = True
         # The threads are blocking until they receive a message. Therefore we
@@ -320,3 +331,17 @@ class NESTInterface(object):
 
     def get_device_results(self):
         return self.device_results
+
+    def handle_status_message(self, msg):
+        """
+        Handles receiving status messages from the NEST client.
+
+        :param msg: Nett type message with the status message
+        """
+        self.print('Received status message:\n' +
+                   '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+
+        socketio.emit('message',
+                           {'message': msg.value})
+        # TODO: Use namespace to send to different clients
+        print('Sent socket msg')

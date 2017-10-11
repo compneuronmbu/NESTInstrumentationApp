@@ -95,7 +95,22 @@ class App  // TODO: rename App -> ???
 
         // Server-Sent Events
         this.serverUpdateEvent = new EventSource( "/simulationData" );
-        this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
+        this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
+
+        // Sockets
+        let host = 'http://' + window.location.host;
+        console.log('Connecting socket to ' + host);
+        this.statusSocket = io(host);
+        this.statusSocket.on('connect', function(){
+            console.log('Socket connected');
+        });
+        this.statusSocket.on('disconnect', function(){
+            console.log('Socket disconnected');
+        });
+        this.statusSocket.on('message', function(data){
+            window.alert('The server encountered the following error:\n\n' + data.message)
+        });
+
         this.render();
     }
 
@@ -397,14 +412,13 @@ class App  // TODO: rename App -> ???
      *
      * @event
      */
-    handleMessage( e )
+    handleSimulationData( e )
     {
         try 
         {
             var data = JSON.parse(e.data);
             var recordedData = data['stream_results'];
             var deviceData = data['plot_results'];
-            console.log(data);
             var t = deviceData['time'];
         }
         catch ( err )
@@ -706,7 +720,6 @@ class App  // TODO: rename App -> ???
         {
             clampedVm = maxVm;
         }
-        console.log(clampedVm)
         var colorRG = ( clampedVm - minVm ) / ( maxVm - minVm );
         return [ colorRG, colorRG, 1.0 ];
     }

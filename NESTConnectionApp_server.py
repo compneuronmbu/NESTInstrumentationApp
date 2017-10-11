@@ -3,21 +3,36 @@ from __future__ import print_function
 
 import pprint
 import subprocess as sp
+import functools
 import gevent
 import gevent.wsgi
 import gevent.queue
 import flask
+import flask_socketio
 import json
 import nest_utils as nu
 
 VERSION = sp.check_output(["git", "describe"]).strip()
 app = flask.Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
+socketio = flask_socketio.SocketIO(app, async_mode='gevent')
 interface = None
 busy = False
 BUSY_ERRORCODE = 418
 subscriptions = []
 abort_sub = []
+
+
+def report_errors_to_client(function):
+    @functools.wraps(function)
+    def exception_handle_wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as exception:
+            print('An exception was raised:', exception)
+            socketio.emit('message',
+                          {'message': str(exception)})
+    return exception_handle_wrapper
 
 
 @app.route('/')
@@ -37,6 +52,7 @@ def index():
 
 
 @app.route('/makeNetwork', methods=['POST'])
+@report_errors_to_client
 def make_network():
     """
     Receives the network and construct the interface.
@@ -48,7 +64,8 @@ def make_network():
         interface.cease_threads()
         interface.terminate_nest_client()
 
-    interface = nu.NESTInterface(json.dumps(data['network']))
+    interface = nu.NESTInterface(json.dumps(data['network']),
+                                 socketio=socketio)
 
     #interface.send_abort_signal()
 
@@ -56,6 +73,7 @@ def make_network():
 
 
 @app.route('/selector', methods=['POST', 'GET'])
+@report_errors_to_client
 def print_GIDs():
     """
     Receives the network and selected areas, and prints the GIDs in the
@@ -78,6 +96,7 @@ def print_GIDs():
 
 
 @app.route('/connect', methods=['POST'])
+@report_errors_to_client
 def connect_ajax():
     """
     Receives the network and projections, and connects them.
@@ -103,6 +122,7 @@ def connect_ajax():
 
 
 @app.route('/connections', methods=['GET'])
+@report_errors_to_client
 def get_connections_ajax():
     """
     Sends the number of current connections to the client.
@@ -114,6 +134,7 @@ def get_connections_ajax():
 
 
 @app.route('/simulate', methods=['POST'])
+@report_errors_to_client
 def simulate_ajax():
     """
     Receives the network and projections, connects them and simulates.
@@ -141,6 +162,7 @@ def simulate_ajax():
     return flask.Response(status=204)
 
 
+@report_errors_to_client
 def g_simulate(network, projections, t):
     """
     Runs a simulation in steps. This way the client can be updated on the
@@ -192,6 +214,7 @@ def g_simulate(network, projections, t):
 
 
 @app.route('/streamSimulate', methods=['POST'])
+@report_errors_to_client
 def streamSimulate():
     """
     Receive data from the client and run a simulation in steps.
@@ -212,6 +235,7 @@ def streamSimulate():
 
 
 @app.route('/abortSimulation')
+@report_errors_to_client
 def abortSimulation():
     """
     Abort the currently running simulation.
@@ -222,6 +246,7 @@ def abortSimulation():
 
 
 @app.route('/simulationData')
+@report_errors_to_client
 def simulationData():
     """
     Lets the client listen to this URL to get updates on the simulation status.
@@ -243,8 +268,6 @@ def simulationData():
 if __name__ == '__main__':
     # app.run()
 
-    # print('Serving on https://fsd.cloud42.zam.kfa-juelich.de:7000/NESTConnectionApp')
-    server = gevent.pywsgi.WSGIServer(('', 7000), app, keyfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.key', certfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.pem')
-    # print('Serving on http://127.0.0.1:7000/NESTConnectionApp')
-    # server = gevent.pywsgi.WSGIServer(("", 7000), app)
-    server.serve_forever()
+    # socketio.run(app, host="", port=7000, log_output=True, keyfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.key', certfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.pem')
+    socketio.run(app, host="", port=7000, log_output=True)
+    # server.serve_forever()
