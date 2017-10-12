@@ -62,18 +62,6 @@ body {
   color: #ffffff
 }
 
-#transformInfo{
-  position: absolute;
-  top: 0px;
-  right: calc(200px + var(--gui_width));
-  margin: 10px;
-  width: 100px;
-  padding:0px;
-  text-align: left;
-  color: #ffffff;
-  display: none
-}
-
 #version{
   font-family:Monospace;
   font-size:10px;

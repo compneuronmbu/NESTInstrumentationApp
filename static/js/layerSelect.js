@@ -95,7 +95,22 @@ class App  // TODO: rename App -> ???
 
         // Server-Sent Events
         this.serverUpdateEvent = new EventSource( "/simulationData" );
-        this.serverUpdateEvent.onmessage = this.handleMessage.bind(this);
+        this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
+
+        // Sockets
+        let host = 'http://' + window.location.host;
+        console.log('Connecting socket to ' + host);
+        this.statusSocket = io(host);
+        this.statusSocket.on('connect', function(){
+            console.log('Socket connected');
+        });
+        this.statusSocket.on('disconnect', function(){
+            console.log('Socket disconnected');
+        });
+        this.statusSocket.on('message', function(data){
+            window.alert('The server encountered the following error:\n\n' + data.message)
+        });
+
         this.render();
     }
 
@@ -164,12 +179,45 @@ class App  // TODO: rename App -> ???
 
         // Camera
         //this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
-        this.axisCamera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, 0.5, 1000);
+        this.axisCamera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, 0.0, 1000);
         this.axisCamera.up = this.camera.up; // Important!
 
         // Axes
         var axes = new this.THREE.AxisHelper( 0.9 );
         this.axisScene.add(axes);
+
+        // Axis labels
+        var loader = new THREE.FontLoader();
+        var labelSpecs = {x: {text: 'x', color: 0xff0000, position: {x: 0.83, y: 0.05, z: 0}},
+                          y: {text: 'y', color: 0x00ff00, position: {x: 0.05, y: 0.83, z: 0}},
+                          z: {text: 'z', color: 0x3333ff, position: {x: 0, y: 0.05, z: 0.83}},
+                         };
+        this.labelMeshes = [];
+        loader.load( 'static/js/lib/three/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
+            for (var label in labelSpecs)
+            {
+                let specs = labelSpecs[ label ]
+                var geometry = new THREE.TextGeometry( specs.text, {
+                        font: font,
+                        size: 10,
+                        height: 1,
+                        curveSegments: 12,
+                        bevelEnabled: true,
+                        bevelThickness: 0.001,
+                        bevelSize: 0.1,
+                        bevelSegments: 5
+                } );
+                var material = new this.THREE.MeshBasicMaterial({color: specs.color} );
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.scale.setScalar(0.01);
+                mesh.position.x = specs.position.x
+                mesh.position.y = specs.position.y
+                mesh.position.z = specs.position.z
+                this.labelMeshes.push( mesh );
+                this.axisScene.add(mesh);
+            }
+
+        });
     }
 
     /**
@@ -268,7 +316,6 @@ class App  // TODO: rename App -> ???
 
         $("#startButtons").html( "Reload page to display model buttons again." );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
-        $("#transformInfo").css( { display: "block" } );
         this.initHelp();
     }
 
@@ -404,14 +451,13 @@ class App  // TODO: rename App -> ???
      *
      * @event
      */
-    handleMessage( e )
+    handleSimulationData( e )
     {
         try 
         {
             var data = JSON.parse(e.data);
             var recordedData = data['stream_results'];
             var deviceData = data['plot_results'];
-            console.log(data);
             var t = deviceData['time'];
         }
         catch ( err )
@@ -713,7 +759,6 @@ class App  // TODO: rename App -> ???
         {
             clampedVm = maxVm;
         }
-        console.log(clampedVm)
         var colorRG = ( clampedVm - minVm ) / ( maxVm - minVm );
         return [ colorRG, colorRG, 1.0 ];
     }
@@ -1291,9 +1336,13 @@ class App  // TODO: rename App -> ???
 
         if ( this.axisRenderer !== undefined )
         {
-            this.axisRenderer.render( this.axisScene, this.axisCamera );
             this.axisCamera.position.copy( this.camera.position );
             this.axisCamera.lookAt( this.axisScene.position );
+            for (var i = 0; i < this.labelMeshes.length; ++i)
+            {
+                this.labelMeshes[ i ].lookAt(this.axisCamera.position)
+            }
+            this.axisRenderer.render( this.axisScene, this.axisCamera );
         }
 
         if ( !this.layerNamesMade && !this.is3DLayer && this.brain )
