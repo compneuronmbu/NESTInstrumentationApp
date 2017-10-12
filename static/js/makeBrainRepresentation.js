@@ -406,13 +406,18 @@ class Brain
     {
         for ( var layer in app.layer_points )
         {
-            var borderBox = new app.THREE.BoxHelper( );
+            var ext = app.layer_points[ layer ].extent;
+            var cntr = app.layer_points[ layer ].center;
+            var geometry = new app.THREE.BoxBufferGeometry(ext[0], ext[1], ext[2]);
+            var object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( 0xff0000 ) );
+            object.position.copy( {x: cntr[0], y:cntr[1], z:cntr[2]} );
+
+            var borderBox = new app.THREE.BoxHelper( object );
             borderBox.material.depthTest = false;
             borderBox.material.transparent = true;
 
             app.scene.add( borderBox );
 
-            borderBox.setFromObject( app.layer_points[ layer ].points );
             for (var i = 0; i < borderBox.geometry.attributes.position.array; ++i )
             {
                 borderBox.geometry.attributes.position.array[ i ] *= 1.5;

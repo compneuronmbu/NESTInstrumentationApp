@@ -160,7 +160,7 @@ def make_layers():
 
 
     x_extent = 1.0
-    y_extent = 0.5
+    #y_extent = 0.5
     z_extent = 1.0
 
     maxpop = max(P.populations['L23E'], P.populations['L23I'],
@@ -178,9 +178,11 @@ def make_layers():
     L23E_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L23E'] )
-    dy = y_extent / float( maxpop )
-    L23E_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) + 0.75
-    L23E_y_end_pos = ( y_extent - dy ) / 2.0 + 0.75
+    L23y_extent = 0.6
+    L23_cntr = 0.75#0.95
+    dy = L23y_extent / float( maxpop )
+    L23E_y_start_pos = - ( ( L23y_extent - dy ) / 2.0 ) + L23_cntr
+    L23E_y_end_pos = ( L23y_extent - dy ) / 2.0 + L23_cntr
 
     #dz = z_extent / float( P.populations['L23E'] )
     dz = z_extent / float( maxpop )
@@ -204,8 +206,8 @@ def make_layers():
     L23I_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L23I'] )
-    L23I_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) + 0.75
-    L23I_y_end_pos = ( y_extent - dy ) / 2.0 + 0.75
+    L23I_y_start_pos = - ( ( L23y_extent - dy ) / 2.0 ) + L23_cntr
+    L23I_y_end_pos = ( L23y_extent - dy ) / 2.0 + L23_cntr
 
     #dz = z_extent / float( P.populations['L23I'] )
     L23I_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -228,8 +230,10 @@ def make_layers():
     L4E_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L4E'] )
-    L4E_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) + 0.25
-    L4E_y_end_pos = ( y_extent - dy ) / 2.0 + 0.25
+    L4y_extent = 0.7
+    L4_cntr = 0.1#0.3
+    L4E_y_start_pos = - ( ( L4y_extent - dy ) / 2.0 ) + L4_cntr
+    L4E_y_end_pos = ( L4y_extent - dy ) / 2.0 + L4_cntr
 
     #dz = z_extent / float( P.populations['L4E'] )
     L4E_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -252,8 +256,8 @@ def make_layers():
     L4I_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L4I'] )
-    L4I_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) + 0.25
-    L4I_y_end_pos = ( y_extent - dy ) / 2.0 + 0.25
+    L4I_y_start_pos = - ( ( L4y_extent - dy ) / 2.0 ) + L4_cntr
+    L4I_y_end_pos = ( L4y_extent - dy ) / 2.0 + L4_cntr
 
     #dz = z_extent / float( P.populations['L4I'] )
     L4I_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -276,8 +280,10 @@ def make_layers():
     L5E_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L5E'] )
-    L5E_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) - 0.25
-    L5E_y_end_pos = ( y_extent - dy ) / 2.0 - 0.25
+    L5y_extent = 0.3
+    L5_cntr = -0.4#-0.2
+    L5E_y_start_pos = - ( ( L5y_extent - dy ) / 2.0 ) + L5_cntr
+    L5E_y_end_pos = ( L5y_extent - dy ) / 2.0 + L5_cntr
 
     #dz = z_extent / float( P.populations['L5E'] )
     L5E_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -300,8 +306,8 @@ def make_layers():
     L5I_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L5I'] )
-    L5I_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) - 0.25
-    L5I_y_end_pos = ( y_extent - dy ) / 2.0 - 0.25
+    L5I_y_start_pos = - ( ( L5y_extent - dy ) / 2.0 ) + L5_cntr
+    L5I_y_end_pos = ( L5y_extent - dy ) / 2.0 + L5_cntr
 
     #dz = z_extent / float( P.populations['L5I'] )
     L5I_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -324,8 +330,10 @@ def make_layers():
     L6E_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L6E'] )
-    L6E_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) - 0.75
-    L6E_y_end_pos = ( y_extent - dy ) / 2.0 - 0.75
+    L6y_extent = 0.4
+    L6_cntr = -0.75#-0.55
+    L6E_y_start_pos = - ( ( L6y_extent - dy ) / 2.0 ) + L6_cntr
+    L6E_y_end_pos = ( L6y_extent - dy ) / 2.0 + L6_cntr
 
     #dz = z_extent / float( P.populations['L6E'] )
     L6E_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -348,8 +356,8 @@ def make_layers():
     L6I_x_end_pos = ( x_extent - dx ) / 2.0
 
     #dy = y_extent / float( P.populations['L6I'] )
-    L6I_y_start_pos = - ( ( y_extent - dy ) / 2.0 ) - 0.75
-    L6I_y_end_pos = ( y_extent - dy ) / 2.0 - 0.75
+    L6I_y_start_pos = - ( ( L6y_extent - dy ) / 2.0 ) + L6_cntr
+    L6I_y_end_pos = ( L6y_extent - dy ) / 2.0 + L6_cntr
 
     #dz = z_extent / float( P.populations['L6I'] )
     L6I_z_start_pos = - ( ( z_extent - dz ) / 2.0 )
@@ -367,50 +375,50 @@ def make_layers():
     print("Generating layers...")
     layers = [('L23E', {'positions': L23E_positions,
                         #'edge_wrap': True,
-                        'center': [0.0, 0.75, 0.0],
-                        'extent': [x_extent, y_extent, z_extent],
+                        'center': [0.0, L23_cntr, 0.0],
+                        'extent': [x_extent, L23y_extent, z_extent],
                         'neuronType': 'excitatory',
                         'elements': 'excitatory'}),
               ('L23I', {'positions': L23I_positions,
                         #'edge_wrap': True,
-                        'center': [0.0, 0.75, 0.0],
-                        'extent': [x_extent, y_extent, z_extent],
+                        'center': [0.0, L23_cntr, 0.0],
+                        'extent': [x_extent, L23y_extent, z_extent],
                         'neuronType': 'inhibitory',
                         'elements': 'inhibitory'}),
               ('L4E', {'positions': L4E_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, 0.25, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L4_cntr, 0.0],
+                       'extent': [x_extent, L4y_extent, z_extent],
                        'neuronType': 'excitatory',
                        'elements': 'excitatory'}),
               ('L4I', {'positions': L4I_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, 0.25, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L4_cntr, 0.0],
+                       'extent': [x_extent, L4y_extent, z_extent],
                        'neuronType': 'inhibitory',
                        'elements': 'inhibitory'}),
               ('L5E', {'positions': L5E_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, -0.25, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L5_cntr, 0.0],
+                       'extent': [x_extent, L5y_extent, z_extent],
                        'neuronType': 'excitatory',
                        'elements': 'excitatory'}),
               ('L5I', {'positions': L5I_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, -0.25, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L5_cntr, 0.0],
+                       'extent': [x_extent, L5y_extent, z_extent],
                        'neuronType': 'inhibitory',
                        'elements': 'inhibitory'}),
               ('L6E', {'positions': L6E_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, -0.75, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L6_cntr, 0.0],
+                       'extent': [x_extent, L6y_extent, z_extent],
                        'neuronType': 'excitatory',
                        'elements': 'excitatory'}),
               ('L6I', {'positions': L6I_positions,
                        #'edge_wrap': True,
-                       'center': [0.0, -0.75, 0.0],
-                       'extent': [x_extent, y_extent, z_extent],
+                       'center': [0.0, L6_cntr, 0.0],
+                       'extent': [x_extent, L6y_extent, z_extent],
                        'neuronType': 'inhibitory',
                        'elements': 'inhibitory'})]
 
