@@ -266,5 +266,9 @@ def simulationData():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="", port=7000, log_output=True, keyfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.key', certfile='/home/ubuntu/certs/fsd-cloud42_zam_kfa-juelich_de.pem')
-    # socketio.run(app, host="", port=7000, log_output=True)
+    socketio.run(app,
+                 host="",
+                 port=7000,
+                 log_output=True,
+                 keyfile='../certs/fsd-cloud42_zam_kfa-juelich_de.key',
+                 certfile='../certs/fsd-cloud42_zam_kfa-juelich_de.pem')
