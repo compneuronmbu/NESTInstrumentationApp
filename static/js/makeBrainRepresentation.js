@@ -317,7 +317,7 @@ class Brain
         var name_pos;
         var screenCenter;
 
-        var layer_name = layerNameNode.id.substr(0, layerNameNode.id.indexOf('_'))
+        var layer_name = layerNameNode.id.substr(0, layerNameNode.id.lastIndexOf('_'))
 
         center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
         bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
