@@ -58,11 +58,13 @@ class GuiButtons extends React.Component{
                     //disabled={app.is3DLayer+1}
                     function={function () {app.makeEllipticalShape();}} />
                 <br/>
-                <SelectionsButton text='Make mask box'
-                    disabled={app.is3DLayer}
-                    function={function () {app.makeMaskBox();}}
-                    button_class ='button'
-                    button_id='maskBoxButton' />
+                {app.is3DLayer ? (
+                  <SelectionsButton text='Make mask box'
+                      disabled={app.is3DLayer}
+                      function={function () {app.makeMaskBox();}}
+                      button_class ='button'
+                      button_id='maskBoxButton' />
+                  ) : (null)}
             </div>
 
             <div id="gui-box">
