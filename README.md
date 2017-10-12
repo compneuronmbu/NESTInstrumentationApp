@@ -18,7 +18,7 @@ The communication between the Flask server and NEST is done with the included ne
 source ./nett_modules/exports.sh
 ```
 
-Be aware that this will replace everything in ```PYTHONPATH```, so remember to add your PyNEST path to it afterwards.
+Be aware that this will replace everything in ```PYTHONPATH```, so remember to add your PyNEST path to it afterwards. Additionally, you will need the following non-standard Python modules: [gevent](http://www.gevent.org/), [Flask](http://flask.pocoo.org/), and [Flask-SocketIO](https://flask-socketio.readthedocs.io/en/latest/).
 
 You also need a JavaScript package manager installed, like [Yarn](https://yarnpkg.com) or [npm](https://www.npmjs.com/). For brevity we will use Yarn in the examples, but if you're using npm, simply replace ```yarn``` with ```npm``` below. To run the JavaScript tests, you will also need [Node.js](https://nodejs.org/en/), and for testing the Python backend, you'll need [nose](http://nose.readthedocs.io/en/latest/). For generating documentation on the Python backend, you will need [Sphinx](http://www.sphinx-doc.org/en/stable/index.html).
 
