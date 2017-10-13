@@ -587,29 +587,6 @@ class Controls
     }
 
     /**
-     * Checks if the selection box is flipped, and updates accordingly.
-     */
-    checkFlipBox()
-    {
-        this.resizeSideInFocus = undefined;
-        // We need to exchange coordinates if the selection is being flipped
-        if ( this.boxInFocus.ll.x > this.boxInFocus.ur.x )
-        {
-            var tmpX = this.boxInFocus.ur.x;
-            this.boxInFocus.ur.x = this.boxInFocus.ll.x;
-            this.boxInFocus.ll.x = tmpX;
-        }
-        if ( this.boxInFocus.ll.y > this.boxInFocus.ur.y )
-        {
-            var tmpY = this.boxInFocus.ur.y;
-            this.boxInFocus.ur.y = this.boxInFocus.ll.y;
-            this.boxInFocus.ll.y = tmpY;
-        }
-        this.boxInFocus.updateColors();
-        this.serverPrintGids();
-    }
-
-    /**
      * Checks if the mouse is over a device, if so creates a connection between
      * the device and the selected selection box.
      */
@@ -726,14 +703,12 @@ class Controls
             {
                 // If neither of the above, check if we click on a box.
                 this.selectBox();
-                console.log(this.boxInFocus)
                 if ( this.boxInFocus !== undefined && !this.nothingClicked )
                 {
                     return;
                 }
                 // If no box was selected, check if we click on a line.
                 this.selectLine();
-                console.log(this.lineInFocus);
             }
         }
     }
@@ -806,8 +781,11 @@ class Controls
         }
         else if ( this.resizeSideInFocus !== undefined )
         {
+            this.resizeSideInFocus = undefined;
             // Check if we have flipped any of the axes of the box.
-            this.checkFlipBox();
+            this.boxInFocus.checkFlip();
+            this.boxInFocus.updateColors();
+            this.serverPrintGids();
         }
         else if ( this.rotationPoint !== undefined )
         {

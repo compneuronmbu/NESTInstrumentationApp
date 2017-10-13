@@ -98,7 +98,7 @@ class App  // TODO: rename App -> ???
         this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
 
         // Sockets
-        let host = 'http://' + window.location.host;
+        let host = 'https://' + window.location.host;
         console.log('Connecting socket to ' + host);
         this.statusSocket = io(host);
         this.statusSocket.on('connect', function(){
@@ -226,7 +226,8 @@ class App  // TODO: rename App -> ???
     *
     * @event
     */
-    onLayerModelClicked(evt) {
+    onLayerModelClicked(evt)
+    {
         var target = evt.target;
         var JSONstring;
 
@@ -234,45 +235,39 @@ class App  // TODO: rename App -> ???
         {
             console.log("Brunel!");
             JSONstring = "/static/examples/brunel_converted.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
             this.is3DLayer = false;
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === 'hillTononi' )
         {
             console.log("Hill-Tononi!");
             JSONstring = "/static/examples/hill_tononi_converted.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
             this.is3DLayer = false;
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === "brunel3D" )
         {
             console.log("Brunel 3D!");
             JSONstring = "/static/examples/brunel_3D_converted.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === "brunel3Dqr" )
         {
             console.log("Brunel 3D quasi random!");
             JSONstring = "/static/examples/brunel_3D_converted_quasi_random.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === "hillTononi3D" )
         {
             console.log("Hill-Tononi 3D!");
             JSONstring = "/static/examples/hill_tononi_3D_converted.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === "potDies" )
         {
             console.log("Potjans-Diesmann!");
             JSONstring = "/static/examples/Potjans_Diesmann_converted.json";
-            // Hide buttons after clicking on one.
-            $("#modelButtons").css( { display: "none" } );
+            this.loadModelIntoApp(JSONstring);
         }
         else if ( target.id === 'loadOwn' )
         {
@@ -285,7 +280,13 @@ class App  // TODO: rename App -> ???
         {
             return;
         }
+    }
 
+    /**
+    * Loads the selected model into the app.
+    */
+    loadModelIntoApp(JSONstring)
+    {
         var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
         document.documentElement.style.setProperty('--gui_width', guiWidth);
         this.setShowGUI(true);
@@ -327,7 +328,6 @@ class App  // TODO: rename App -> ???
     */
     handleModelFileUpload (event) {
         var file = event.target.files;
-
         if (file.length <= 0) {
             return false;
         }
@@ -341,10 +341,7 @@ class App  // TODO: rename App -> ???
                 console.log(result)
                 this.is3DLayer = this.modelParameters.is3DLayer;
                 this.brain = new Brain();
-                // Hide buttons after clicking on it.
-                this.$("#modelButtons").css( { display: "none" } );
-                this.$("#startButtons").html( "Reload page to display model buttons again." );
-                this.initHelp();
+                this.loadModelIntoApp();
             } catch(e) {
                 console.log(e.message)
                 window.alert("Please upload a correct JSON file");
