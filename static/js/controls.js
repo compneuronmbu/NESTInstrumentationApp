@@ -487,7 +487,7 @@ class Controls
         else
         {
             // If the mouse position is at the bottom half of the ellipse.
-            var angle = - Math.acos( ( mouseX - cntr.x ) / hyp ) ;
+            var angle = 2*Math.PI - Math.acos( ( mouseX - cntr.x ) / hyp ) ;
         }
 
         this.boxInFocus.angle = angle;
@@ -794,22 +794,6 @@ class Controls
             this.boxInFocus.makeRotationPoints();
 
             this.rotationPoint = undefined;
-
-            /*this.boxInFocus.box.geometry.computeBoundingBox();
-            var bbox = this.boxInFocus.box.geometry.boundingBox;
-            var pos = this.boxInFocus.box.position;
-
-            this.boxInFocus.ur = app.toScreenXY({
-                x: bbox.max.x + pos.x,
-                y: bbox.max.y + pos.y
-            });
-
-            this.boxInFocus.ll = app.toScreenXY({
-                x: bbox.min.x + pos.x,
-                y: bbox.min.y + pos.y
-            });*/
-
-            console.log(this.boxInFocus.ll, this.boxInFocus.ur)
 
             // Print GIDs for debugging purposes
             this.serverPrintGids();

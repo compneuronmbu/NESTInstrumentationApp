@@ -772,18 +772,14 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-
-        // TODO: This is wrong when we resize and switch between major and minor axis.
         if ( this.majorAxis == Math.abs( ( this.ur.x - this.ll.x ) / 2 ) )
         {
             var angle = this.angle;
         }
         else
         {
-            // This messes things up, but if we don't have it, it will be wrong when we major axis along y-axis.
             var angle = this.angle + Math.PI / 2;
         }
-        //var angle = this.angle;
 
         console.log(angle)
 
@@ -883,42 +879,63 @@ class SelectionBox
             } ];
         }
 
-        // TODO: Have to rotate nameArray as well...
         var nameArray = [
-            'lowerLeft', //0
+            'lowerLeft',   //0
             'lowerMiddle', //1
-            'lowerRight', //2
+            'lowerRight',  //2
             'middleRight', //3
-            'upperRight', //4
+            'upperRight',  //4
             'upperMiddle', //5
-            'upperLeft', //6
-            'middleLeft', ////  //7
-            'lowerLeft', //8
+            'upperLeft',   //6
+            'middleLeft',  //7
+            'lowerLeft',   //8
             'lowerMiddle', //9
-            'lowerRight', //10
+            'lowerRight',  //10
             'middleRight', //11
-            'upperRight', //12
+            'upperRight',  //12
             'upperMiddle', //13
-            'upperLeft', //14
-            'middleLeft', //15
-            'lowerLeft' //16
+            'upperLeft'    //14
         ];
 
         var rotater;
-        if ( angle == 0 )
+        if ( 0 <= angle && angle <= Math.PI / 6 )
         {
             rotater = 0;
         }
-        else if ( angle == Math.PI )
+        else if ( Math.PI / 6 <= angle && angle <= Math.PI / 3 )
+        {
+            rotater = 1;
+        }
+        else if ( Math.PI / 3 <= angle && angle <= ( 2 * Math.PI ) / 3 )
+        {
+            rotater = 2;
+        }
+        else if ( ( 2 * Math.PI ) / 3 <= angle && angle <= ( 5 * Math.PI ) / 6 )
+        {
+            rotater = 3;
+        }
+        else if ( ( 5 * Math.PI ) / 6 <= angle && angle <= ( 7 * Math.PI ) / 6 )
         {
             rotater = 4;
         }
-        else
+        else if ( ( 7 * Math.PI ) / 6 <= angle && angle <= ( 4 * Math.PI ) / 3 )
         {
-            rotater = 9;
+            rotater = 5;
         }
-        //var rotater = angle == 0 || angle == Math.PI ? 0:9
-        //var rotater = 0
+        else if ( ( 4 * Math.PI ) / 3 <= angle && angle <= ( 5 * Math.PI ) / 3 )
+        {
+            rotater = 6;
+        }
+        else if ( ( 5 * Math.PI ) / 3 <= angle && angle <= ( 11 * Math.PI ) / 6 )
+        {
+            rotater = 7;
+        }
+        else if ( ( 11 * Math.PI ) / 6 <= angle && angle <= ( 2 * Math.PI ) )
+        {
+            rotater = 0;
+        }
+
+        console.log(angle)
         console.log("rotater", rotater)
 
         for ( var i = 0; i < posArray.length; ++i )
@@ -1052,21 +1069,11 @@ class SelectionBox
         this.minorAxis = Math.min( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
                                    Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
 
-        if ( this.majorAxis === Math.abs(  ( this.ur.x - this.ll.x ) / 2 ) )
+        if ( this.angle === 0.0 || this.angle === Math.PI / 2 )
         {
-            console.log("major axis is on x-axis")
-        //    this.angle = Math.PI / 2;
-        }
-        else
-        {
-            console.log("major axis is on y-axis")
+            this.angle = ( this.majorAxis === Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
         }
 
-        this.angle = ( this.majorAxis === Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
-
-        console.log(this.angle)
-
-        //this.angle = ( this.majorAxis == ( this.ur.x - this.ll.x ) / 2 ) ? 0.0: Math.PI / 2;
     }
 
     /**
