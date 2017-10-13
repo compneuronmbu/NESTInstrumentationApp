@@ -723,45 +723,47 @@ class SelectionBox
             var center = this.box.position;
             var posArray = [
             {
-                x: ( selectionBounds.ll.x  - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ll.x  - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ll.x - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ll.x - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2  - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2  - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2 - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2 - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( selectionBounds.ur.x  - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ur.x  - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ur.x - center.x ) * Math.cos( angle ) - ( selectionBounds.ll.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ur.x - center.x ) * Math.sin( angle ) + ( selectionBounds.ll.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( selectionBounds.ur.x  - center.x ) * Math.cos( angle ) - ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ur.x  - center.x ) * Math.sin( angle ) + ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ur.x - center.x ) * Math.cos( angle ) - ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ur.x - center.x ) * Math.sin( angle ) + ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( selectionBounds.ur.x  - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ur.x  - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ur.x - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ur.x - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2  - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2  - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2 - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( ( selectionBounds.ll.x + selectionBounds.ur.x ) / 2 - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( selectionBounds.ll.x  - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ll.x  - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ll.x - center.x ) * Math.cos( angle ) - ( selectionBounds.ur.y - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ll.x - center.x ) * Math.sin( angle ) + ( selectionBounds.ur.y - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             },
             {
-                x: ( selectionBounds.ll.x  - center.x ) * Math.cos( angle ) - ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.sin( angle ) + center.x,
-                y: ( selectionBounds.ll.x  - center.x ) * Math.sin( angle ) + ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.cos( angle ) + center.y,
+                x: ( selectionBounds.ll.x - center.x ) * Math.cos( angle ) - ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.sin( angle ) + center.x,
+                y: ( selectionBounds.ll.x - center.x ) * Math.sin( angle ) + ( ( selectionBounds.ll.y + selectionBounds.ur.y ) / 2 - center.y ) * Math.cos( angle ) + center.y,
                 z: 0.0001
             } ];
+
+            
         }
         else
         {
@@ -810,19 +812,31 @@ class SelectionBox
 
         // TODO: Have to rotate nameArray as well...
         var nameArray = [
-            'lowerLeft',
-            'lowerMiddle',
-            'lowerRight',
-            'middleRight',
-            'upperRight',
-            'upperMiddle',
-            'upperLeft',
-            'middleLeft'
+            'lowerLeft', //0
+            'lowerMiddle', //1
+            'lowerRight', //2
+            'middleRight', //3
+            'upperRight', //4
+            'upperMiddle', //5
+            'upperLeft', //6
+            'middleLeft', ////  //7
+            'lowerLeft', //8
+            'lowerMiddle', //9
+            'lowerRight', //10
+            'middleRight', //11
+            'upperRight', //12
+            'upperMiddle', //13
+            'upperLeft', //14
+            'middleLeft', //15
+            'lowerLeft' //16
         ];
+
+        var rotater = angle == 0 ? 0:9
+        //var rotater = 0
 
         for ( var i = 0; i < posArray.length; ++i )
         {
-            this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i ] , 0xcccccc ) );
+            this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i + rotater ] , 0xcccccc ) );
         }
         /*
         // TODO: I don't know what is prettiest.
