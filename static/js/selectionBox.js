@@ -193,6 +193,10 @@ class SelectionBox
             return;
         }
         this.updateColors();
+        if (this.nSelected === 0)  // nothing selected
+        {
+            this.layerName = "";
+        }
     }
 
     /**
@@ -283,12 +287,6 @@ class SelectionBox
 
         }
         points.geometry.attributes.customColor.needsUpdate = true;
-        console.log(this.nSelected);
-        if (this.nSelected === 0)  // nothing selected
-        {
-            this.layerName = "";
-            return;
-        }
 
         if ( this.nSelected != nSelectedOld )
         {
@@ -673,6 +671,77 @@ class SelectionBox
         };
         console.log(selectionInfo)
         return selectionInfo;
+    }
+
+    /**
+     * Checks if the selection box is flipped, and updates accordingly.
+     */
+    checkFlip()
+    {
+        // We need to exchange coordinates if the selection is being flipped
+        if( this.ll.x < this.ur.x && this.ll.y < this.ur.y )
+        {
+            return;
+        }
+        var nameArray;
+        if (this.ll.x > this.ur.x && this.ll.y > this.ur.y)
+        {
+            nameArray = [
+                'upperRight',
+                'upperMiddle',
+                'upperLeft',
+                'middleLeft',
+                'lowerLeft',
+                'lowerMiddle',
+                'lowerRight',
+                'middleRight'
+            ];
+        }
+        if ( this.ll.x > this.ur.x )
+        {
+            var tmpX = this.ur.x;
+            this.ur.x = this.ll.x;
+            this.ll.x = tmpX;
+            if ( nameArray === undefined)
+            {
+                nameArray = [
+                    'lowerRight',
+                    'lowerMiddle',
+                    'lowerLeft',
+                    'middleLeft',
+                    'upperLeft',
+                    'upperMiddle',
+                    'upperRight',
+                    'middleRight'
+                ];
+            }
+            
+        }
+        if ( this.ll.y > this.ur.y )
+        {
+            var tmpY = this.ur.y;
+            this.ur.y = this.ll.y;
+            this.ll.y = tmpY;
+            if ( nameArray === undefined)
+            {
+                nameArray = [
+                    'upperLeft',
+                    'upperMiddle',
+                    'upperRight',
+                    'middleRight',
+                    'lowerRight',
+                    'lowerMiddle',
+                    'lowerLeft',
+                    'middleLeft'
+                ];
+            }
+        }
+        // Need to update the resize point names
+
+        for (var i = 0; i < this.resizePoints.length; ++i)
+        {
+            this.resizePoints[i].name = nameArray[ i ];
+        }
     }
 
     /**
