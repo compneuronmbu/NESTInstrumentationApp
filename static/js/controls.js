@@ -15,6 +15,7 @@ class Controls
         this.mouseDown = false;
         this.mouseDownFirstTime = false;
         this.mouseMoved = false;
+        this.keyDown = false;
         this.shiftDown = false;
         this.translatingBox = false;
         this.make_selection_box = false;
@@ -840,6 +841,10 @@ class Controls
      */
     onKeyDown( event )
     {
+        if ( this.keyDown )
+        {
+            return;
+        }
         switch ( event.keyCode )
         {
             case 16:  // shift key
@@ -856,7 +861,7 @@ class Controls
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "scale" );
         }
-        requestAnimationFrame( app.render.bind(app) );
+        this.keyDown = true;
     }
 
     /**
@@ -898,6 +903,7 @@ class Controls
                     && this.boxInFocus.transformControls
                     && this.boxInFocus.transformControls.setMode( "translate" );
         }
+        this.keyDown = false;
         requestAnimationFrame( app.render.bind(app) );
     }
 
