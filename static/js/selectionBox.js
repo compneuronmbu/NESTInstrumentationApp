@@ -774,7 +774,7 @@ class SelectionBox
 
 
         // TODO: This is wrong when we resize and switch between major and minor axis.
-        if ( this.majorAxis == ( this.ur.x - this.ll.x ) / 2 )
+        if ( this.majorAxis == Math.abs( ( this.ur.x - this.ll.x ) / 2 ) )
         {
             var angle = this.angle;
         }
@@ -783,6 +783,10 @@ class SelectionBox
             // This messes things up, but if we don't have it, it will be wrong when we major axis along y-axis.
             var angle = this.angle + Math.PI / 2;
         }
+        //var angle = this.angle;
+
+        console.log(angle)
+
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
         // We need to apply a rotation matrix in case we have a tilted ellipse.
@@ -900,8 +904,22 @@ class SelectionBox
             'lowerLeft' //16
         ];
 
-        var rotater = angle == 0 ? 0:9
+        var rotater;
+        if ( angle == 0 )
+        {
+            rotater = 0;
+        }
+        else if ( angle == Math.PI )
+        {
+            rotater = 4;
+        }
+        else
+        {
+            rotater = 9;
+        }
+        //var rotater = angle == 0 || angle == Math.PI ? 0:9
         //var rotater = 0
+        console.log("rotater", rotater)
 
         for ( var i = 0; i < posArray.length; ++i )
         {
@@ -1028,8 +1046,27 @@ class SelectionBox
      */
     updateMajorAndMinorAxis()
     {
-        this.majorAxis = Math.max( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
-        this.minorAxis = Math.min( ( this.ur.x - this.ll.x ) / 2, ( this.ur.y - this.ll.y ) / 2 );
+
+        this.majorAxis = Math.max( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
+                                   Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
+        this.minorAxis = Math.min( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
+                                   Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
+
+        if ( this.majorAxis === Math.abs(  ( this.ur.x - this.ll.x ) / 2 ) )
+        {
+            console.log("major axis is on x-axis")
+        //    this.angle = Math.PI / 2;
+        }
+        else
+        {
+            console.log("major axis is on y-axis")
+        }
+
+        this.angle = ( this.majorAxis === Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
+
+        console.log(this.angle)
+
+        //this.angle = ( this.majorAxis == ( this.ur.x - this.ll.x ) / 2 ) ? 0.0: Math.PI / 2;
     }
 
     /**
