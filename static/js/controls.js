@@ -119,7 +119,7 @@ class Controls
             data: JSON.stringify(
             {
                 network: app.modelParameters,
-                info: this.boxInFocus.getSelectionInfo()
+                info: this.boxInFocus.getData( true )
             } ),
             success: function( data )
             {},

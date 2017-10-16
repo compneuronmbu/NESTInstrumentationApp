@@ -811,7 +811,7 @@ class App  // TODO: rename App -> ???
      *
      * @returns {Object} Projections created.
      */
-    makeProjections()
+    makeProjections( convertToRoomCoordinates=false )
     {
         var projections = {};
         // projections['internal'] = this.modelParameters.projections;
@@ -824,7 +824,15 @@ class App  // TODO: rename App -> ???
             };
             for ( var i in this.deviceBoxMap[ device ].connectees )
             {
-                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
+                if ( convertToRoomCoordinates && !this.is3DLayer )
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
+                }
+                else
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData();
+                }
+                projections[ device ].connectees.push( data )
             }
         }
         return projections;
@@ -836,7 +844,7 @@ class App  // TODO: rename App -> ???
     makeConnections()
     {
         // create object to be sent
-        var projections = this.makeProjections();
+        var projections = this.makeProjections( true );
         console.log( projections );
 
         this.$( "#infoconnected" ).html( "Connecting ..." );
@@ -877,7 +885,7 @@ class App  // TODO: rename App -> ???
      */
     runSimulation()
     {
-        var projections = this.makeProjections();
+        var projections = this.makeProjections( true );
 
         this.$( "#infoconnected" ).html( "Simulating ..." );
 
@@ -919,7 +927,7 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                projections: this.makeProjections(),
+                projections: this.makeProjections( true ),
                 time: "10000"
             } ),
             dataType: "json"
@@ -965,20 +973,7 @@ class App  // TODO: rename App -> ???
             // User cancelled saving
             return;
         }
-        // create object to be saved
-        var projections = {};
-        for ( var device in this.deviceBoxMap )
-        {
-            var deviceModel = this.deviceBoxMap[ device ].specs.model;
-            projections[ device ] = {
-                specs: this.deviceBoxMap[ device ].specs,
-                connectees: []
-            };
-            for ( var i in this.deviceBoxMap[ device ].connectees )
-            {
-                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
-            }
-        }
+        var projections = this.makeProjections();
         console.log( "projections", projections );
 
         // abort if there is nothing to save
