@@ -318,8 +318,26 @@ class App  // TODO: rename App -> ???
             this.axisRenderer = undefined;
         }
 
-        $("#startButtons").html( "Reload page to display model buttons again." );
+        $("#startButtons").html( "" );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
+
+        // Back to menu button
+        var element = document.getElementById( 'startButtons' );
+        var fragment = document.createDocumentFragment();
+
+        var returnToStart = document.createElement( 'div' );
+        returnToStart.className = 'floatBox backToMenu unselectable';
+        returnToStart.onclick = function()
+        {
+            location.reload();
+        };
+        var heading = document.createElement( 'label' );
+        heading.innerHTML = '<b>&larr;</b> Back to menu';
+
+        returnToStart.appendChild( heading );
+        fragment.appendChild( returnToStart );
+        element.appendChild( fragment );
+
         this.initHelp();
     }
 
@@ -381,11 +399,12 @@ class App  // TODO: rename App -> ???
         var fragment = document.createDocumentFragment();
         if ( this.is3DLayer )
         {
-            var helpPoints = [ [ 'R:', 'rotate' ],
-                               [ 'S:', 'scale' ],
+            var helpPoints = [ [ 'R:', 'rotate box' ],
+                               [ 'S:', 'scale box' ],
                                [ 'Delete:', 'delete selected box/device' ],
-                               [ 'Click + drag:', 'rotate camera' ],
-                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Left click + drag:', 'orbit camera' ],
+                               [ 'Right click + drag:', 'pan camera' ],
+                               [ 'Click box-handle + drag:', 'connect' ],
                                [ 'Shift + click:', 'select device' ],
                                [ 'Shift + drag:', 'move device' ],
                              ];
@@ -393,7 +412,7 @@ class App  // TODO: rename App -> ???
         else
         {
             var helpPoints = [ [ 'Click + drag:', 'make box' ],
-                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Click box-handle + drag:', 'connect' ],
                                [ 'Delete:', 'delete selected box/device' ],
                                [ 'Shift + click:', 'select device' ],
                                [ 'Shift + drag:', 'move device' ]
@@ -401,7 +420,7 @@ class App  // TODO: rename App -> ???
         }
         
         var helpBox = document.createElement( 'div' );
-        helpBox.className = "helpBox";
+        helpBox.className = "floatBox help";
         helpBox.onclick = function() {
             var collapsed = document.getElementById('collapse-1');
             collapsed.checked = !collapsed.checked;
