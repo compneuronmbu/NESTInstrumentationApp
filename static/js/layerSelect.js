@@ -815,7 +815,7 @@ class App  // TODO: rename App -> ???
     {
         var projections = {};
         // projections['internal'] = this.modelParameters.projections;
-        this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        // this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
         for ( var device in this.deviceBoxMap )
         {
             projections[ device ] = {
@@ -1324,6 +1324,28 @@ class App  // TODO: rename App -> ???
             }
             points.geometry.attributes.visible.needsUpdate = true;
         }
+        requestAnimationFrame( this.render.bind(this) );
+    }
+
+    /**
+     * Deletes all selections and devices.
+     */
+    deleteEverything()
+    {
+        // Delete all boxes
+        while ( this.selectionBoxArray.length > 0 )
+        {
+            this.controls.boxInFocus = this.selectionBoxArray[ 0 ];
+            this.controls.deleteBox();
+        }
+
+        // Delete all devices
+        while ( this.circle_objects.length > 0 )
+        {
+            this.controls.deviceInFocus = this.circle_objects[0];
+            this.controls.deleteDevice();
+        }
+
         requestAnimationFrame( this.render.bind(this) );
     }
 
