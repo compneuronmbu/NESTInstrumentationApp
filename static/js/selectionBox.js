@@ -337,10 +337,6 @@ class SelectionBox
             z: 0.0
         }
 
-        console.log(objectBoundsLL)
-        console.log(objectBoundsUR)
-        console.log(boxPosition)
-
         this.box.position.copy( boxPosition );
         app.scene.add( this.box );
         this.makeConnectionHandle();
@@ -736,8 +732,8 @@ class SelectionBox
                 ];
             }
         }
-        // Need to update the resize point names
 
+        // Need to update the resize point names
         for (var i = 0; i < this.resizePoints.length; ++i)
         {
             this.resizePoints[i].name = nameArray[ i ];
@@ -884,8 +880,6 @@ class SelectionBox
             rotater = 0;
         }
 
-        console.log(angle)
-
         for ( var i = 0; i < posArray.length; ++i )
         {
             this.resizePoints.push( this.makePoint( posArray[ i ], nameArray[ i + rotater ] , 0xcccccc ) );
@@ -992,7 +986,6 @@ class SelectionBox
         this.minorAxis = Math.min( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
                                    Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
 
-        //if ( this.angle === 0.0 || this.angle === Math.PI / 2 )
         if ( Math.abs( this.angle - 0.0 ) <= 0.1 || Math.abs( this.angle - Math.PI / 2 ) <= 0.1 )
         {
             this.angle = ( this.majorAxis ===
@@ -1037,15 +1030,11 @@ class SelectionBox
      */
     withinEllipticalBounds( pos )
     {
-        //var x_side = ( this.ur.x - this.ll.x ) / 2;
-        //var y_side = ( this.ur.y - this.ll.y ) / 2;
         var center = {
             x: ( this.ur.x + this.ll.x ) / 2.0,
             y: ( this.ur.y + this.ll.y ) / 2.0
         };
 
-        // TODO: I think using major and minor axis might have been a bad idea on my side.
-        //return ( ( Math.pow( pos.x - center.x, 2 ) ) / ( x_side * x_side ) + ( Math.pow( pos.y - center.y, 2 ) ) / ( y_side * y_side ) <= 1 );
         return ( ( Math.pow( ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ), 2 ) ) / ( this.majorAxis * this.majorAxis ) + ( Math.pow( ( pos.x - center.x ) * Math.sin( this.angle ) - ( pos.y - center.y ) * Math.cos( this.angle ), 2 ) ) / ( this.minorAxis * this.minorAxis ) <= 1 );
     }
 
@@ -1106,7 +1095,6 @@ class SelectionBox3D
         this.lines = [];
 
         this.selectedPoints = {};
-        // this.nSelected = 0;
 
         this.makeBox();
         this.box.scale.set( scale.x, scale.y, scale.z );
@@ -1123,9 +1111,8 @@ class SelectionBox3D
         }
         else if ( this.selectedShape === "ellipsoidal" )
         {
-            // for now we set the radius to be the largest of the dimensions
+            // For now we set the radius to be the largest of the dimensions
             var radius = Math.max( this.originalWidth, this.originalHeight, this.originalDepth );
-            console.log(radius);
             var geometry = new app.THREE.SphereBufferGeometry( radius / 2, 32, 32 );
         }
         console.log(geometry);
@@ -1286,7 +1273,6 @@ class SelectionBox3D
     */
     updateAfterTransformations()
     {
-        //console.log("Vi tranformerer!")
         this.updateWidthHeightDeptCenter();
         this.updateLLAndUR();
         //this.updateAzimuthAndPolarAngle();
@@ -1352,9 +1338,6 @@ class SelectionBox3D
 
     updateAzimuthAndPolarAngle()
     {
-        //console.log(this.transformControls.axis)
-        //console.log(this.transformControls)
-
         if( this.transformControls.axis == "Z")
         {
             this.azimuthAngle = this.box.rotation.z;
@@ -1368,7 +1351,6 @@ class SelectionBox3D
         {
             this.polarAngle = this.box.rotation.y;
 
-            //var at2 = Math.atan2( this.box.rotation.y, this.box.rotation.x );
             var at2 = Math.atan2( -this.box.matrix.elements[2], this.box.matrix.elements[0] );
 
             if ( at2 > Math.PI / 2 && at2 <= Math.PI )
