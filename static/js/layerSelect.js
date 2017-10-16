@@ -248,12 +248,6 @@ class App  // TODO: rename App -> ???
             this.is3DLayer = false;
             this.loadModelIntoApp(JSONstring);
         }
-        else if ( target.id === "brunel3D" )
-        {
-            console.log("Brunel 3D!");
-            JSONstring = "/static/examples/brunel_3D_converted.json";
-            this.loadModelIntoApp(JSONstring);
-        }
         else if ( target.id === "brunel3Dqr" )
         {
             console.log("Brunel 3D quasi random!");
