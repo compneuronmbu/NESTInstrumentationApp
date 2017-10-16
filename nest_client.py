@@ -84,7 +84,8 @@ class observe_slot(gevent.Greenlet):
                 self.client.handle_ping()
         except Exception as exception:
             print('An exception was raised:', exception)
-            self.client.send_status_message(exception)
+            self.client.send_status_message(
+                "{}: {}".format(type(exception).__name__, exception.args[0]))
             self.client.send_complete_signal()
 
     def run(self):
