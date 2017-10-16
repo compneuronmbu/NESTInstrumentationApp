@@ -781,8 +781,6 @@ class SelectionBox
             var angle = this.angle + Math.PI / 2;
         }
 
-        console.log(angle)
-
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
         // We need to apply a rotation matrix in case we have a tilted ellipse.
@@ -887,7 +885,6 @@ class SelectionBox
         }
 
         console.log(angle)
-        console.log("rotater", rotater)
 
         for ( var i = 0; i < posArray.length; ++i )
         {
@@ -990,17 +987,17 @@ class SelectionBox
      */
     updateMajorAndMinorAxis()
     {
-
         this.majorAxis = Math.max( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
                                    Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
         this.minorAxis = Math.min( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
                                    Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
 
-        if ( this.angle === 0.0 || this.angle === Math.PI / 2 )
+        //if ( this.angle === 0.0 || this.angle === Math.PI / 2 )
+        if ( Math.abs( this.angle - 0.0 ) <= 0.1 || Math.abs( this.angle - Math.PI / 2 ) <= 0.1 )
         {
-            this.angle = ( this.majorAxis === Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
+            this.angle = ( this.majorAxis ===
+                Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
         }
-
     }
 
     /**
