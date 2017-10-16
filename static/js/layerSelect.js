@@ -169,13 +169,15 @@ class App  // TODO: rename App -> ???
         var container2 = document.getElementById('coordinateHelper');
 
         // Renderer
-        this.axisRenderer = new this.THREE.WebGLRenderer( { antialias: true } );
-        this.axisRenderer.setSize( 200, 200 );
+        this.axisRenderer = new this.THREE.WebGLRenderer( { antialias: true, alpha: true } );
+        this.axisRenderer.setSize( 100, 100 );
+        this.axisRenderer.setClearColor( 0x000000, 0 );
+        // this.axisRenderer.setClearAlpha(0);
         container2.appendChild( this.axisRenderer.domElement );
 
         // Scene
         this.axisScene = new this.THREE.Scene();
-        this.axisScene.background = new THREE.Color( 0x202020 );
+        // this.axisScene.background = new THREE.Color( 0xffffff );
 
         // Camera
         //this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
@@ -184,13 +186,14 @@ class App  // TODO: rename App -> ???
 
         // Axes
         var axes = new this.THREE.AxisHelper( 0.9 );
+        axes.material.linewidth = 2;
         this.axisScene.add(axes);
 
         // Axis labels
         var loader = new THREE.FontLoader();
-        var labelSpecs = {x: {text: 'x', color: 0xff0000, position: {x: 0.83, y: 0.05, z: 0}},
-                          y: {text: 'y', color: 0x00ff00, position: {x: 0.05, y: 0.83, z: 0}},
-                          z: {text: 'z', color: 0x3333ff, position: {x: 0, y: 0.05, z: 0.83}},
+        var labelSpecs = {x: {text: 'x', color: 0xff0000, position: {x: 0.82, y: 0.05, z: 0}},
+                          y: {text: 'y', color: 0x00ff00, position: {x: 0.05, y: 0.82, z: -0.05}},
+                          z: {text: 'z', color: 0x3333ff, position: {x: 0, y: 0.05, z: 0.82}},
                          };
         this.labelMeshes = [];
         loader.load( 'static/js/lib/three/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
@@ -209,7 +212,7 @@ class App  // TODO: rename App -> ???
                 } );
                 var material = new this.THREE.MeshBasicMaterial({color: specs.color} );
                 var mesh = new THREE.Mesh(geometry, material);
-                mesh.scale.setScalar(0.01);
+                mesh.scale.setScalar(0.02);
                 mesh.position.x = specs.position.x
                 mesh.position.y = specs.position.y
                 mesh.position.z = specs.position.z
@@ -315,8 +318,26 @@ class App  // TODO: rename App -> ???
             this.axisRenderer = undefined;
         }
 
-        $("#startButtons").html( "Reload page to display model buttons again." );
+        $("#startButtons").html( "" );
         $("#startButtons").css( {width: "auto", top: "10px", left: "10px", "text-align": "left"} );
+
+        // Back to menu button
+        var element = document.getElementById( 'startButtons' );
+        var fragment = document.createDocumentFragment();
+
+        var returnToStart = document.createElement( 'div' );
+        returnToStart.className = 'floatBox backToMenu unselectable';
+        returnToStart.onclick = function()
+        {
+            location.reload();
+        };
+        var heading = document.createElement( 'label' );
+        heading.innerHTML = '<b>&larr;</b> Back to menu';
+
+        returnToStart.appendChild( heading );
+        fragment.appendChild( returnToStart );
+        element.appendChild( fragment );
+
         this.initHelp();
     }
 
@@ -378,11 +399,12 @@ class App  // TODO: rename App -> ???
         var fragment = document.createDocumentFragment();
         if ( this.is3DLayer )
         {
-            var helpPoints = [ [ 'R:', 'rotate' ],
-                               [ 'S:', 'scale' ],
+            var helpPoints = [ [ 'R:', 'rotate box' ],
+                               [ 'S:', 'scale box' ],
                                [ 'Delete:', 'delete selected box/device' ],
-                               [ 'Click + drag:', 'rotate camera' ],
-                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Left click + drag:', 'orbit camera' ],
+                               [ 'Right click + drag:', 'pan camera' ],
+                               [ 'Click box-handle + drag:', 'connect' ],
                                [ 'Shift + click:', 'select device' ],
                                [ 'Shift + drag:', 'move device' ],
                              ];
@@ -390,7 +412,7 @@ class App  // TODO: rename App -> ???
         else
         {
             var helpPoints = [ [ 'Click + drag:', 'make box' ],
-                               [ 'Click box + drag:', 'connect' ],
+                               [ 'Click box-handle + drag:', 'connect' ],
                                [ 'Delete:', 'delete selected box/device' ],
                                [ 'Shift + click:', 'select device' ],
                                [ 'Shift + drag:', 'move device' ]
@@ -398,7 +420,7 @@ class App  // TODO: rename App -> ???
         }
         
         var helpBox = document.createElement( 'div' );
-        helpBox.className = "helpBox";
+        helpBox.className = "floatBox help";
         helpBox.onclick = function() {
             var collapsed = document.getElementById('collapse-1');
             collapsed.checked = !collapsed.checked;
@@ -1333,7 +1355,8 @@ class App  // TODO: rename App -> ???
 
         if ( this.axisRenderer !== undefined )
         {
-            this.axisCamera.position.copy( this.camera.position );
+            let normalizedCamera = this.camera.position.clone().normalize();
+            this.axisCamera.position.copy( normalizedCamera.multiplyScalar(5) );
             this.axisCamera.lookAt( this.axisScene.position );
             for (var i = 0; i < this.labelMeshes.length; ++i)
             {

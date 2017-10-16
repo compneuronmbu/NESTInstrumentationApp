@@ -193,7 +193,6 @@ class NESTInterface(object):
         """
         self.client.terminate()
         stdout, stderr = self.client.communicate()
-        self.print('NEST client terminated')
 
     def cease_threads(self):
         """

@@ -36,10 +36,8 @@ body {
 }
 
 #coordinateHelper {
-  width: 200px;
-  height: 200px;
-  background-color: #000000; /* or transparent; will show through only if renderer alpha: true */
-  border: 1px solid black; /* or none; */
+  width: 100px;
+  height: 100px;
   margin: 10px;
   padding: 0px;
   position: absolute;
@@ -286,8 +284,10 @@ hr {
   color: #fff;
   position: absolute;
   top: 5px;
-  width: calc(100% - var(--gui_width));
+  width: calc(100% - var(--gui_width) - 400px);
   padding: 5px;
+  margin-left: 200px;
+  margin-right: 200px;
   z-index: 100;
 }
 
@@ -363,22 +363,30 @@ hr {
   visibility: hidden;
 }
 
-.helpBox {
-  color: #fff;
-  background: rgba(128, 128, 128, 0.5);
-  position: absolute;
-  top: 40px;
-  left: 10px;
-  width: auto;
-  padding: 10px;
-  z-index: 100;
-  border-radius: 5px;
-  font-size: 10px;
-  text-align: left;
+.floatBox{
+    color: #fff;
+    background: rgba(128, 128, 128, 0.5);
+    width: auto;
+    padding: 10px;
+    z-index: 200;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 10px;
+    text-align: left;
 }
 
-.helpBox:hover {
+.floatBox:hover {
   background: rgba(140, 140, 140, 0.5);
+}
+
+.backToMenu{
+  display: inline-block;
+}
+
+.help {
+  position: absolute;
+  top: 50px;
+  left: 10px;
 }
 
 .collapse-open{
@@ -395,7 +403,7 @@ hr {
   float: right;
 }
 
-.helpBox:hover .collapse-btn:before{
+.help:hover .collapse-btn:before{
   color: #ffffff;
 }
 

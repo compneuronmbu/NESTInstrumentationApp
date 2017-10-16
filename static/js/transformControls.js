@@ -184,6 +184,7 @@ Transformer.prototype.update = function ( rotation, eye )
     var vec1 = new THREE.Vector3( 0, 0, 0 );
     var vec2 = new THREE.Vector3( 0, 1, 0 );
     var lookAtMatrix = new THREE.Matrix4();
+    this.parent.rotation.fromArray([0, 0, 0])
 
     this.traverse( function( child )
     {
@@ -295,47 +296,55 @@ var TransformRotate = function ()
 {
     Transformer.call( this );
 
-    var CircleGeometry = function ( radius, facing, arc )
-    {
-        var geometry = new THREE.BufferGeometry();
-        var vertices = [];
-        arc = arc ? arc : 1;
+    var arrowGeometry = new THREE.Geometry();
+    var mesh = new THREE.Mesh( new THREE.SphereGeometry( 0.08, 32, 32 ) );
+    mesh.position.y = 0.5;
+    mesh.updateMatrix();
 
-        for ( var i = 0; i <= 64 * arc; ++ i )
-        {
-            if ( facing === 'y' ) vertices.push( Math.cos( i / 32 * Math.PI ) * radius, 0, Math.sin( i / 32 * Math.PI ) * radius );
-            if ( facing === 'z' ) vertices.push( Math.sin( i / 32 * Math.PI ) * radius, Math.cos( i / 32 * Math.PI ) * radius, 0 );
-        }
+    arrowGeometry.merge( mesh.geometry, mesh.matrix );
 
-        geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
-        return geometry;
-    };
+    var lineXGeometry = new THREE.BufferGeometry();
+    lineXGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0,  1, 0, 0 ], 3 ) );
+
+    var lineYGeometry = new THREE.BufferGeometry();
+    lineYGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0,  0, 1, 0 ], 3 ) );
+
+    var lineZGeometry = new THREE.BufferGeometry();
+    lineZGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0,  0, 0, 1 ], 3 ) );
 
     this.handleTransformer = {
 
-        Y: [
-            [ new THREE.Line( new CircleGeometry( 1, 'y', 0.5 ), new TransformerLineMaterial( { color: 0x00ff00 } ) ) ]
-        ],
+        // X: [
+        //     [ new THREE.Mesh( arrowGeometry, new TransformerMaterial( { color: 0xff0000 } ) ), [ 0.5, 0, 0 ], [ 0, 0, - Math.PI / 2 ] ],
+        //     [ new THREE.Line( lineXGeometry, new TransformerLineMaterial( { color: 0xff0000 } ) ) ]
+        // ],
 
         Z: [
-            [ new THREE.Line( new CircleGeometry( 1, 'z', 0.5 ), new TransformerLineMaterial( { color: 0x0000ff } ) ) ]
+            [ new THREE.Mesh( arrowGeometry, new TransformerMaterial( { color: 0x00ff00 } ) ), [ 0, 0.5, 0 ] ],
+            [ new THREE.Line( lineYGeometry, new TransformerLineMaterial( { color: 0x00ff00 } ) ) ]
         ],
 
-        XYZE: [
-            [ new THREE.Line( new CircleGeometry( 1, 'z', 1 ), new TransformerLineMaterial( { color: 0x787878 } ) ) ]
+        Y: [
+            [ new THREE.Mesh( arrowGeometry, new TransformerMaterial( { color: 0x0000ff } ) ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ] ],
+            [ new THREE.Line( lineZGeometry, new TransformerLineMaterial( { color: 0x0000ff } ) ) ]
         ]
 
     };
 
     this.pickerTransformer = {
 
-        Y: [
-            [ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.12, 4, 12, Math.PI ), pickerMaterial ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ]
-        ],
+        // X: [
+        //     [ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), pickerMaterial ), [ 0.6, 0, 0 ], [ 0, 0, - Math.PI / 2 ] ]
+        // ],
 
         Z: [
-            [ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.12, 4, 12, Math.PI ), pickerMaterial ), [ 0, 0, 0 ], [ 0, 0, - Math.PI / 2 ] ]
+            [ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), pickerMaterial ), [ 0, 0.6, 0 ] ]
+        ],
+
+        Y: [
+            [ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), pickerMaterial ), [ 0, 0, 0.6 ], [ Math.PI / 2, 0, 0 ] ]
         ]
+
     };
 
     this.setActivePlane = function ( axis )
@@ -372,19 +381,20 @@ var TransformRotate = function ()
 
         tempMatrix.makeRotationFromQuaternion( tempQuaternion ).getInverse( tempMatrix );
         eye.applyMatrix4( tempMatrix );
+        this.parent.rotation.setFromRotationMatrix( tempMatrix.extractRotation( this.parent.object.matrixWorld ) )
 
         this.traverse( function( child ) {
 
             tempQuaternion.setFromEuler( worldRotation );
 
-            if ( child.name === "Y" )
+            if ( child.name === "Z" )
             {
                 quaternionY.setFromAxisAngle( unitY, Math.atan2( eye.x, eye.z ) );
                 tempQuaternion.multiplyQuaternions( tempQuaternion, quaternionY );
                 child.quaternion.copy( tempQuaternion );
             }
 
-            if ( child.name === "Z" )
+            if ( child.name === "Y" )
             {
                 quaternionZ.setFromAxisAngle( unitZ, Math.atan2( eye.y, eye.x ) );
                 tempQuaternion.multiplyQuaternions( tempQuaternion, quaternionZ );
@@ -435,10 +445,6 @@ var TransformScale = function ()
         Z: [
             [ new THREE.Mesh( arrowGeometry, new TransformerMaterial( { color: 0x0000ff } ) ), [ 0, 0, 0.5 ], [ Math.PI / 2, 0, 0 ] ],
             [ new THREE.Line( lineZGeometry, new TransformerLineMaterial( { color: 0x0000ff } ) ) ]
-        ],
-
-        XYZ: [
-            [ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 ), new TransformerMaterial( { color: 0xffffff, opacity: 0.25 } ) ) ]
         ]
 
     };
@@ -455,10 +461,6 @@ var TransformScale = function ()
 
         Z: [
             [ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 1, 4, 1, false ), pickerMaterial ), [ 0, 0, 0.6 ], [ Math.PI / 2, 0, 0 ] ]
-        ],
-
-        XYZ: [
-            [ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.4, 0.4, 0.4 ), pickerMaterial ) ]
         ]
 
     };
