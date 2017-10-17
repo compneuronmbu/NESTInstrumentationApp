@@ -1004,20 +1004,20 @@ class App  // TODO: rename App -> ???
      * Creates the devices, selections, and connections, given a JSON with
      * connection data.
      */
-    loadFromJSON( textJSON )
+    loadFromJSON( inputObj )
     {
-        var inputObj = JSON.parse( textJSON );
+        console.log(inputObj)
         var IDsCreated = [];
         for ( var device in inputObj.projections )
         {
             var deviceModel = inputObj.projections[ device ].specs.model;
             if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
             {
-                this.makeStimulationDevice( deviceModel );
+                this.makeStimulationDevice( deviceModel, device );
             }
             else
             {
-                this.makeRecordingDevice( deviceModel );
+                this.makeRecordingDevice( deviceModel, device );
             }
 
             var target = this.circle_objects[ this.circle_objects.length - 1 ];
@@ -1100,7 +1100,8 @@ class App  // TODO: rename App -> ???
         var result;
         fr.onload = function( e )
         {
-            this.loadFromJSON( fr.result );
+            var inputObj = JSON.parse( fr.result );
+            this.loadFromJSON( inputObj );
         }.bind(this);
         fr.readAsText( event.target.files[ 0 ] );
     }
@@ -1113,7 +1114,7 @@ class App  // TODO: rename App -> ???
      * @param {Object} map Texture of the device
      * @param {Object=} params Optional parameters of the device
      */
-    makeDevice( device, col, map, params = {} )
+    makeDevice( device, col, map, params = {}, name )
     {
         if ( this.is3DLayer )
         {
@@ -1145,7 +1146,14 @@ class App  // TODO: rename App -> ???
         } );
 
         var circle = new this.THREE.Mesh( geometry, material );
-        var deviceName = device + "_" + String( this.deviceCounter++ );
+        if ( name !== undefined )
+        {
+            var deviceName = name;
+        }
+        else
+        {
+            var deviceName = device + "_" + String( this.deviceCounter++ );
+        }
         circle.name = deviceName;
 
         if ( this.is3DLayer )
@@ -1181,7 +1189,7 @@ class App  // TODO: rename App -> ???
      *
      * @param {string} device Name of the device
      */
-    makeStimulationDevice( device )
+    makeStimulationDevice( device, name )
     {
         console.log( "making stimulation device of type", device )
 
@@ -1206,7 +1214,7 @@ class App  // TODO: rename App -> ???
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map, params );
+        this.makeDevice( device, col, map, params, name );
     }
 
     /**
@@ -1214,7 +1222,7 @@ class App  // TODO: rename App -> ???
      *
      * @param {string} device Name of the device
      */
-    makeRecordingDevice( device )
+    makeRecordingDevice( device, name )
     {
         console.log( "making recording device of type", device )
         if ( device === "voltmeter" )
@@ -1239,7 +1247,7 @@ class App  // TODO: rename App -> ???
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map );
+        this.makeDevice( device, col, map, name );
     }
 
     /**
