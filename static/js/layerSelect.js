@@ -811,11 +811,11 @@ class App  // TODO: rename App -> ???
      *
      * @returns {Object} Projections created.
      */
-    makeProjections()
+    makeProjections( convertToRoomCoordinates=false )
     {
         var projections = {};
         // projections['internal'] = this.modelParameters.projections;
-        this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        // this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
         for ( var device in this.deviceBoxMap )
         {
             projections[ device ] = {
@@ -824,7 +824,15 @@ class App  // TODO: rename App -> ???
             };
             for ( var i in this.deviceBoxMap[ device ].connectees )
             {
-                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getSelectionInfo() )
+                if ( convertToRoomCoordinates && !this.is3DLayer )
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
+                }
+                else
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData();
+                }
+                projections[ device ].connectees.push( data )
             }
         }
         return projections;
@@ -836,7 +844,7 @@ class App  // TODO: rename App -> ???
     makeConnections()
     {
         // create object to be sent
-        var projections = this.makeProjections();
+        var projections = this.makeProjections( true );
         console.log( projections );
 
         this.$( "#infoconnected" ).html( "Connecting ..." );
@@ -877,7 +885,7 @@ class App  // TODO: rename App -> ???
      */
     runSimulation()
     {
-        var projections = this.makeProjections();
+        var projections = this.makeProjections( true );
 
         this.$( "#infoconnected" ).html( "Simulating ..." );
 
@@ -919,7 +927,7 @@ class App  // TODO: rename App -> ???
             data: JSON.stringify(
             {
                 network: this.modelParameters,
-                projections: this.makeProjections(),
+                projections: this.makeProjections( true ),
                 time: "10000"
             } ),
             dataType: "json"
@@ -965,20 +973,7 @@ class App  // TODO: rename App -> ???
             // User cancelled saving
             return;
         }
-        // create object to be saved
-        var projections = {};
-        for ( var device in this.deviceBoxMap )
-        {
-            var deviceModel = this.deviceBoxMap[ device ].specs.model;
-            projections[ device ] = {
-                specs: this.deviceBoxMap[ device ].specs,
-                connectees: []
-            };
-            for ( var i in this.deviceBoxMap[ device ].connectees )
-            {
-                projections[ device ].connectees.push( this.deviceBoxMap[ device ].connectees[ i ].getInfoForSaving() )
-            }
-        }
+        var projections = this.makeProjections();
         console.log( "projections", projections );
 
         // abort if there is nothing to save
@@ -1009,20 +1004,20 @@ class App  // TODO: rename App -> ???
      * Creates the devices, selections, and connections, given a JSON with
      * connection data.
      */
-    loadFromJSON( textJSON )
+    loadFromJSON( inputObj )
     {
-        var inputObj = JSON.parse( textJSON );
+        console.log(inputObj)
         var IDsCreated = [];
         for ( var device in inputObj.projections )
         {
             var deviceModel = inputObj.projections[ device ].specs.model;
             if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
             {
-                this.makeStimulationDevice( deviceModel );
+                this.makeStimulationDevice( deviceModel, device );
             }
             else
             {
-                this.makeRecordingDevice( deviceModel );
+                this.makeRecordingDevice( deviceModel, device );
             }
 
             var target = this.circle_objects[ this.circle_objects.length - 1 ];
@@ -1105,7 +1100,8 @@ class App  // TODO: rename App -> ???
         var result;
         fr.onload = function( e )
         {
-            this.loadFromJSON( fr.result );
+            var inputObj = JSON.parse( fr.result );
+            this.loadFromJSON( inputObj );
         }.bind(this);
         fr.readAsText( event.target.files[ 0 ] );
     }
@@ -1118,7 +1114,7 @@ class App  // TODO: rename App -> ???
      * @param {Object} map Texture of the device
      * @param {Object=} params Optional parameters of the device
      */
-    makeDevice( device, col, map, params = {} )
+    makeDevice( device, col, map, params = {}, name )
     {
         if ( this.is3DLayer )
         {
@@ -1150,7 +1146,14 @@ class App  // TODO: rename App -> ???
         } );
 
         var circle = new this.THREE.Mesh( geometry, material );
-        var deviceName = device + "_" + String( this.deviceCounter++ );
+        if ( name !== undefined )
+        {
+            var deviceName = name;
+        }
+        else
+        {
+            var deviceName = device + "_" + String( this.deviceCounter++ );
+        }
         circle.name = deviceName;
 
         if ( this.is3DLayer )
@@ -1186,7 +1189,7 @@ class App  // TODO: rename App -> ???
      *
      * @param {string} device Name of the device
      */
-    makeStimulationDevice( device )
+    makeStimulationDevice( device, name )
     {
         console.log( "making stimulation device of type", device )
 
@@ -1211,7 +1214,7 @@ class App  // TODO: rename App -> ???
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map, params );
+        this.makeDevice( device, col, map, params, name );
     }
 
     /**
@@ -1219,7 +1222,7 @@ class App  // TODO: rename App -> ???
      *
      * @param {string} device Name of the device
      */
-    makeRecordingDevice( device )
+    makeRecordingDevice( device, name )
     {
         console.log( "making recording device of type", device )
         if ( device === "voltmeter" )
@@ -1244,7 +1247,7 @@ class App  // TODO: rename App -> ???
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map );
+        this.makeDevice( device, col, map, name );
     }
 
     /**
@@ -1329,6 +1332,28 @@ class App  // TODO: rename App -> ???
             }
             points.geometry.attributes.visible.needsUpdate = true;
         }
+        requestAnimationFrame( this.render.bind(this) );
+    }
+
+    /**
+     * Deletes all selections and devices.
+     */
+    deleteEverything()
+    {
+        // Delete all boxes
+        while ( this.selectionBoxArray.length > 0 )
+        {
+            this.controls.boxInFocus = this.selectionBoxArray[ 0 ];
+            this.controls.deleteBox();
+        }
+
+        // Delete all devices
+        while ( this.circle_objects.length > 0 )
+        {
+            this.controls.deviceInFocus = this.circle_objects[0];
+            this.controls.deleteDevice();
+        }
+
         requestAnimationFrame( this.render.bind(this) );
     }
 

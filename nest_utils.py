@@ -340,7 +340,7 @@ class NESTInterface(object):
         self.print('Received status message:\n' +
                    '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
 
-        socketio.emit('message',
+        self.socketio.emit('message',
                            {'message': msg.value})
         # TODO: Use namespace to send to different clients
         print('Sent socket msg')

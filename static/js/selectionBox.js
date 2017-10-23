@@ -165,8 +165,8 @@ class SelectionBox
         this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
         this.angle = ( this.majorAxis == ( ur.x - ll.x )  / 2 ) ? 0.0: Math.PI / 2;
 
-        this.selectedNeuronType;
-        this.selectedSynModel;
+        this.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        this.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         this.selectedShape = shape;
 
         this.box;
@@ -624,49 +624,50 @@ class SelectionBox
     }
 
     /**
-     * Returns data of this selection box to be sent to the server for
-     * connecting. Coordinates here has to be converted to room coordinates.
+     * Gets data of this selection box to be saved or sent to the server for
+     * connecting.
+     *
+     * @returns {Object} Data of this selection box.
      */
-    getSelectionInfo()
+    getData( convertToRoomCoordinates=false )
     {
-        var selectedBBoxXYZ = {
-            "ll": app.toObjectCoordinates( this.ll ),
-            "ur": app.toObjectCoordinates( this.ur )
-        };
-        var selectionBox = {
-            "ll":
-            {
-                x: ( selectedBBoxXYZ.ll.x - app.layer_points[ this.layerName ].offsets.x ) * app.layer_points[ this.layerName ].extent[0] + app.layer_points[ this.layerName ].center[0] ,
-                y: ( -( selectedBBoxXYZ.ll.y + app.layer_points[ this.layerName ].offsets.y ) ) * app.layer_points[ this.layerName ].extent[1] + app.layer_points[ this.layerName ].center[1],
-                z: 0
-            },
-            "ur":
-            {
-                x: ( selectedBBoxXYZ.ur.x - app.layer_points[ this.layerName ].offsets.x ) * app.layer_points[ this.layerName ].extent[0] + app.layer_points[ this.layerName ].center[0],
-                y: ( -( selectedBBoxXYZ.ur.y + app.layer_points[ this.layerName ].offsets.y ) ) * app.layer_points[ this.layerName ].extent[1] + app.layer_points[ this.layerName ].center[1],
-                z: 0
-            }
-        };
-
-        console.log("SelectionBox", selectionBox)
-
-        var selectedNeuronType = app.getSelectedDropDown( "neuronType" );
-        var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
-        var selectedShape = this.selectedShape;
-
         var noNeurons = { [this.layerName]: app.layer_points[this.layerName]['noElements'] };
-
-        var selectionInfo = {
-            name: [this.layerName],
-            selection: selectionBox,
+        var data = {
+            name: this.layerName,
+            ll: this.ll,
+            ur: this.ur,
             azimuthAngle: this.angle,
-            neuronType: selectedNeuronType,
-            synModel: selectedSynModel,
-            maskShape: selectedShape,
-            noOfNeuronTypesInLayer: noNeurons
+            noOfNeuronTypesInLayer: noNeurons,
+            neuronType: this.selectedNeuronType,
+            synModel: this.selectedSynModel,
+            maskShape: this.selectedShape,
+            uniqueID: this.uniqueID
         };
-        console.log(selectionInfo)
-        return selectionInfo;
+        if ( convertToRoomCoordinates )
+        {
+            // Convert ll and ur to points in space for NEST
+            var selectedBBoxXYZ = {
+                "ll": app.toObjectCoordinates( data.ll ),
+                "ur": app.toObjectCoordinates( data.ur )
+            };
+            var selectionBox = {
+                "ll":
+                {
+                    x: ( selectedBBoxXYZ.ll.x - app.layer_points[ data.name ].offsets.x ) * app.layer_points[ data.name ].extent[0] + app.layer_points[ data.name ].center[0] ,
+                    y: ( -( selectedBBoxXYZ.ll.y + app.layer_points[ data.name ].offsets.y ) ) * app.layer_points[ data.name ].extent[1] + app.layer_points[ data.name ].center[1],
+                    z: 0
+                },
+                "ur":
+                {
+                    x: ( selectedBBoxXYZ.ur.x - app.layer_points[ data.name ].offsets.x ) * app.layer_points[ data.name ].extent[0] + app.layer_points[ data.name ].center[0],
+                    y: ( -( selectedBBoxXYZ.ur.y + app.layer_points[ data.name ].offsets.y ) ) * app.layer_points[ data.name ].extent[1] + app.layer_points[ data.name ].center[1],
+                    z: 0
+                }
+            };
+            data.selection = selectionBox;
+            data.name = [data.name];
+        }
+        return data;
     }
 
     /**
@@ -738,27 +739,6 @@ class SelectionBox
         {
             this.resizePoints[i].name = nameArray[ i ];
         }
-    }
-
-    /**
-     * Gets data of this selection box to be saved.
-     *
-     * @returns {Object} Information to be saved.
-     */
-    getInfoForSaving()
-    {
-        var selectionInfo = {
-            name: this.layerName,
-            ll: this.ll,
-            ur: this.ur,
-            angle: this.angle,
-            neuronType: this.selectedNeuronType,
-            synModel: this.selectedSynModel,
-            maskShape: this.selectedShape,
-            uniqueID: this.uniqueID
-        };
-
-        return selectionInfo;
     }
 
     /**
@@ -1079,8 +1059,8 @@ class SelectionBox3D
         this.azimuthAngle = 0.0;
         this.polarAngle = 0.0;
 
-        this.selectedNeuronType;
-        this.selectedSynModel;
+        this.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
+        this.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         this.selectedShape = shape;
 
         this.box;
@@ -1599,18 +1579,15 @@ class SelectionBox3D
         }
     }
 
+
     /**
-     * Gets data of this selection box to be sent to the server for
+     * Gets data of this selection box to be saved or sent to the server for
      * connecting.
      *
-     * @returns {Object} Information to be sent to the server.
+     * @returns {Object} Data of this selection box.
      */
-    getSelectionInfo()
+    getData()
     {
-        var selectedNeuronType = app.getSelectedDropDown( "neuronType" );
-        var selectedSynModel = app.getSelectedDropDown( "synapseModel" );
-        var selectedShape = this.selectedShape;
-
         var nameArray = [];
         var noNeuronPointsDict = {}
         for ( var layerName in app.layer_points )
@@ -1622,36 +1599,17 @@ class SelectionBox3D
         var selectionInfo = {
             name: nameArray,
             selection: { "ll": this.ll, "ur": this.ur },
-            azimuthAngle: this.azimuthAngle,
-            polarAngle: this.polarAngle,
-            neuronType: selectedNeuronType,
-            synModel: selectedSynModel,
-            maskShape: selectedShape,
-            noOfNeuronTypesInLayer: noNeuronPointsDict
-        };
-
-        console.log(selectionInfo)
-        return selectionInfo;
-    }
-
-
-    /**
-     * Gets data of this selection box to be saved.
-     *
-     * @returns {Object} Information to be saved.
-     */
-    getInfoForSaving()
-    {
-        var selectionInfo = {
-            name: this.layerName,
             width: this.originalWidth,
             height: this.originalHeight,
             depth: this.originalDepth,
             scale: this.box.scale,
             center: this.center,
+            azimuthAngle: this.azimuthAngle,
+            polarAngle: this.polarAngle,
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,
             maskShape: this.selectedShape,
+            noOfNeuronTypesInLayer: noNeuronPointsDict,
             uniqueID: this.uniqueID
         };
         return selectionInfo;
