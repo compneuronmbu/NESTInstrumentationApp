@@ -70,10 +70,11 @@ class App
     {
         // Binding libraries to this so that they can be set by test scripts,
         // because Node.js is being difficult.
-        this.$ = $;
-        this.THREE = THREE;
-        this.SelectionBox = SelectionBox;
-        this.SelectionBox3D = SelectionBox3D;
+        this.$ = this.$ || $;
+        this.THREE = this.THREE || THREE;
+        this.SelectionBox = this.SelectionBox || SelectionBox;
+        this.SelectionBox3D = this.SelectionBox3D || SelectionBox3D;
+        this.io = this.io || io;
 
         this.container = document.getElementById( 'main_body' );
 
@@ -1247,7 +1248,7 @@ class App
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map, name );
+        this.makeDevice( device, col, map, {}, name );
     }
 
     /**

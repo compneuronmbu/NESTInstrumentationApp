@@ -90,17 +90,25 @@ test('Test main init', () => {
     THREE = jest.fn();
     SelectionBox = jest.fn();
     SelectionBox3D = jest.fn();
+    io = require('socket.io-client');
     app.initTHREEScene = jest.fn();
     app.initTHREERenderer = jest.fn();
     app.initContainer = jest.fn();
-    app.initParameters = jest.fn();
     app.initGUI = jest.fn();
     app.initSecondCamera = jest.fn();
+    app.render = jest.fn();
     Controls = jest.fn();
     DevicePlots = jest.fn();
     EventSource = jest.fn();
     app.handleMessage = jest.fn();
     app.init();
+
+    expect(app.initTHREEScene.mock.calls.length).toBe(1);
+    expect(app.initTHREERenderer.mock.calls.length).toBe(1);
+    expect(app.initContainer.mock.calls.length).toBe(1);
+    expect(app.initGUI.mock.calls.length).toBe(1);
+    expect(app.initSecondCamera.mock.calls.length).toBe(1);
+    expect(app.render.mock.calls.length).toBe(1);
 });
 
 test('Test makeBrainRepresentation', () => {
@@ -125,7 +133,7 @@ test('Test makeBrainRepresentation', () => {
     expect(app.scene.children.length).toBe(2);
 });
 
-test('Test handleMessage', () => {
+test('Test handleSimulationData', () => {
     // make mock functions
     app.$ = function(s)
     {
@@ -145,7 +153,7 @@ test('Test handleMessage', () => {
         data: '{"plot_results":{"rec_dev":{"V_m":[[-70,-70,-70,-70],[-69.96517328370601,-69.97058344797023,-69.97411530833868,-69.96469057409006],[-69.73877348405927,-69.76270592265867,-69.79392409469823,-69.73867196291485],[-69.26640287104746,-69.31914920527167,-69.37309320711462,-69.28635861129042],[-68.54020218833176,-68.68615389078396,-68.73379468001576,-68.63662805565743],[-67.63383563570525,-67.92980437246618,-67.95385333973516,-67.82933377509188],[-66.67929187893259,-67.1040325153895,-67.08225155921052,-66.95964160447717],[-65.70305549046087,-66.23770870006803,-66.1863651933137,-66.07525044362609],[-64.72642634511188,-65.36638351257704,-65.29973570268487,-65.18145733388278]],"times":[1,2,3,4,5,6,7,8,9]},"spike_det":{"senders":[1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499,1458,1459,1498,1499],"times":[1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,9,9,9,9]},"time":10},"stream_results":{"voltmeter_2":{"1458":[9,-65],"1459":[9,-65],"1498":[9,-65],"1499":[9,-65]}}}'
     }
     let parsedData = JSON.parse(e.data);
-    app.handleMessage( e );
+    app.handleSimulationData( e );
 
     expect(app.colorFromSpike.mock.calls[0][0]).toMatchObject(parsedData['stream_results']);
     expect(app.colorFromVm.mock.calls[0][0]).toMatchObject(parsedData['stream_results']);
@@ -345,11 +353,11 @@ test('Test makeProjections', () => {
     }
     app.deviceBoxMap = {
         device1: {specs: {}, connectees: {
-            box1: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()},
-            box2: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()}}},
+            box1: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()},
+            box2: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()}}},
         device2: {specs: {}, connectees: {
-            box1: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()},
-            box2: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()}}}
+            box1: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()},
+            box2: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()}}}
     }
     let projections = app.makeProjections();
     expect(projections).toMatchObject({
@@ -375,11 +383,11 @@ test('Test makeConnections', () => {
     app.modelParameters = MODELPARAMETERS;
     app.deviceBoxMap = {
         device1: {specs: {}, connectees: {
-            box1: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()},
-            box2: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()}}},
+            box1: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()},
+            box2: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()}}},
         device2: {specs: {}, connectees: {
-            box1: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()},
-            box2: {getSelectionInfo: function(){return {info: "INFO"}}, updateColors: jest.fn()}}}
+            box1: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()},
+            box2: {getData: function(){return {info: "INFO"}}, updateColors: jest.fn()}}}
     }
     app.makeConnections();
     expect(app.$.ajax.mock.calls[0][0]).toMatchObject({
@@ -514,14 +522,14 @@ test('Test saveSelection', () => {
     prompt = jest.fn(function(){return "selection name"});
     app.deviceBoxMap = {
         device1: {specs: {model: "device_model"}, connectees: {
-            box1: {getInfoForSaving: function(){return {info: "INFO"}}},
-            box2: {getInfoForSaving: function(){return {info: "INFO"}}}}},
+            box1: {getData: function(){return {info: "INFO"}}},
+            box2: {getData: function(){return {info: "INFO"}}}}},
         device2: {specs: {model: "device_model"}, connectees: {
-            box1: {getInfoForSaving: function(){return {info: "INFO"}}},
-            box2: {getInfoForSaving: function(){return {info: "INFO"}}}}}
+            box1: {getData: function(){return {info: "INFO"}}},
+            box2: {getData: function(){return {info: "INFO"}}}}}
     }
     app.saveSelection();
-    expect(setAnchorAttribute.mock.calls[0]).toEqual(['href', 'data:text/json;charset=utf-8,%7B%22projections%22%3A%7B%22device1%22%3A%7B%22specs%22%3A%7B%22model%22%3A%22device_model%22%7D%2C%22connectees%22%3A%5B%7B%22info%22%3A%22INFO%22%7D%2C%7B%22info%22%3A%22INFO%22%7D%5D%7D%2C%22device2%22%3A%7B%22specs%22%3A%7B%22model%22%3A%22device_model%22%7D%2C%22connectees%22%3A%5B%7B%22info%22%3A%22INFO%22%7D%2C%7B%22info%22%3A%22INFO%22%7D%5D%7D%7D%7D']);
+    expect(setAnchorAttribute.mock.calls[0]).toEqual(['href', 'data:text/json;charset=utf-8,%7B%0A%20%20%22projections%22%3A%20%7B%0A%20%20%20%20%22device1%22%3A%20%7B%0A%20%20%20%20%20%20%22specs%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22model%22%3A%20%22device_model%22%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%22connectees%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%2C%0A%20%20%20%20%22device2%22%3A%20%7B%0A%20%20%20%20%20%20%22specs%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22model%22%3A%20%22device_model%22%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%22connectees%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D']);
     expect(clickAnchorElement.mock.calls.length).toBe(1);
     document.getElementById = _getElementById;
 });
@@ -552,6 +560,7 @@ test('Test loadFromJSON', () => {
     app.SelectionBox = require('../static/js/selectionBox.js');
     var brain = require('../static/js/makeBrainRepresentation.js');
     
+    app.getSelectedDropDown = jest.fn();
     app.container = {
         clientWidth: 800,
         clientHeight: 600
@@ -570,9 +579,8 @@ test('Test loadFromJSON', () => {
     app.modelParameters = MODELPARAMETERS
     app.brain = new brain(app.camera, app.scene);
     
-    var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]}}}'
-    app.loadFromJSON(textJSON);
-
+    var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]}}}';
+    app.loadFromJSON(JSON.parse(textJSON));
     expect(app.deviceBoxMap).toMatchObject({
         poisson_generator_1: {connectees: expect.any(Array),
                               specs: {model: "poisson_generator", params: expect.anything()}
@@ -584,9 +592,9 @@ test('Test loadFromJSON', () => {
                            specs: {model: "spike_detector", params: expect.anything()}
                           }
     });
-    expect(app.deviceBoxMap.poisson_generator_1.connectees.length).toBe(4);
-    expect(app.deviceBoxMap.voltmeter_2.connectees.length).toBe(4);
-    expect(app.deviceBoxMap.spike_detector_3.connectees.length).toBe(4);
+    expect(app.deviceBoxMap.poisson_generator_1.connectees.length).toBe(2);
+    expect(app.deviceBoxMap.voltmeter_2.connectees.length).toBe(2);
+    expect(app.deviceBoxMap.spike_detector_3.connectees.length).toBe(2);
 });
 
 test('Test handleFileUpload', () => {
@@ -601,10 +609,10 @@ test('Test handleFileUpload', () => {
         }
     }
     FileReader = mockFileReader;
-    var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":425,"y":431},"ur":{"x":443,"y":447},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":4},{"name":"Inhibitory","ll":{"x":433,"y":153},"ur":{"x":475,"y":193},"neuronType":"All","synModel":"static_excitatory","maskShape":"elliptical","uniqueID":11},{"name":"Excitatory","ll":{"x":349,"y":154},"ur":{"x":371,"y":173},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":8},{"name":"Excitatory","ll":{"x":72,"y":437},"ur":{"x":83,"y":452},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1}]}}}'
+    var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]}}}';
     var event = {target: {files: [textJSON]}}
     app.handleFileUpload(event);
-    expect(app.loadFromJSON.mock.calls[0]).toEqual([textJSON]);
+    expect(app.loadFromJSON.mock.calls[0]).toMatchObject([JSON.parse(textJSON)]);
     FileReader = _FileReader;
 });
 

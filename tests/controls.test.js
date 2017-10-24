@@ -23,11 +23,15 @@ beforeEach( () => {
                 width: 800
             }
         },
+        domElement: {
+            addEventListener: jest.fn(),
+            getBoundingClientRect: function(){
+                return {left: 0, top: 0, width: 1200, height: 800}
+            },
+            style: {}
+        }
     }
-    app.controls = new Controls( undefined, {
-        addEventListener: jest.fn(),
-        style: {}
-    } );
+    app.controls = new Controls( undefined, app.renderer.domElement );
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
     app.is3DLayer = MODELPARAMETERS.is3DLayer;
@@ -91,6 +95,7 @@ test( 'Test makeOutline and removeOutline', () => {
 } );
 
 test( 'Test selectBox', () => {
+    app.getSelectedDropDown = jest.fn();
     app.controls.selectBox();
     expect( app.controls.make_selection_box ).toBe( true );
 
@@ -112,6 +117,7 @@ test( 'Test selectBox', () => {
 } );
 
 test( 'Test resizeBox', () => {
+    app.getSelectedDropDown = jest.fn();
     app.controls.make_selection_box = false;
     var box = new app.SelectionBox( {
         x: 50,
@@ -156,6 +162,7 @@ test( 'Test resizeBox', () => {
 } );
 
 test( 'Test updateLine', () => {
+    app.getSelectedDropDown = jest.fn();
     app.controls.make_selection_box = false;
     var box = new app.SelectionBox( {
         x: 50,
@@ -170,8 +177,8 @@ test( 'Test updateLine', () => {
     box.makeLine();
 
     app.controls.updateLine( 200, 200 );
-    expect( box.curves.length ).toBe( 1 );
-    expect( box.curves[ 0 ].curve.points[ 3 ] ).toMatchObject( app.toObjectCoordinates( {
+    expect( box.lines.length ).toBe( 1 );
+    expect( box.lines[ 0 ].curve.points[ 3 ] ).toMatchObject( app.toObjectCoordinates( {
         x: 200,
         y: 200
     } ) );
@@ -223,10 +230,9 @@ test( 'Test makeSelectionBox', () => {
         },
         selectedShape: "rectangular",
         resizePoints: expect.anything(),
-        curves: [],
+        lines: [],
         selectedPointIDs: expect.anything(),
         nSelected: 600,
-        CURVE_SEGMENTS: 100,
         box: expect.any( app.THREE.Mesh ),
         selectedNeuronType: undefined,
         selectedSynModel: undefined
@@ -235,7 +241,7 @@ test( 'Test makeSelectionBox', () => {
 } );
 
 
-test( 'Test checkFlipBox', () => {
+test( 'Test box checkFlip', () => {
     app.mouseDownCoords = {
         x: 20,
         y: 50
@@ -255,7 +261,7 @@ test( 'Test checkFlipBox', () => {
     app.controls.makeSelectionBox();
 
     app.controls.boxInFocus.ll.x = 350;
-    app.controls.checkFlipBox()
+    app.controls.boxInFocus.checkFlip()
     expect( app.controls.boxInFocus.ll ).toMatchObject( {
         x: 300,
         y: 300
@@ -266,7 +272,7 @@ test( 'Test checkFlipBox', () => {
     } );
 
     app.controls.boxInFocus.ur.y = 250;
-    app.controls.checkFlipBox()
+    app.controls.boxInFocus.checkFlip()
     expect( app.controls.boxInFocus.ll ).toMatchObject( {
         x: 300,
         y: 250
@@ -306,7 +312,7 @@ test( 'Test makeConnection', () => {
     app.controls.drag_objects = app.circle_objects;
     app.controls.boxInFocus.makeLine();
     app.controls.makeConnection( 0, 0 ); // mouse coordinates are irrelevant
-    expect( app.deviceBoxMap[ 'poisson_generator_1' ].connectees ).toMatchObject( [ app.controls.boxInFocus ] );
+    expect( app.deviceBoxMap[ 'poisson_generator_1' ].connectees ).toEqual( [ app.controls.boxInFocus ] );
 } );
 
 test( 'Test deleteBox', () => {
@@ -370,11 +376,12 @@ test( 'Test deleteDevice', () => {
     app.deviceBoxMap[ "poisson_generator_1" ].connectees.push( app.controls.boxInFocus );
 
     app.controls.deleteDevice();
-    expect( app.scene.children.length ).toBe( 3 ); // two points objects, one box
+    expect( app.scene.children.length ).toBe( 4 ); // two points objects, one box, one box handle
     expect( app.outlineScene.children.length ).toBe( 0 ); // no outline
 } );
 
 test( 'Test onMouseDown', () => {
+    app.getSelectedDropDown = jest.fn();
     app.controls.getMouseIntersecting = ( cX, cY, objects ) => {
         return [ {
             object: objects[ 0 ]
@@ -512,13 +519,19 @@ test( 'Test onMouseUp', () => {
 
     // make mock functions of target functions
     app.controls.makeSelectionBox = jest.fn();
-    app.controls.checkFlipBox = jest.fn();
+    app.controls.serverPrintGids = jest.fn();
+    app.getSelectedDropDown = jest.fn();
+    app.controls.boxInFocus = {
+        checkFlip: jest.fn(),
+        updateColors: jest.fn()
+    };
+    // app.controls.checkFlipBox = jest.fn();
     app.controls.makeConnection = jest.fn();
     app.controls.updateDevicePosition = jest.fn();
 
     var resetMocks = () => {
-        app.controls.makeSelectionBox.mockReset();
-        app.controls.checkFlipBox.mockReset();
+        app.controls.boxInFocus.checkFlip.mockReset();
+        app.controls.boxInFocus.updateColors.mockReset();
         app.controls.makeConnection.mockReset();
     };
 
@@ -526,8 +539,8 @@ test( 'Test onMouseUp', () => {
     app.controls.make_selection_box = true;
     var event = makeMouseEvent();
     app.controls.onMouseUp( event );
-    expect( app.controls.makeSelectionBox.mock.calls.length ).toBe( 1 );
-    expect( app.controls.checkFlipBox.mock.calls.length ).toBe( 0 );
+    expect( app.controls.boxInFocus.checkFlip.mock.calls.length ).toBe( 0 );
+    expect( app.controls.boxInFocus.updateColors.mock.calls.length ).toBe( 0 );
     expect( app.controls.makeConnection.mock.calls.length ).toBe( 0 );
     resetMocks();
 
@@ -536,8 +549,8 @@ test( 'Test onMouseUp', () => {
     app.controls.resizeSideInFocus = "lowerLeft";
     var event = makeMouseEvent();
     app.controls.onMouseUp( event );
-    expect( app.controls.makeSelectionBox.mock.calls.length ).toBe( 0 );
-    expect( app.controls.checkFlipBox.mock.calls.length ).toBe( 1 );
+    expect( app.controls.boxInFocus.checkFlip.mock.calls.length ).toBe( 1 );
+    expect( app.controls.boxInFocus.updateColors.mock.calls.length ).toBe( 1 );
     expect( app.controls.makeConnection.mock.calls.length ).toBe( 0 );
     resetMocks();
 
@@ -546,8 +559,8 @@ test( 'Test onMouseUp', () => {
     app.controls.make_connection = true;
     var event = makeMouseEvent();
     app.controls.onMouseUp( event );
-    expect( app.controls.makeSelectionBox.mock.calls.length ).toBe( 0 );
-    expect( app.controls.checkFlipBox.mock.calls.length ).toBe( 0 );
+    expect( app.controls.boxInFocus.checkFlip.mock.calls.length ).toBe( 0 );
+    expect( app.controls.boxInFocus.updateColors.mock.calls.length ).toBe( 0 );
     expect( app.controls.makeConnection.mock.calls[ 0 ] ).toEqual( [ 100, 500 ] );
     resetMocks();
 } );
