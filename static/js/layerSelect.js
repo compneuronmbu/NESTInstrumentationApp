@@ -1,7 +1,7 @@
 /**
  * NESTConnection app.
  */
-class App  // TODO: rename App -> ???
+class App
 {
     constructor()
     {
