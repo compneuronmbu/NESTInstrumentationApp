@@ -1,6 +1,6 @@
-# NEST Connection App
+# NEST Instrumentation App
 
-The NESTConnectionApp is a graphical user interface to connect recording and stimulation devices to networks in [NEST](http://www.nest-simulator.org).
+The NESTInstrumentationApp is a graphical user interface to connect recording and stimulation devices to networks in [NEST](http://www.nest-simulator.org).
 
 <p align="center">
   <img src="documentation/figures/3D_example.png" width=60%>
@@ -38,7 +38,7 @@ First start the server with
 $ yarn start
 ```
 
-Then open your web browser and go to `http://127.0.0.1:7000/NESTConnectionApp`.
+Then open your web browser and go to `http://127.0.0.1:7000/NESTInstrumentationApp`.
 
 
 ## Running the testsuite

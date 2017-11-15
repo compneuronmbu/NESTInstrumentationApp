@@ -1107,8 +1107,7 @@ class SelectionBox3D
         this.updateColors();
         this.makeConnectionHandle();
 
-        this.box.rotation.order = "ZYX";//"YZX";
-        console.log(this.box)
+        this.box.rotation.order = "ZYX"; //"YZX";
     }
 
     /**
@@ -1317,8 +1316,12 @@ class SelectionBox3D
      */
     updateLLAndUR()
     {
-        this.ll = { x: this.center.x - this.width / 2, y: this.center.y - this.height / 2, z: this.center.z - this.depth / 2 };
-        this.ur = { x: this.center.x + this.width / 2, y: this.center.y + this.height / 2, z: this.center.z + this.depth / 2 };
+        this.ll = { x: this.center.x - this.width / 2,
+                    y: this.center.y - this.height / 2,
+                    z: this.center.z - this.depth / 2 };
+        this.ur = { x: this.center.x + this.width / 2,
+                    y: this.center.y + this.height / 2,
+                    z: this.center.z + this.depth / 2 };
     }
 
     updateAzimuthAndPolarAngle()
@@ -1330,9 +1333,9 @@ class SelectionBox3D
         {
             this.azimuthAngle += 2 * Math.PI;
         }
-        
         console.log("azimuthAngle:", this.azimuthAngle * 180 / Math.PI)
         console.log("polarAngle:", this.polarAngle * 180 / Math.PI)
+        console.log("xAngle:", this.box.rotation.x * 180 / Math.PI)
     }
 
     /**
@@ -1419,7 +1422,7 @@ class SelectionBox3D
                       ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.cos( this.polarAngle ) -
                     ( pos. z - this.center.z ) * Math.sin( this.polarAngle );
 
-        var new_y = ( ( pos.x - this.center.x ) * Math.sin( this.azimuthAngle ) -
+        var new_y = ( -( pos.x - this.center.x ) * Math.sin( this.azimuthAngle ) +
                       ( pos.y - this.center.y ) * Math.cos( this.azimuthAngle ) );
 
         var new_z = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) +
@@ -1442,11 +1445,24 @@ class SelectionBox3D
         var new_x = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) +
                       ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.cos( this.polarAngle ) -
                     ( pos.z - this.center.z ) * Math.sin( this.polarAngle ) + this.center.x;
+
         var new_y = -( pos.x - this.center.x ) * Math.sin( this.azimuthAngle ) +
                     ( pos.y - this.center.y ) * Math.cos( this.azimuthAngle ) + this.center.y;
+
         var new_z = ( ( pos.x - this.center.x ) * Math.cos( this.azimuthAngle ) +
                       ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) ) * Math.sin( this.polarAngle ) +
-                    ( pos.z - this.center.z ) * Math.cos( this.polarAngle ) + this.center.z;        
+                    ( pos.z - this.center.z ) * Math.cos( this.polarAngle ) + this.center.z;
+
+        /*var new_x = ( ( pos.x - this.center.x ) * Math.cos( this.polarAngle ) -
+                      ( pos.z - this.center.z ) * Math.sin( this.polarAngle ) ) * Math.cos( this.azimuthAngle ) +
+                    ( pos.y - this.center.y ) * Math.sin( this.azimuthAngle ) + this.center.x;
+
+        var new_y = -( ( pos.x - this.center.x ) * Math.cos( this.polarAngle ) -
+                      ( pos.z - this.center.z ) * Math.sin( this.polarAngle ) ) * Math.sin( this.azimuthAngle ) +
+                    ( pos.y - this.center.y ) * Math.cos( this.azimuthAngle ) + this.center.y;
+                    
+        var new_z = ( pos.x - this.center.x ) * Math.sin( this.polarAngle ) +
+                    ( pos.z - this.center.z ) * Math.cos( this.polarAngle ) + this.center.z;*/
 
         return new_x > this.ll.x && new_x < this.ur.x
             && new_y > this.ll.y && new_y < this.ur.y

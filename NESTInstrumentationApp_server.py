@@ -43,12 +43,12 @@ def redirect():
     return flask.redirect(flask.url_for('index'))
 
 
-@app.route('/NESTConnectionApp')
+@app.route('/NESTInstrumentationApp')
 def index():
     """
     Renders the index page template and sends it to the client.
     """
-    return flask.render_template('NESTConnectionApp.html', version=VERSION)
+    return flask.render_template('NESTInstrumentationApp.html', version=VERSION)
 
 
 @app.route('/makeNetwork', methods=['POST'])

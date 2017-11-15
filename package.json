@@ -1,5 +1,5 @@
 {
-  "name": "NESTConnectionApp",
+  "name": "NESTInstrumentationApp",
   "version": "0.1.0",
   "main": "static/js/layerSelect.js",
   "repository": "https://github.com/compneuronmbu/NESTConnectionApp.git",
@@ -9,7 +9,7 @@
   ],
   "license": "GPL-2.0",
   "scripts": {
-    "start": "python NESTConnectionApp_server.py",
+    "start": "python NESTInstrumentationApp_server.py",
     "doc": "jsdoc README.md static/js/layerSelect.js static/js/makeBrainRepresentation.js static/js/controls.js static/js/devicePlots.js static/js/selectionBox.js -d ./documentation/javascript --verbose && make -C documentation/python html",
     "test": "jest",
     "test_verbose": "jest --verbose",

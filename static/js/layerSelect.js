@@ -1,5 +1,5 @@
 /**
- * NESTConnection app.
+ * NESTInstrumentation app.
  */
 class App  // TODO: rename App -> ???
 {

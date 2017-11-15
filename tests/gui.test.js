@@ -37,7 +37,7 @@ beforeEach( () => {
     document.body.innerHTML =
         '<div id="main_body">' +
         '        <div id="info">' +
-        '            NEST Connection App' +
+        '            NEST Instrumentation App' +
         '            <div id="infoselected"></div>' +
         '            <div id="infoconnected"></div>' +
         '        </div>' +
