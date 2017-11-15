@@ -38,7 +38,7 @@ First start the server with
 $ yarn start
 ```
 
-Then open your web browser and go to `http://127.0.0.1:7000/NESTInstrumentationApp`.
+Then open your web browser and go to `https://127.0.0.1:7000/NESTInstrumentationApp`.
 
 
 ## Running the testsuite
