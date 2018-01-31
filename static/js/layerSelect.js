@@ -78,6 +78,8 @@ class App
 
         this.container = document.getElementById( 'main_body' );
 
+        authentication();
+
         this.initTHREEScene();
         this.initTHREERenderer();
         this.initContainer();
