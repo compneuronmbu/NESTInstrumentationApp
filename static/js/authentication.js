@@ -28,33 +28,35 @@ function authentication() {
 }
 
 // Extract the context UUID from the querystring.
-var extractCtx = function() {
+/*var extractCtx = function() {
     return window.location.search.substr(
       window.location.search.indexOf('ctx=') + 4,
       36 // UUID is 36 chars long.
     );
-};
+};*/
 
 var retrieveCurrentContext = function() {
-    var ctx = extractCtx();
+    //var ctx = extractCtx();
 
     // Retrieve the user auth informations
     var auth = hello.getAuthResponse('hbp');
     console.log(auth)
     if (auth && auth.access_token) {
       var token = auth.access_token;
+      //var token = auth.id_token;
       // Query the collaboratory service to retrieve the current context
       // related collab and other associated informations.
-      $.ajax('https://services.humanbrainproject.eu/collab/v0/collab/context/' + ctx + '/', {
+      $.ajax('https://services.humanbrainproject.eu/oidc/userinfo', {
+      //$.ajax('https://services.humanbrainproject.eu/collab/v0/collab/context/' + ctx + '/', {
         headers: {
           Authorization: 'Bearer ' + token
         }
       })
       .done(function(data) {
         // Update the DOM with the context object retrieved by the web service.
-        console.log("collab-title: ", data.collab.title);
-        console.log("collab-content: ", data.collab.content);
         console.log("data-source: ", JSON.stringify(data, null, 2));
+        console.log("user_id: ", data.sub);
+        console.log("name: ", data.name);
       })
       .fail(function(err) {
         console.log("Noe har failet, data-source: ", JSON.stringify(err, null, 2));
