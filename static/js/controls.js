@@ -255,7 +255,7 @@ class Controls
                 if( this.boxInFocus.selectedFirstTime )
                 {
                     console.log( "Selected for second time!" );
-                    // We have chosen the selectionBox two times, and must make roation points.
+                    // We have chosen the selectionBox two times, and must make rotation points.
                     this.boxInFocus.makeRotationPoints();
                     // If we have already pressed the selectionBox once, we have to reset the tracker.
                     this.boxInFocus.selectedFirstTime = false;
@@ -477,7 +477,7 @@ class Controls
 
         var cntr = app.toScreenXY(this.boxInFocus.box.position);
 
-        // The length between the center of the ellipse and the mouse position.
+        // The length between the centre of the ellipse and the mouse position.
         var hyp = Math.sqrt( Math.pow( app.renderer.getSize().height - cntr.y - mouseY, 2 ) + Math.pow( mouseX - cntr.x, 2 ) );
 
         if(  app.renderer.getSize().height - cntr.y - mouseY >= 0 )

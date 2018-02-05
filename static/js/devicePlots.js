@@ -193,7 +193,7 @@ class DevicePlots {
             .data(this.spikeTime);
 
         // Update all circles to new positions. 
-        // Cirles are given by center x-position, center y-position and radius of the circle.
+        // Circles are given by centre x-position, centre y-position and radius of the circle.
         circle.transition()
             .duration(0)
             .attr("cx",(d, i) => {

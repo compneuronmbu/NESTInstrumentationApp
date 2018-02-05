@@ -101,7 +101,7 @@ class Brain
                 // Render to show the points
                 requestAnimationFrame( app.render.bind(app) );
                 // Rendering again after some time because the compiled shaders
-                // may be slow to initialize propperly.
+                // may be slow to initialize properly.
                 setTimeout(function(){
                     requestAnimationFrame( app.render.bind(app) );
                 }, 1000);
@@ -159,9 +159,9 @@ class Brain
         for ( var neuron in neurons )
         {
             // TODO: Make so this is the same for 2D and 3D? We have added
-            // offsett for 2D so that the layers are not on top of eachother
-            // when they are centered around origo. We therefore also normalize
-            // and re-center around origo here just to make it easier. We could
+            // offset for 2D so that the layers are not on top of each other
+            // when they are centred around origo. We therefore also normalize
+            // and re-centre around origo here just to make it easier. We could
             // enforce users to place the 2D layers correctly in space. Then 2D
             // and 3D would be the same.
             if ( app.is3DLayer )

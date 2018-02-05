@@ -5,6 +5,7 @@ import json
 import gevent
 import numbers
 import math
+import traceback as tb
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
@@ -86,6 +87,7 @@ class observe_slot(gevent.Greenlet):
             print('An exception was raised:', exception)
             self.client.send_status_message(
                 "{}: {}".format(type(exception).__name__, exception.args[0]))
+            tb.print_exc()
             self.client.send_complete_signal()
 
     def run(self):
@@ -166,7 +168,7 @@ class NESTClient(object):
         """
         Resets the NEST kernel.
         """
-        self.print("Reseting kernel")
+        self.print("Resetting kernel")
         nest.ResetKernel()
         self.send_complete_signal()
 
@@ -277,7 +279,7 @@ class NESTClient(object):
             self.prepared_simulation = True
 
         if t == '-1':
-            self.print("cleanup simulation")
+            self.print("clean up simulation")
             self.cleanup_simulation()
             self.prepared_simulation = False
         else:
@@ -459,7 +461,7 @@ class NESTClient(object):
                     # 'azimuth_angle': azimuth_angle
                     }
         elif mask_type == 'elliptical':
-            # Calculate center of ellipse
+            # Calculate centre of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
             ypos = (upper_right[1] + lower_left[1]) / 2.0
             # Find major and minor axis
@@ -486,7 +488,7 @@ class NESTClient(object):
                     # 'polar_angle': polar_angle
                     }
         elif mask_type == 'ellipsoidal':
-            # Calculate center of ellipse
+            # Calculate centre of ellipse
             xpos = (upper_right[0] + lower_left[0]) / 2.0
             ypos = (upper_right[1] + lower_left[1]) / 2.0
             zpos = (upper_right[2] + lower_left[2]) / 2.0
@@ -630,7 +632,7 @@ class NESTClient(object):
         start_index = 0
         end_index = 0
         for mod in models:
-            # If mod is a string, we add the element, unless we have hit apon
+            # If mod is a string, we add the element, unless mod is
             # the neuron type, in which we need to find the indices.
             if isinstance(mod, str):
                 if mod == neuron_type:
@@ -676,7 +678,7 @@ class NESTClient(object):
                 events = {}
                 device_events = status['events']
 
-                # TODO numpy i json?
+                # TODO numpy in json?
                 if 'voltmeter' in device_name:
                     for e in range(status['n_events']):
                         events[str(device_events['senders'][e])] = [

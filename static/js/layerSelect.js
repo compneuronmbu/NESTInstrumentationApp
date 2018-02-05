@@ -227,8 +227,8 @@ class App
     }
 
     /**
-    * Finds out which of the model buttons we chose, and sends infomation to Brain, which
-    * then displays the chosen model. Can chose Brunel model, Hill-Tononi or load your own.
+    * Finds out which of the model buttons we chose, and sends information to Brain, which
+    * then displays the chosen model. Can choose Brunel model, Hill-Tononi or load your own.
     *
     * @event
     */
@@ -553,7 +553,7 @@ class App
      * Converts coordinates of a point in space to coordinates on screen.
      *
      * @param {Object} point_pos xyz values for position
-     * @returns {Object} Object conaining xy values.
+     * @returns {Object} Object containing xy values.
      */
     toScreenXY( point_pos )
     {
@@ -573,7 +573,7 @@ class App
      * Converts coordinates on the screen to coordinates in space.
      *
      * @param {Object} screenPos xy values for position
-     * @returns {Object} Object conaining xyz values.
+     * @returns {Object} Object containing xyz values.
      */
     toObjectCoordinates( screenPos )
     {

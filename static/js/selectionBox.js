@@ -238,7 +238,7 @@ class SelectionBox
     }
 
     /**
-     * Updates the colors of the points within the box.
+     * Updates the colours of the points within the box.
      */
     updateColors()
     {
@@ -330,7 +330,7 @@ class SelectionBox
 
         this.box = new app.THREE.Mesh( geometry, material );
 
-        // Center of box
+        // Centre of box
         var boxPosition = {
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
@@ -1034,7 +1034,7 @@ class SelectionBox
  * @param {Number} width Width of the selection.
  * @param {Number} height Height of the selection.
  * @param {Number} depth Depth of the selection.
- * @param {Object} center Center coordinates of the selection.
+ * @param {Object} center Centre coordinates of the selection.
  * @param {String} shape Shape of the selection.
  */
 class SelectionBox3D
@@ -1310,7 +1310,7 @@ class SelectionBox3D
     }
 
     /**
-     * Updates the width, height, depth from the scale of the box, and center from the position of the box. 
+     * Updates the width, height, depth from the scale of the box, and centre from the position of the box. 
      */
     updateWidthHeightDeptCenter()
     {
@@ -1348,7 +1348,7 @@ class SelectionBox3D
     }
 
     /**
-     * Finds which points lie within the box, and colors them.
+     * Finds which points lie within the box, and colours them.
      */
     updateColors()
     {

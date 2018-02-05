@@ -12,7 +12,7 @@ import flask_socketio
 import json
 import nest_utils as nu
 
-VERSION = sp.check_output(["git", "describe"]).strip()
+VERSION = sp.check_output(["git", "describe", "--tags", "--dirty"]).strip()
 app = flask.Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
 socketio = flask_socketio.SocketIO(app, async_mode='gevent')
