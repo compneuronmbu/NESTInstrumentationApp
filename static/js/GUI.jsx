@@ -65,6 +65,13 @@ class GuiButtons extends React.Component{
                       button_class ='button'
                       button_id='maskBoxButton' />
                   ) : (null)}
+                {app.isLFP ? (
+                  <SelectionsButton text='Make LFP box'
+                      disabled={app.isLFP}
+                      function={function () {app.makeMaskBox(true);}}
+                      button_class ='button lfp'
+                      button_id='LfpBoxButton' />
+                  ) : (null)}
             </div>
 
             <div id="gui-box">

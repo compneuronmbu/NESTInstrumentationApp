@@ -538,6 +538,10 @@ hr {
   transition: width 0.2s;
 }
 
+.button.lfp {
+    margin-top: 6px;
+}
+
 
 /* Danger button
    ========================================================================== */

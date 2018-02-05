@@ -1039,9 +1039,10 @@ class SelectionBox
  */
 class SelectionBox3D
 {
-    constructor( width, height, depth, center, shape, scale={x: 1.0, y: 1.0, z: 1.0} )
+    constructor( width, height, depth, center, shape, scale={x: 1.0, y: 1.0, z: 1.0}, lfp=false )
     {
         this.uniqueID = -1;
+        this.lfp = lfp;
 
         this.originalWidth = width;
         this.originalHeight = height;
@@ -1096,7 +1097,8 @@ class SelectionBox3D
             var geometry = new app.THREE.SphereBufferGeometry( radius / 2, 32, 32 );
         }
         console.log(geometry);
-        var material = new app.THREE.MeshBasicMaterial();
+        var matColour = this.lfp ? 0x77ff77 : undefined;
+        var material = new app.THREE.MeshBasicMaterial( { color: matColour } );
         material.transparent = true;
         material.opacity = 0.3;
         this.box = new app.THREE.Mesh( geometry, material );
@@ -1105,7 +1107,7 @@ class SelectionBox3D
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
-        this.makeConnectionHandle();
+        !this.lfp && this.makeConnectionHandle();
 
         this.box.rotation.order = "ZYX"; //"YZX";
     }
@@ -1164,7 +1166,7 @@ class SelectionBox3D
     updateBox()
     {
         this.updateColors();
-        this.updateConnectionHandle();
+        !this.lfp && this.updateConnectionHandle();
     }
 
 
@@ -1237,8 +1239,12 @@ class SelectionBox3D
         this.transformControls.attach( this.box );
         this.setBorderLinesColor(this.activeColor);
         this.updateColors();
-        this.connectionHandle.visible = true;
-        document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
+        if (!this.lfp)
+        {
+            this.connectionHandle.visible = true;
+            document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
+        }
+        
     }
 
     /**
@@ -1248,8 +1254,11 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
-        this.connectionHandle.visible = false;
-        document.removeEventListener( "mousemove", this.onMouseMove );
+        if (!this.lfp)
+        {
+            this.connectionHandle.visible = false;
+            document.removeEventListener( "mousemove", this.onMouseMove );
+        }
     }
     
     /*

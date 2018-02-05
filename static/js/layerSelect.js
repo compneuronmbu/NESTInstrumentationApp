@@ -45,6 +45,8 @@ class App
         // 3D layer is default.
         this.is3DLayer = true;
 
+        this.isLFP = false;
+
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
         this.setShowGUI = function() {};
@@ -274,6 +276,13 @@ class App
             // handles the file upload and subsequent allocation to Brain, which displays the model.
             document.getElementById( 'loadLayer' ).click();
         }
+        else if ( target.id === "LFP" )
+        {
+            console.log("LFP!");
+            this.isLFP = true;
+            JSONstring = "/static/examples/Potjans_Diesmann_converted.json";
+            this.loadModelIntoApp(JSONstring, this.initLFP.bind(this));
+        }
         else
         {
             return;
@@ -283,7 +292,7 @@ class App
     /**
     * Loads the selected model into the app.
     */
-    loadModelIntoApp(JSONstring)
+    loadModelIntoApp(JSONstring, postBrain=Function)
     {
         var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
         document.documentElement.style.setProperty('--gui_width', guiWidth);
@@ -294,6 +303,7 @@ class App
         {
             this.modelParameters = data;
             this.brain = new Brain();
+            postBrain();
         }.bind(this) );
 
         // Define orbit controls system here, because we need to know if we have
@@ -448,6 +458,39 @@ class App
         element.appendChild( fragment );
 
      }
+
+    /**
+    * Sets up visuals and selection for LFP.
+    */
+    initLFP()
+    {
+        // Shifting the top into L1
+        var rodTop = 0.1 + Math.max(...Array.from(Object.keys(this.layer_points), key => this.layer_points[key].points.geometry.boundingBox.max.y));
+        var rodBottom = Math.min(...Array.from(Object.keys(this.layer_points), key => this.layer_points[key].points.geometry.boundingBox.min.y));
+        console.log(rodTop);
+        console.log(rodBottom);
+        var lfpRodMaterial = new this.THREE.LineBasicMaterial({color: 0x00ff00});
+        var lfpRodGeometry = new this.THREE.Geometry();
+        lfpRodGeometry.vertices.push(
+            new this.THREE.Vector3( 0, rodTop, 0 ),
+            new this.THREE.Vector3( 0, rodBottom, 0 )
+        );
+        var lfpRod = new this.THREE.Line( lfpRodGeometry, lfpRodMaterial );
+        this.scene.add( lfpRod );
+
+        var texture = new app.THREE.TextureLoader().load( "static/js/textures/disc.png" );
+        var lfpPointMaterial = new this.THREE.PointsMaterial( { size: 0.1, map: texture, alphaTest: 0.5, transparent: true, color: 0x00ff00 } );
+        var lfpPointGeometry = new this.THREE.Geometry();
+        var delta = Math.abs( rodTop - rodBottom ) / 15.0;
+        for ( let i=0; i<16; i++ )
+        {
+            let vertex = new this.THREE.Vector3();
+            vertex.y = rodBottom + i*delta;
+            lfpPointGeometry.vertices.push( vertex );
+        }
+        var lfpPoints = new this.THREE.Points( lfpPointGeometry, lfpPointMaterial );
+        this.scene.add( lfpPoints );
+    }
 
     /**
     * Enables or disables the orbit controls.
@@ -1254,13 +1297,14 @@ class App
     /**
      * Creates a selection box.
      */
-    makeMaskBox()
+    makeMaskBox(lfp=false)
     {
         var dim = 0.2;
         var pos = {x: 0, y: 0, z: 0};
         var shape = this.getSelectedShape();
 
-        var box = new this.SelectionBox3D( dim, dim, dim, pos, shape );
+        var box = new this.SelectionBox3D( dim, dim, dim, pos, shape, undefined, lfp);
+        
         box.uniqueID = app.uniqueID++;
 
         if ( this.controls.boxInFocus !== undefined )
