@@ -46,7 +46,7 @@ var retrieveCurrentContext = function() {
       //var token = auth.id_token;
       // Query the collaboratory service to retrieve the current context
       // related collab and other associated informations.
-      $.ajax('https://services.humanbrainproject.eu/oidc/userinfo', {
+      $.ajax('https://services.humanbrainproject.eu/oidc/userinfo/', {
       //$.ajax('https://services.humanbrainproject.eu/collab/v0/collab/context/' + ctx + '/', {
         headers: {
           Authorization: 'Bearer ' + token

@@ -78,6 +78,7 @@ class App
 
         this.container = document.getElementById( 'main_body' );
 
+        // HBP Authentication, must happen before we initiate anything.
         authentication();
 
         this.initTHREEScene();
