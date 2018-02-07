@@ -96,3 +96,8 @@ node_modules/
 
 # test coverage files
 coverage/
+
+# Data files
+*.h5
+*.hdf5
+*.he5
