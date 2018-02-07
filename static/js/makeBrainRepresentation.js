@@ -29,20 +29,20 @@ class Brain
             }
         }
 
-        var offsett_x;
-        var offsett_y;
+        var offset_x;
+        var offset_y;
         var no_rows = Math.round( Math.sqrt( number_of_layers ) );
         if ( app.is3DLayer )
         {
-            offsett_x = 0.0;
-            offsett_y = 0.0;
+            offset_x = 0.0;
+            offset_y = 0.0;
         }
         else
         {
             var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
-            offsett_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
-            offsett_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0;
+            offset_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
+            offset_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0;
             var i = 1;
         }
 
@@ -55,14 +55,14 @@ class Brain
                     layers[ layer ].name.toLowerCase().indexOf( "meter" ) === -1 )
                 {
                     // Not sure if this is the best way. Could also do
-                    // points: new initPoints( layers[layer].neurons, offsett_x, offsett_y ),
+                    // points: new initPoints( layers[layer].neurons, offset_x, offset_y ),
                     // but then I think we would have to rewrite some of the code below.
                     app.layer_points[ layers[ layer ].name ] = {
-                        points: this.initPoints( layers[ layer ].neurons, offsett_x, offsett_y, layers[layer].extent, layers[layer].center, layers[layer].neuronType ),
+                        points: this.initPoints( layers[ layer ].neurons, offset_x, offset_y, layers[layer].extent, layers[layer].center, layers[layer].neuronType ),
                         offsets:
                             {
-                                x: offsett_x,
-                                y: offsett_y
+                                x: offset_x,
+                                y: offset_y
                             },
                         extent: layers[layer].extent, 
                         center: layers[layer].center,
@@ -73,12 +73,12 @@ class Brain
                     {
                         if ( i % no_cols == 0 )
                         {
-                            offsett_x = -0.6 * ( no_cols - 1 );
-                            offsett_y += -1.2;
+                            offset_x = -0.6 * ( no_cols - 1 );
+                            offset_y += -1.2;
                         }
                         else
                         {
-                            offsett_x += 0.6 * 2;
+                            offset_x += 0.6 * 2;
                         }
                         ++i;
                     }
@@ -98,13 +98,15 @@ class Brain
             success: function( data )
             {
                 document.getElementById("loadingOverlay").style.display = "none";
-                // Render to show the points
-                requestAnimationFrame( app.render.bind(app) );
-                // Rendering again after some time because the compiled shaders
-                // may be slow to initialize properly.
-                setTimeout(function(){
-                    requestAnimationFrame( app.render.bind(app) );
-                }, 1000);
+                // Render to show the points. Render multiple times as the
+                // compiled shaders may be slow to get ready.
+                for (let i = 0; i < 10; ++i)
+                {
+                    setTimeout(function(){
+                        requestAnimationFrame( app.render.bind(app) );
+                    }, 100);
+                }
+                
             },
             dataType: "json"
         } );
@@ -147,7 +149,7 @@ class Brain
     /**
      * Creates the points representing nodes.
      */
-    initPoints( neurons, offsett_x, offsett_y, extent, center, neuronType )
+    initPoints( neurons, offset_x, offset_y, extent, center, neuronType )
     {
         var geometry = new app.THREE.BufferGeometry();
 
@@ -173,8 +175,8 @@ class Brain
             }
             else
             {
-                positions[ i ] = ( neurons[ neuron ].x - center[0] ) / extent[0] + offsett_x;
-                positions[ i + 1 ] = ( neurons[ neuron ].y - center[1] ) / extent[1] + offsett_y;
+                positions[ i ] = ( neurons[ neuron ].x - center[0] ) / extent[0] + offset_x;
+                positions[ i + 1 ] = ( neurons[ neuron ].y - center[1] ) / extent[1] + offset_y;
                 positions[ i + 2 ] = ( neurons[ neuron ].z - center[2] ) / extent[2];
             }
 
