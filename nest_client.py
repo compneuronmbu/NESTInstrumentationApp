@@ -119,7 +119,7 @@ class NESTClient(object):
         self.user_id = user_id
         self.silent = silent
 
-        random.seed(self.user_id)
+        random.seed(int(self.user_id))
         nett.initialize('tcp://127.0.0.1:{}'.format(
             8000 + random.randint(1, 1000)))
 
@@ -131,7 +131,6 @@ class NESTClient(object):
         self.last_results = None
 
         self.print('Setting up slot messages..')
-        self.print(self.user_id)
         self.slot_out_complete = nett.slot_out_float_message(
             'task_complete_{}'.format(self.user_id))
         self.slot_out_nconnections = (

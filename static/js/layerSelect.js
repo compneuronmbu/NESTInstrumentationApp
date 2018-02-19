@@ -103,7 +103,7 @@ class App
         this.initSecondCamera();
 
         // Server-Sent Events
-        this.serverUpdateEvent = new EventSource( "/simulationData" );
+        this.serverUpdateEvent = new EventSource( "/simulationData/" + this.userID);
         this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
 
         // Sockets

@@ -187,7 +187,7 @@ class NESTInterface(object):
         Starting the NEST client in a separate process using the subprocess
         module.
         """
-        cmd = ['python', 'nest_client.py', self.user_id]
+        cmd = ['python', 'nest_client.py', str(self.user_id)]
         if self.silent:
             self.client = sp.Popen(cmd + ['-s'], stdout=sp.PIPE)
         else:
