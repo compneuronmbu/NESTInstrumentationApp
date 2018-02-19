@@ -5,6 +5,8 @@ class App
 {
     constructor()
     {
+        this.userID;
+
         this.controls;
 
         this.renderer;
@@ -66,7 +68,7 @@ class App
     /**
      * Initializes the app.
      */
-    init()
+    init(userID)
     {
         // Binding libraries to this so that they can be set by test scripts,
         // because Node.js is being difficult.
@@ -79,7 +81,8 @@ class App
         this.container = document.getElementById( 'main_body' );
 
         // HBP Authentication, must happen before we initiate anything.
-        authentication();
+        this.userID = userID;
+        console.log("layerSelect userID:", this.userID);
 
         this.initTHREEScene();
         this.initTHREERenderer();

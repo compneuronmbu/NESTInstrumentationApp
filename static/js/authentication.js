@@ -27,27 +27,15 @@ function authentication() {
 
 }
 
-// Extract the context UUID from the querystring.
-/*var extractCtx = function() {
-    return window.location.search.substr(
-      window.location.search.indexOf('ctx=') + 4,
-      36 // UUID is 36 chars long.
-    );
-};*/
-
 var retrieveCurrentContext = function() {
-    //var ctx = extractCtx();
-
     // Retrieve the user auth informations
     var auth = hello.getAuthResponse('hbp');
     console.log(auth)
     if (auth && auth.access_token) {
       var token = auth.access_token;
-      //var token = auth.id_token;
       // Query the collaboratory service to retrieve the current context
       // related collab and other associated informations.
       $.ajax('https://services.humanbrainproject.eu/oidc/userinfo/', {
-      //$.ajax('https://services.humanbrainproject.eu/collab/v0/collab/context/' + ctx + '/', {
         headers: {
           Authorization: 'Bearer ' + token
         }
@@ -57,12 +45,13 @@ var retrieveCurrentContext = function() {
         console.log("data-source: ", JSON.stringify(data, null, 2));
         console.log("user_id: ", data.sub);
         console.log("name: ", data.name);
+        app.init(data.sub);
       })
       .fail(function(err) {
         console.log("Noe har failet, data-source: ", JSON.stringify(err, null, 2));
       });
     } else {
-      console.log("collab-title: Not Authenticated");
-      console.log("collab-content: Please login first");
+      console.log("data-source: Not Authenticated");
+      console.log("user-id: Please login first");
     }
 };
