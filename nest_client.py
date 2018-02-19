@@ -111,9 +111,10 @@ class NESTClient(object):
     For running NEST. Controlled by NESTInterface.
     """
 
-    def __init__(self, silent=False):
+    def __init__(self, user_id, silent=False):
         nett.initialize('tcp://127.0.0.1:8000')
         nest.set_verbosity("M_ERROR")
+        self.user_id = user_id
         self.silent = silent
 
         self.networkSpecs = {}
@@ -124,17 +125,21 @@ class NESTClient(object):
         self.last_results = None
 
         self.print('Setting up slot messages..')
-        self.slot_out_complete = nett.slot_out_float_message('task_complete')
+        self.slot_out_complete = nett.slot_out_float_message(
+            'task_complete_{}'.format(self.user_id))
         self.slot_out_nconnections = (
-            nett.slot_out_float_message('nconnections'))
+            nett.slot_out_float_message(
+                'nconnections_{}'.format(self.user_id)))
         self.slot_out_device_results = (
-            nett.slot_out_string_message('device_results'))
+            nett.slot_out_string_message(
+                'device_results_{}'.format(self.user_id)))
         self.slot_out_status_message = (
-            nett.slot_out_string_message('status_message'))
+            nett.slot_out_string_message(
+                'status_message_{}'.format(self.user_id)))
 
         self.slot_in_data = nett.slot_in_string_message()
         self.print('Connecting to data input stream..')
-        self.slot_in_data.connect('tcp://127.0.0.1:2001', 'data')
+        self.slot_in_data.connect('tcp://127.0.0.1:2001', 'data_{}'.format(self.user_id))
         self.print('Initializing observe slot..')
         observe_slot_data = observe_slot(self.slot_in_data,
                                          sm.string_message(),
@@ -718,5 +723,6 @@ class NESTClient(object):
 
 
 if __name__ == '__main__':
-    silent = sys.argv[1] == '-s' if len(sys.argv) > 1 else False
-    client = NESTClient(silent)
+    user_id = sys.argv[1]
+    # silent = sys.argv[1] == '-s' if len(sys.argv) > 1 else False
+    client = NESTClient(user_id, silent=False)

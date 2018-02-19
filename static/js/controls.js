@@ -118,6 +118,7 @@ class Controls
             url: "/selector",
             data: JSON.stringify(
             {
+                userID: app.userID,
                 network: app.modelParameters,
                 info: this.boxInFocus.getData( true )
             } ),

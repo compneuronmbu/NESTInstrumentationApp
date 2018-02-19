@@ -66,6 +66,7 @@ def make_network():
         interface[user_id].terminate_nest_client()
 
     interface[user_id] = nu.NESTInterface(json.dumps(data['network']),
+                                          user_id,
                                           socketio=socketio)
 
     #interface.send_abort_signal()
@@ -89,6 +90,7 @@ def print_GIDs():
         busy = True
 
         data = flask.request.json
+        user_id = data['userID']
         print('Trying to print gids..')
         interface[user_id].printGIDs(json.dumps(data['info']))
         busy = False
