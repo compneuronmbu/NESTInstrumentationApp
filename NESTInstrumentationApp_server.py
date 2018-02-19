@@ -16,7 +16,7 @@ VERSION = sp.check_output(["git", "describe"]).strip()
 app = flask.Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
 socketio = flask_socketio.SocketIO(app, async_mode='gevent')
-interface = None
+interface = {}
 busy = False
 BUSY_ERRORCODE = 418
 subscriptions = []
@@ -58,14 +58,15 @@ def make_network():
     Receives the network and construct the interface.
     """
     data = flask.request.json
+    user_id = data['userID']
     global interface
 
-    if interface:
-        interface.cease_threads()
-        interface.terminate_nest_client()
+    if user_id in interface:
+        interface[user_id].cease_threads()
+        interface[user_id].terminate_nest_client()
 
-    interface = nu.NESTInterface(json.dumps(data['network']),
-                                 socketio=socketio)
+    interface[user_id] = nu.NESTInterface(json.dumps(data['network']),
+                                          socketio=socketio)
 
     #interface.send_abort_signal()
 
@@ -89,7 +90,7 @@ def print_GIDs():
 
         data = flask.request.json
         print('Trying to print gids..')
-        interface.printGIDs(json.dumps(data['info']))
+        interface[user_id].printGIDs(json.dumps(data['info']))
         busy = False
 
         return flask.Response(status=204)
@@ -114,10 +115,10 @@ def connect_ajax():
         print('Projections:')
         print(projections)
 
-        interface.device_projections = projections
-        interface.send_device_projections()
+        interface[user_id].device_projections = projections
+        interface[user_id].send_device_projections()
 
-        interface.connect_all()
+        interface[user_id].connect_all()
         return flask.Response(status=204)
 
 
@@ -129,7 +130,7 @@ def get_connections_ajax():
     """
     global interface
     print("Received ", flask.request.args.get('input'))
-    n_connections = interface.get_num_connections()
+    n_connections = interface[user_id].get_num_connections()
     return flask.jsonify(connections=n_connections)
 
 
@@ -150,13 +151,13 @@ def simulate_ajax():
     t = float(data['time'])
 
     busy = True
-    interface.device_projections = projections
-    interface.send_device_projections()
-    interface.connect_all()
+    interface[user_id].device_projections = projections
+    interface[user_id].send_device_projections()
+    interface[user_id].connect_all()
 
     print("Simulating for ", t, "ms ...")
-    interface.simulate(t)
-    interface.simulate(-1)
+    interface[user_id].simulate(t)
+    interface[user_id].simulate(-1)
     busy = False
 
     return flask.Response(status=204)
@@ -176,10 +177,10 @@ def g_simulate(network, projections, t):
     global busy
     busy = True
 
-    interface.device_projections = projections
-    interface.send_device_projections()
-    interface.connect_all()
-    interface.device_results = '{}'
+    interface[user_id].device_projections = projections
+    interface[user_id].send_device_projections()
+    interface[user_id].connect_all()
+    interface[user_id].device_results = '{}'
 
     q = gevent.queue.Queue()
     abort_sub.append(q)
@@ -195,17 +196,17 @@ def g_simulate(network, projections, t):
             if abort:
                 print("Simulation aborted")
                 break
-        interface.simulate(dt)
-        results = json.loads(interface.get_device_results())
+        interface[user_id].simulate(dt)
+        results = json.loads(interface[user_id].get_device_results())
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
-        interface.device_results = '{}'
+        interface[user_id].device_results = '{}'
         # Yield this context to check abort and send data
         gevent.sleep(sleep_t)
 
-    interface.simulate(-1)
+    interface[user_id].simulate(-1)
 
     busy = False
 
