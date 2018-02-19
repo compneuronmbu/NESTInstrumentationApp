@@ -5,6 +5,7 @@ import json
 import gevent
 import numbers
 import math
+import random
 import nett_python as nett
 import float_message_pb2 as fm
 import string_message_pb2 as sm
@@ -112,10 +113,13 @@ class NESTClient(object):
     """
 
     def __init__(self, user_id, silent=False):
-        nett.initialize('tcp://127.0.0.1:8000')
         nest.set_verbosity("M_ERROR")
         self.user_id = user_id
         self.silent = silent
+
+        random.seed(self.user_id)
+        nett.initialize('tcp://127.0.0.1:{}'.format(
+            8000 + random.randint(1, 1000)))
 
         self.networkSpecs = {}
         self.layers = {}
@@ -125,6 +129,7 @@ class NESTClient(object):
         self.last_results = None
 
         self.print('Setting up slot messages..')
+        self.print(self.user_id)
         self.slot_out_complete = nett.slot_out_float_message(
             'task_complete_{}'.format(self.user_id))
         self.slot_out_nconnections = (

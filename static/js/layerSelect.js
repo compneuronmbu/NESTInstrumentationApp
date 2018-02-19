@@ -863,6 +863,7 @@ class App
             url: "/connect",
             data: JSON.stringify(
             {
+                userID: this.userID,
                 network: this.modelParameters,
                 projections: projections
             } ),
@@ -880,6 +881,7 @@ class App
     {
         this.$.getJSON( "/connections",
         {
+            userID: this.userID,
             input: "dummyData"
         } ).done( function( data )
         {
@@ -903,9 +905,10 @@ class App
             url: "/simulate",
             data: JSON.stringify(
             {
+                userID: this.userID,
                 network: this.modelParameters,
                 projections: projections,
-                time: "1000"
+                time: "100000"
             } ),
             dataType: "json"
         } ).done( function( data )
@@ -933,6 +936,7 @@ class App
             url: "/streamSimulate",
             data: JSON.stringify(
             {
+                userID: this.userID,
                 network: this.modelParameters,
                 projections: this.makeProjections( true ),
                 time: "10000"
@@ -953,7 +957,14 @@ class App
     {
         this.$.ajax(
         {
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
             url: "/abortSimulation",
+            data: JSON.stringify(
+            {
+                userID: this.userID
+            } ),
+            dataType: "json"
         } ).done( function( data )
         {
             console.log( data );

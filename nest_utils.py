@@ -5,6 +5,7 @@ import os
 import sys
 import threading
 import time
+import random
 import atexit
 import contextlib
 import nett_python as nett
@@ -110,14 +111,17 @@ class NESTInterface(object):
         self.slot_in_device_results = nett.slot_in_string_message()
         self.slot_in_status_message = nett.slot_in_string_message()
 
-        self.slot_in_complete.connect('tcp://127.0.0.1:8000',
+        random.seed(self.user_id)
+        port_increment = random.randint(1, 1000)
+        client_address = 'tcp://127.0.0.1:{}'.format(8000 + port_increment)
+        self.slot_in_complete.connect(client_address,
                                       'task_complete_{}'.format(self.user_id))
-        self.slot_in_nconnections.connect('tcp://127.0.0.1:8000',
+        self.slot_in_nconnections.connect(client_address,
                                           'nconnections_{}'.format(self.user_id))
-        # self.slot_in_gids.connect('tcp://127.0.0.1:8000', 'GIDs')
-        self.slot_in_device_results.connect('tcp://127.0.0.1:8000',
+        # self.slot_in_gids.connect(client_address, 'GIDs')
+        self.slot_in_device_results.connect(client_address,
                                             'device_results_{}'.format(self.user_id))
-        self.slot_in_status_message.connect('tcp://127.0.0.1:8000',
+        self.slot_in_status_message.connect(client_address,
                                             'status_message_{}'.format(self.user_id))
 
         self.observe_slot_ready = observe_slot(self.slot_in_complete,

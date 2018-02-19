@@ -20,7 +20,7 @@ interface = {}
 busy = False
 BUSY_ERRORCODE = 418
 subscriptions = []
-abort_sub = []
+abort_sub = {}
 
 
 def report_errors_to_client(function):
@@ -112,6 +112,7 @@ def connect_ajax():
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
         projections = json.dumps(data['projections'])
+        user_id = data['userID']
 
         pp = pprint.PrettyPrinter(indent=4)
         print('Projections:')
@@ -132,6 +133,7 @@ def get_connections_ajax():
     """
     global interface
     print("Received ", flask.request.args.get('input'))
+    user_id = flask.request.args.get('userID')
     n_connections = interface[user_id].get_num_connections()
     return flask.jsonify(connections=n_connections)
 
@@ -150,6 +152,7 @@ def simulate_ajax():
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
     projections = json.dumps(data['projections'])
+    user_id = data['userID']
     t = float(data['time'])
 
     busy = True
@@ -166,7 +169,7 @@ def simulate_ajax():
 
 
 @report_errors_to_client
-def g_simulate(network, projections, t):
+def g_simulate(network, projections, t, user_id):
     """
     Runs a simulation in steps. This way the client can be updated on the
     status of the simulation.
@@ -185,7 +188,7 @@ def g_simulate(network, projections, t):
     interface[user_id].device_results = '{}'
 
     q = gevent.queue.Queue()
-    abort_sub.append(q)
+    abort_sub[user_id] = q
 
     steps = 1000
     sleep_t = 0.1  # sleep time
@@ -229,22 +232,24 @@ def streamSimulate():
     data = flask.request.json
     network = json.dumps(data['network'])
     projections = json.dumps(data['projections'])
+    user_id = data['userID']
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, projections, t)
+    gevent.spawn(g_simulate, network, projections, t, user_id)
 
     return flask.Response(status=204)
 
 
-@app.route('/abortSimulation')
+@app.route('/abortSimulation', methods=['POST'])
 @report_errors_to_client
 def abortSimulation():
     """
     Abort the currently running simulation.
     """
-    for sub in abort_sub:
-        sub.put(True)
+    user_id = flask.request.json['userID']
+    if user_id in abort_sub:
+        abort_sub[user_id].put(True)
     return flask.Response(status=204)
 
 
