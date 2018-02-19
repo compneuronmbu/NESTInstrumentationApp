@@ -93,6 +93,7 @@ class Brain
             url: "/makeNetwork",
             data: JSON.stringify(
             {
+                userID : app.userID,
                 network: app.modelParameters
             } ),
             success: function( data )

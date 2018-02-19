@@ -16,11 +16,11 @@ VERSION = sp.check_output(["git", "describe", "--tags", "--dirty"]).strip()
 app = flask.Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
 socketio = flask_socketio.SocketIO(app, async_mode='gevent')
-interface = None
+interface = {}
 busy = False
 BUSY_ERRORCODE = 418
 subscriptions = []
-abort_sub = []
+abort_sub = {}
 
 
 def report_errors_to_client(function):
@@ -58,14 +58,16 @@ def make_network():
     Receives the network and construct the interface.
     """
     data = flask.request.json
+    user_id = data['userID']
     global interface
 
-    if interface:
-        interface.cease_threads()
-        interface.terminate_nest_client()
+    if user_id in interface:
+        interface[user_id].cease_threads()
+        interface[user_id].terminate_nest_client()
 
-    interface = nu.NESTInterface(json.dumps(data['network']),
-                                 socketio=socketio)
+    interface[user_id] = nu.NESTInterface(json.dumps(data['network']),
+                                          user_id,
+                                          socketio=socketio)
 
     #interface.send_abort_signal()
 
@@ -88,8 +90,9 @@ def print_GIDs():
         busy = True
 
         data = flask.request.json
+        user_id = data['userID']
         print('Trying to print gids..')
-        interface.printGIDs(json.dumps(data['info']))
+        interface[user_id].printGIDs(json.dumps(data['info']))
         busy = False
 
         return flask.Response(status=204)
@@ -109,15 +112,16 @@ def connect_ajax():
             return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
         projections = json.dumps(data['projections'])
+        user_id = data['userID']
 
         pp = pprint.PrettyPrinter(indent=4)
         print('Projections:')
         print(projections)
 
-        interface.device_projections = projections
-        interface.send_device_projections()
+        interface[user_id].device_projections = projections
+        interface[user_id].send_device_projections()
 
-        interface.connect_all()
+        interface[user_id].connect_all()
         return flask.Response(status=204)
 
 
@@ -129,7 +133,8 @@ def get_connections_ajax():
     """
     global interface
     print("Received ", flask.request.args.get('input'))
-    n_connections = interface.get_num_connections()
+    user_id = flask.request.args.get('userID')
+    n_connections = interface[user_id].get_num_connections()
     return flask.jsonify(connections=n_connections)
 
 
@@ -147,23 +152,24 @@ def simulate_ajax():
         return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
     projections = json.dumps(data['projections'])
+    user_id = data['userID']
     t = float(data['time'])
 
     busy = True
-    interface.device_projections = projections
-    interface.send_device_projections()
-    interface.connect_all()
+    interface[user_id].device_projections = projections
+    interface[user_id].send_device_projections()
+    interface[user_id].connect_all()
 
     print("Simulating for ", t, "ms ...")
-    interface.simulate(t)
-    interface.simulate(-1)
+    interface[user_id].simulate(t)
+    interface[user_id].simulate(-1)
     busy = False
 
     return flask.Response(status=204)
 
 
 @report_errors_to_client
-def g_simulate(network, projections, t):
+def g_simulate(network, projections, t, user_id):
     """
     Runs a simulation in steps. This way the client can be updated on the
     status of the simulation.
@@ -176,13 +182,13 @@ def g_simulate(network, projections, t):
     global busy
     busy = True
 
-    interface.device_projections = projections
-    interface.send_device_projections()
-    interface.connect_all()
-    interface.device_results = '{}'
+    interface[user_id].device_projections = projections
+    interface[user_id].send_device_projections()
+    interface[user_id].connect_all()
+    interface[user_id].device_results = '{}'
 
     q = gevent.queue.Queue()
-    abort_sub.append(q)
+    abort_sub[user_id] = q
 
     steps = 1000
     sleep_t = 0.1  # sleep time
@@ -195,17 +201,17 @@ def g_simulate(network, projections, t):
             if abort:
                 print("Simulation aborted")
                 break
-        interface.simulate(dt)
-        results = json.loads(interface.get_device_results())
+        interface[user_id].simulate(dt)
+        results = json.loads(interface[user_id].get_device_results())
         if results:
             jsonResult = flask.json.dumps(results)
             for sub in subscriptions:
                 sub.put(jsonResult)
-        interface.device_results = '{}'
+        interface[user_id].device_results = '{}'
         # Yield this context to check abort and send data
         gevent.sleep(sleep_t)
 
-    interface.simulate(-1)
+    interface[user_id].simulate(-1)
 
     busy = False
 
@@ -226,22 +232,24 @@ def streamSimulate():
     data = flask.request.json
     network = json.dumps(data['network'])
     projections = json.dumps(data['projections'])
+    user_id = data['userID']
     t = data['time']
 
     print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, projections, t)
+    gevent.spawn(g_simulate, network, projections, t, user_id)
 
     return flask.Response(status=204)
 
 
-@app.route('/abortSimulation')
+@app.route('/abortSimulation', methods=['POST'])
 @report_errors_to_client
 def abortSimulation():
     """
     Abort the currently running simulation.
     """
-    for sub in abort_sub:
-        sub.put(True)
+    user_id = flask.request.json['userID']
+    if user_id in abort_sub:
+        abort_sub[user_id].put(True)
     return flask.Response(status=204)
 
 
