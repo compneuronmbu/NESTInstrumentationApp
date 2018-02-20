@@ -344,10 +344,13 @@ class NESTInterface(object):
 
         :param msg: Nett type message with the status message
         """
+        user_id = msg.value.split()[0]
+        message = ' '.join(msg.value.split()[1:])
         self.print('Received status message:\n' +
-                   '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+                   '{:>{width}}'.format(message, width=len(message) + 9))
 
         self.socketio.emit('message',
-                           {'message': msg.value})
+                           {'message': message},
+                           namespace='/message/{}'.format(user_id))
         # TODO: Use namespace to send to different clients
         print('Sent socket msg')

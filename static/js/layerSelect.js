@@ -107,7 +107,7 @@ class App
         this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
 
         // Sockets
-        let host = 'https://' + window.location.host;
+        let host = `https://${window.location.host}/message/${this.userID}`;
         console.log('Connecting socket to ' + host);
         this.statusSocket = io(host);
         this.statusSocket.on('connect', function(){

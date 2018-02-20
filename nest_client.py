@@ -87,7 +87,9 @@ class observe_slot(gevent.Greenlet):
         except Exception as exception:
             print('An exception was raised:', exception)
             self.client.send_status_message(
-                "{}: {}".format(type(exception).__name__, exception.args[0]))
+                "{} {}: {}".format(self.client.user_id,
+                                   type(exception).__name__,
+                                   exception.args[0]))
             tb.print_exc()
             self.client.send_complete_signal()
 
