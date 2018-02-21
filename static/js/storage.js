@@ -51,14 +51,17 @@ function hbpStorage()
       // Update the DOM with the context object retrieved by the web service.
       storage_this.id = data.collab.id
       console.log(`Got collab id: ${storage_this.id}`);
-      getCollabUuid();
+      queryPath(storage_this.id, (data) => {
+        storage_this.uuid = data.uuid;
+        console.log(`Got collab UUID: ${storage_this.uuid}`);
+      });
     })
     .fail(function(err) {
       console.log("Something went wrong when getting collab id: ", JSON.stringify(err, null, 2));
     });
   }
 
-  function getCollabUuid()
+  function queryPath(path, callback)
   {
     $.ajax(
     {
@@ -66,13 +69,13 @@ function hbpStorage()
         jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
       },
       type: "GET",
-      url: `${storage_this.baseUrl}/entity/?path=/${storage_this.id}/`,
+      url: `${storage_this.baseUrl}/entity/?path=/${path}/`,
     }
     )
     .done(function(data)
     {
-      storage_this.uuid = data.uuid;
-      console.log(`Got collab UUID: ${storage_this.uuid}`);
+      // storage_this.uuid = data.uuid;
+      callback(data);
       // callback(token, new_data);
     })
     .fail(function(err) {
@@ -145,7 +148,48 @@ function hbpStorage()
     }
   }
 
+  function loadFromFile(filename, callback)
+  {
+    this_ = this;
+    this_.callback = callback;
+
+    function getFileContent(uuid)
+    {
+      console.log(`Trying to get content from file with uuid: ${uuid}`);
+      // 0dd90ebc-168c-421c-a41c-94b1732fd05c
+      $.ajax(
+      {
+        beforeSend: function (jqXHR, settings) {
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+          // jqXHR.setRequestHeader('If-None-Match', '');
+        },
+        type: "GET",
+        url: `${storage_this.baseUrl}/file/${uuid}/content/`,
+      }
+      )
+      .done(function(data)
+      {
+        // storage_this.uuid = data.uuid;
+        console.log('Got data from file:');
+        this_.callback(data);
+        // callback(token, new_data);
+      })
+      .fail(function(err) {
+        console.log("Something went wrong when getting file content: ", JSON.stringify(err, null, 2));
+      });
+    }
+
+    if (storage_this.token)
+    {
+      queryPath(`${storage_this.id}/${filename}.json`, (data)=>{getFileContent(data.uuid)})
+    } else
+    {
+      console.log("data-source: Not Authenticated");
+      console.log("user-id: Please login first");
+    }
+  }
   return {
-    saveToFile: saveToFile
+    saveToFile: saveToFile,
+    loadFromFile: loadFromFile
   }
 }
