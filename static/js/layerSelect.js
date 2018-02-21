@@ -1074,8 +1074,8 @@ class App
         var dlObject = {
             projections: projections
         };
-        var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
-        hbpStorageSaveToFile(this.modelName, jsonStr);
+        //var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
+        hbpStorageSaveToFile(this.modelName, dlObject);
 
         //var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
         //dlAnchorElem.setAttribute( "href", jsonStr );
