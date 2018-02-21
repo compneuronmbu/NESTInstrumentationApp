@@ -82,7 +82,9 @@ class App
 
         this.container = document.getElementById( 'main_body' );
 
-        // HBP Authentication, must happen before we initiate anything.
+        storage();
+
+        // HBP Authentication"ID, must be defined before we initiate anything.
         this.userID = userID;
         console.log("layerSelect userID:", this.userID);
 
