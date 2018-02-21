@@ -12,95 +12,116 @@ var extractCtx = function() {
     );
 };
 
-function accessStorage(token, callback)
+function hbpStorage()
 {
-  var collabUrl = "https://services.humanbrainproject.eu/collab/v0/collab/context";
-  var ctx = extractCtx();
-  $.ajax(
-    {
-      beforeSend: function (jqXHR, settings) {
-              jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-          },
-      type: "GET",
-      url: `${collabUrl}/${ctx}/`,
-    }
-  )
-  .done(function(data)
-  {
-    // Update the DOM with the context object retrieved by the web service.
-    console.log(`Got collab id: ${data.collab.id}`);
-    getCollabUuid(token, data, callback);
-  })
-  .fail(function(err) {
-    console.log("Something went wrong when getting collab id: ", JSON.stringify(err, null, 2));
-  });
-}
+  storage_this = this;
+  storage_this.collabUrl = "https://services.humanbrainproject.eu/collab/v0/collab/context";
+  storage_this.baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
 
-function getCollabUuid(token, data, callback)
-{
-  var baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
-  $.ajax(
-    {
-      beforeSend: function (jqXHR, settings) {
-              jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-          },
-      type: "GET",
-      url: `${baseUrl}/entity/?path=/${data.collab.id}/`,
-    }
-  )
-  .done(function(new_data)
+  // Retrieve the user auth informations
+  var auth = hello.getAuthResponse('hbp');
+  if (auth && auth.access_token)
   {
-    console.log(`Got collab UUID: ${new_data.uuid}`);
-    callback(token, new_data);
-  })
-  .fail(function(err) {
-    console.log("Something went wrong when getting collab UUID: ", JSON.stringify(err, null, 2));
-  });
-}
+    storage_this.token = auth.access_token;
+    getCollabId();
+    // getCollabUuid();
 
-function saveDataToNewFile(filename, data)
-{
-  this_ = this;
-  this_.filename = filename;
-  this_.data = data;
-  this_.baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
-
-  function makeFile(token, data)
+    // accessStorage(auth.access_token,
+    //               saveDataToNewFile(filename, data));
+  } else
   {
-    $.ajax(
-      {
-        beforeSend: function (jqXHR, settings) {
-                jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
-        type: "POST",
-        url: `${this_.baseUrl}/file/`,
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify({
-                        'name': `${this_.filename}.json`,
-                        'content_type': 'application/json',
-                        'parent': data.uuid
-                      }, null, 2)
-      })
-      .done(function(new_data)
-      {
-        console.log(`Created new file: ${new_data.name}`);
-        console.log(new_data);
-        writeToFile(token, new_data);
-      })
-      .fail(function(err) {
-          console.log("Something went wrong when making file: ", JSON.stringify(err, null, 2));
-        });
+    console.log("data-source: Not Authenticated");
+    console.log("user-id: Please login first");
   }
 
-  function writeToFile(token, data)
+  function getCollabId()
+  {
+    var ctx = extractCtx();
+    $.ajax(
+    {
+      beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+      },
+      type: "GET",
+      url: `${storage_this.collabUrl}/${ctx}/`,
+    }
+    )
+    .done(function(data)
+    {
+      // Update the DOM with the context object retrieved by the web service.
+      storage_this.id = data.collab.id
+      console.log(`Got collab id: ${storage_this.id}`);
+      getCollabUuid();
+    })
+    .fail(function(err) {
+      console.log("Something went wrong when getting collab id: ", JSON.stringify(err, null, 2));
+    });
+  }
+
+  function getCollabUuid()
   {
     $.ajax(
+    {
+      beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+      },
+      type: "GET",
+      url: `${storage_this.baseUrl}/entity/?path=/${storage_this.id}/`,
+    }
+    )
+    .done(function(data)
+    {
+      storage_this.uuid = data.uuid;
+      console.log(`Got collab UUID: ${storage_this.uuid}`);
+      // callback(token, new_data);
+    })
+    .fail(function(err) {
+      console.log("Something went wrong when getting collab UUID: ", JSON.stringify(err, null, 2));
+    });
+  }
+
+  function saveToFile(filename, data)
+  {
+    this_ = this;
+    this_.filename = filename;
+    this_.data = data;
+
+    function makeAndWriteFile()
+    {
+      $.ajax(
       {
         beforeSend: function (jqXHR, settings) {
-                jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+        },
         type: "POST",
-        url: `${this_.baseUrl}/file/${data.uuid}/content/upload/`,
+        url: `${storage_this.baseUrl}/file/`,
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          'name': `${this_.filename}.json`,
+          'content_type': 'application/json',
+          'parent': storage_this.uuid
+        }, null, 2)
+      })
+      .done(function(data)
+      {
+        console.log(`Created new file: ${data.name}`);
+        console.log(data);
+        writeToFile(data);
+      })
+      .fail(function(err) {
+        console.log("Something went wrong when making file: ", JSON.stringify(err, null, 2));
+      });
+    }
+
+    function writeToFile(data)
+    {
+      $.ajax(
+      {
+        beforeSend: function (jqXHR, settings) {
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+        },
+        type: "POST",
+        url: `${storage_this.baseUrl}/file/${data.uuid}/content/upload/`,
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(this_.data, null, 2)
       })
@@ -109,23 +130,22 @@ function saveDataToNewFile(filename, data)
         console.log(`Successfully wrote data to ${data.name}`);
       })
       .fail(function(err) {
-          console.log("Something went wrong when writing to file: ", JSON.stringify(err, null, 2));
-        });
-  }
-  return makeFile;
-}
+        console.log("Something went wrong when writing to file: ", JSON.stringify(err, null, 2));
+      });
+    }
 
-function hbpStorageSaveToFile(filename, data)
-{
     // Retrieve the user auth informations
-    var auth = hello.getAuthResponse('hbp');
-    if (auth && auth.access_token)
+    if (storage_this.token)
     {
-      accessStorage(auth.access_token,
-                    saveDataToNewFile(filename, data));
+      makeAndWriteFile();
     } else
     {
       console.log("data-source: Not Authenticated");
       console.log("user-id: Please login first");
     }
+  }
+
+  return {
+    saveToFile: saveToFile
+  }
 }
