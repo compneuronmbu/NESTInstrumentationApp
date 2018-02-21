@@ -128,3 +128,32 @@ function hbpStorageSaveToFile(filename, data)
       console.log("user-id: Please login first");
     }
 }
+
+function getFilesInFolder(token, uuid)
+{
+  baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
+  $.ajax(
+  {
+    beforeSend: function (jqXHR, settings) {
+            jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
+    type: "GET",
+    url: 'https://services.humanbrainproject.eu/storage/v1/api/folder/' + uuid + '/children/'
+  })
+  .done(function(recv_data)
+  {
+    file_dict = {}
+    for ( count in recv_data.results )
+    {
+      if ( recv_data.results[count].entity_type === "file" )
+      {
+        file_dict[recv_data.results[count].name] = recv_data.results[count].uuid;
+      }
+    }
+    console.log("FILE DICT", file_dict)
+
+  })
+  .fail(function(err) {
+      console.log("Something went wrong when looking at folder: ", JSON.stringify(err, null, 2));
+  });
+}

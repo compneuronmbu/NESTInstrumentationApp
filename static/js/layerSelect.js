@@ -122,6 +122,12 @@ class App
             window.alert('The server encountered the following error:\n\n' + data.message)
         });
 
+        var auth = hello.getAuthResponse('hbp');
+        var token = auth.access_token;
+        var uuid = 'bcad123d-2833-419a-9bfd-a54271a059d7'
+        
+        getFilesInFolder(token, uuid)
+
         this.render();
     }
 
@@ -300,11 +306,6 @@ class App
     getFileName(name)
     {
         var startIndx = name.lastIndexOf('/');
-        //var startIndx = (( lastIndx < 0 ) ? 0 : lastIndx);
-        //if ( startIndx === -1 )
-        //{
-        //    startIndx = 0;
-        //}
         var endIndx = name.search('.json');
 
         var currentDate = new Date();
@@ -315,9 +316,8 @@ class App
         var month = currentDate.getMonth() + 1;
         var year = currentDate.getFullYear();
         var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
-        console.log(dateTime)
+
         this.modelName = name.slice(startIndx + 1,endIndx) + '--' + dateTime;
-        console.log("MODELNAME", this.modelName)
     }
 
     /**
