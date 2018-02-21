@@ -84,8 +84,6 @@ class App
 
         this.container = document.getElementById( 'main_body' );
 
-        storage();
-
         // HBP Authentication"ID, must be defined before we initiate anything.
         this.userID = userID;
         console.log("layerSelect userID:", this.userID);
@@ -125,8 +123,6 @@ class App
         });
 
         this.render();
-
-        hbpStorageSaveToFile('new_file3', {data:'data1'});
     }
 
     /**
@@ -1079,10 +1075,12 @@ class App
             projections: projections
         };
         var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
-        var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
-        dlAnchorElem.setAttribute( "href", jsonStr );
-        dlAnchorElem.setAttribute( "download", this.modelName + ".json" );
-        dlAnchorElem.click();
+        hbpStorageSaveToFile(this.modelName, jsonStr);
+
+        //var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
+        //dlAnchorElem.setAttribute( "href", jsonStr );
+        //dlAnchorElem.setAttribute( "download", this.modelName + ".json" );
+        //dlAnchorElem.click();
     }
 
     /**
