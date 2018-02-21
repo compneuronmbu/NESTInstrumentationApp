@@ -156,12 +156,10 @@ function hbpStorage()
     function getFileContent(uuid)
     {
       console.log(`Trying to get content from file with uuid: ${uuid}`);
-      // 0dd90ebc-168c-421c-a41c-94b1732fd05c
       $.ajax(
       {
         beforeSend: function (jqXHR, settings) {
           jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
-          // jqXHR.setRequestHeader('If-None-Match', '');
         },
         type: "GET",
         url: `${storage_this.baseUrl}/file/${uuid}/content/`,
@@ -169,10 +167,8 @@ function hbpStorage()
       )
       .done(function(data)
       {
-        // storage_this.uuid = data.uuid;
-        console.log('Got data from file:');
+        console.log('Got data from file');
         this_.callback(data);
-        // callback(token, new_data);
       })
       .fail(function(err) {
         console.log("Something went wrong when getting file content: ", JSON.stringify(err, null, 2));
