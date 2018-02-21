@@ -121,7 +121,6 @@ class GuiButtons extends React.Component{
                     <SelectionsButton text='Save'
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
-                    <a id="downloadAnchorElem" style={{display: "none"}}/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
