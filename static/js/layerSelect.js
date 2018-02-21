@@ -122,7 +122,7 @@ class App
 
         this.render();
 
-        storage();
+        hbpStorageSaveToFile('new_file3', {data:'data1'});
     }
 
     /**
