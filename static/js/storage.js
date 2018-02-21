@@ -28,7 +28,7 @@ function accessStorage(token, callback)
   .done(function(data)
   {
     // Update the DOM with the context object retrieved by the web service.
-    // console.log("data-source: ", JSON.stringify(data, null, 2));
+    console.log(`Got collab id: ${data.collab.id}`);
     getCollabUuid(token, data, callback);
   })
   .fail(function(err) {
@@ -50,6 +50,7 @@ function getCollabUuid(token, data, callback)
   )
   .done(function(new_data)
   {
+    console.log(`Got collab UUID: ${new_data.uuid}`);
     callback(token, new_data);
   })
   .fail(function(err) {
@@ -80,11 +81,11 @@ function saveDataToNewFile(filename, data)
                         'parent': data.uuid
                       }, null, 2)
       })
-      .done(function(data)
+      .done(function(new_data)
       {
-        console.log(`Created new file: ${data.name}`);
-        console.log(data);
-        writeToFile(token, data);
+        console.log(`Created new file: ${new_data.name}`);
+        console.log(new_data);
+        writeToFile(token, new_data);
       })
       .fail(function(err) {
           console.log("Something went wrong when making file: ", JSON.stringify(err, null, 2));
@@ -103,7 +104,7 @@ function saveDataToNewFile(filename, data)
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(this_.data, null, 2)
       })
-      .done(function(recv_data)
+      .done(function(new_data)
       {
         console.log(`Successfully wrote data to ${data.name}`);
       })
