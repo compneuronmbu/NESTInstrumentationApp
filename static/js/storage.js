@@ -12,121 +12,186 @@ var extractCtx = function() {
     );
 };
 
-function accessStorage(token, callback)
+function hbpStorage()
 {
-  var collabUrl = "https://services.humanbrainproject.eu/collab/v0/collab/context";
-  var ctx = extractCtx();
-  $.ajax(
+  storage_this = this;
+  storage_this.collabUrl = "https://services.humanbrainproject.eu/collab/v0/collab/context";
+  storage_this.baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
+
+  // Retrieve the user auth informations
+  var auth = hello.getAuthResponse('hbp');
+  if (auth && auth.access_token)
+  {
+    storage_this.token = auth.access_token;
+    getCollabId();
+    // getCollabUuid();
+
+    // accessStorage(auth.access_token,
+    //               saveDataToNewFile(filename, data));
+  } else
+  {
+    console.log("data-source: Not Authenticated");
+    console.log("user-id: Please login first");
+  }
+
+  function getCollabId()
+  {
+    var ctx = extractCtx();
+    $.ajax(
     {
       beforeSend: function (jqXHR, settings) {
-              jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-          },
+        jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+      },
       type: "GET",
-      url: `${collabUrl}/${ctx}/`,
+      url: `${storage_this.collabUrl}/${ctx}/`,
     }
-  )
-  .done(function(data)
-  {
-    // Update the DOM with the context object retrieved by the web service.
-    // console.log("data-source: ", JSON.stringify(data, null, 2));
-    getCollabUuid(token, data, callback);
-  })
-  .fail(function(err) {
-    console.log("Something went wrong when getting collab id: ", JSON.stringify(err, null, 2));
-  });
-}
-
-function getCollabUuid(token, data, callback)
-{
-  var baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
-  $.ajax(
+    )
+    .done(function(data)
     {
-      beforeSend: function (jqXHR, settings) {
-              jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-          },
-      type: "GET",
-      url: `${baseUrl}/entity/?path=/${data.collab.id}/`,
-    }
-  )
-  .done(function(new_data)
-  {
-    callback(token, new_data);
-  })
-  .fail(function(err) {
-    console.log("Something went wrong when getting collab UUID: ", JSON.stringify(err, null, 2));
-  });
-}
+      // Update the DOM with the context object retrieved by the web service.
+      storage_this.id = data.collab.id
+      console.log(`Got collab id: ${storage_this.id}`);
+      queryPath(storage_this.id, (data) => {
+        storage_this.uuid = data.uuid;
+        console.log(`Got collab UUID: ${storage_this.uuid}`);
+      });
+    })
+    .fail(function(err) {
+      console.log("Something went wrong when getting collab id: ", JSON.stringify(err, null, 2));
+    });
+  }
 
-function saveDataToNewFile(filename, data)
-{
-  this_ = this;
-  this_.filename = filename;
-  this_.data = data;
-  this_.baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
-
-  function makeFile(token, data)
+  function queryPath(path, callback)
   {
     $.ajax(
+    {
+      beforeSend: function (jqXHR, settings) {
+        jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+      },
+      type: "GET",
+      url: `${storage_this.baseUrl}/entity/?path=/${path}/`,
+    }
+    )
+    .done(function(data)
+    {
+      // storage_this.uuid = data.uuid;
+      callback(data);
+      // callback(token, new_data);
+    })
+    .fail(function(err) {
+      console.log("Something went wrong when getting collab UUID: ", JSON.stringify(err, null, 2));
+    });
+  }
+
+  function saveToFile(filename, data)
+  {
+    this_ = this;
+    this_.filename = filename;
+    this_.data = data;
+
+    function makeAndWriteFile()
+    {
+      $.ajax(
       {
         beforeSend: function (jqXHR, settings) {
-                jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+        },
         type: "POST",
-        url: `${this_.baseUrl}/file/`,
+        url: `${storage_this.baseUrl}/file/`,
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
-                        'name': `${this_.filename}.json`,
-                        'content_type': 'application/json',
-                        'parent': data.uuid
-                      }, null, 2)
+          'name': `${this_.filename}.json`,
+          'content_type': 'application/json',
+          'parent': storage_this.uuid
+        }, null, 2)
       })
       .done(function(data)
       {
         console.log(`Created new file: ${data.name}`);
         console.log(data);
-        writeToFile(token, data);
+        writeToFile(data);
       })
       .fail(function(err) {
-          console.log("Something went wrong when making file: ", JSON.stringify(err, null, 2));
-        });
-  }
+        console.log("Something went wrong when making file: ", JSON.stringify(err, null, 2));
+      });
+    }
 
-  function writeToFile(token, data)
-  {
-    $.ajax(
+    function writeToFile(data)
+    {
+      $.ajax(
       {
         beforeSend: function (jqXHR, settings) {
-                jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+        },
         type: "POST",
-        url: `${this_.baseUrl}/file/${data.uuid}/content/upload/`,
+        url: `${storage_this.baseUrl}/file/${data.uuid}/content/upload/`,
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(this_.data, null, 2)
       })
-      .done(function(recv_data)
+      .done(function(new_data)
       {
         console.log(`Successfully wrote data to ${data.name}`);
       })
       .fail(function(err) {
-          console.log("Something went wrong when writing to file: ", JSON.stringify(err, null, 2));
-        });
-  }
-  return makeFile;
-}
+        console.log("Something went wrong when writing to file: ", JSON.stringify(err, null, 2));
+      });
+    }
 
-function hbpStorageSaveToFile(filename, data)
-{
     // Retrieve the user auth informations
-    var auth = hello.getAuthResponse('hbp');
-    if (auth && auth.access_token)
+    if (storage_this.token)
     {
-      accessStorage(auth.access_token,
-                    saveDataToNewFile(filename, data));
+      makeAndWriteFile();
     } else
     {
       console.log("data-source: Not Authenticated");
       console.log("user-id: Please login first");
     }
+  }
+
+  function loadFromFile(filename, callback)
+  {
+    this_ = this;
+    this_.callback = callback;
+
+    function getFileContent(uuid)
+    {
+      console.log(`Trying to get content from file with uuid: ${uuid}`);
+      // 0dd90ebc-168c-421c-a41c-94b1732fd05c
+      $.ajax(
+      {
+        beforeSend: function (jqXHR, settings) {
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+          // jqXHR.setRequestHeader('If-None-Match', '');
+        },
+        type: "GET",
+        url: `${storage_this.baseUrl}/file/${uuid}/content/`,
+      }
+      )
+      .done(function(data)
+      {
+        // storage_this.uuid = data.uuid;
+        console.log('Got data from file:');
+        this_.callback(data);
+        // callback(token, new_data);
+      })
+      .fail(function(err) {
+        console.log("Something went wrong when getting file content: ", JSON.stringify(err, null, 2));
+      });
+    }
+
+    if (storage_this.token)
+    {
+      queryPath(`${storage_this.id}/${filename}.json`, (data)=>{getFileContent(data.uuid)})
+    } else
+    {
+      console.log("data-source: Not Authenticated");
+      console.log("user-id: Please login first");
+    }
+  }
+  return {
+    saveToFile: saveToFile,
+    loadFromFile: loadFromFile
+  }
 }
 
 function getFilesInFolder(token, uuid)

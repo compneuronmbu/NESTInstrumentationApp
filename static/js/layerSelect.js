@@ -87,6 +87,7 @@ class App
         // HBP Authentication"ID, must be defined before we initiate anything.
         this.userID = userID;
         console.log("layerSelect userID:", this.userID);
+        this.storage = hbpStorage();
 
         this.initTHREEScene();
         this.initTHREERenderer();
@@ -1068,7 +1069,7 @@ class App
         var dlObject = {
             projections: projections
         };
-        hbpStorageSaveToFile(this.modelName, dlObject);
+        this.storage.saveToFile(this.modelName, dlObject);
     }
 
     /**
