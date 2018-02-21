@@ -105,11 +105,11 @@ class App
         this.initSecondCamera();
 
         // Server-Sent Events
-        this.serverUpdateEvent = new EventSource( "/simulationData" );
+        this.serverUpdateEvent = new EventSource( "/simulationData/" + this.userID);
         this.serverUpdateEvent.onmessage = this.handleSimulationData.bind(this);
 
         // Sockets
-        let host = 'https://' + window.location.host;
+        let host = `https://${window.location.host}/message/${this.userID}`;
         console.log('Connecting socket to ' + host);
         this.statusSocket = io(host);
         this.statusSocket.on('connect', function(){
@@ -123,6 +123,8 @@ class App
         });
 
         this.render();
+
+        storage();
     }
 
     /**

@@ -187,7 +187,7 @@ class NESTInterface(object):
         Starting the NEST client in a separate process using the subprocess
         module.
         """
-        cmd = ['python', 'nest_client.py', self.user_id]
+        cmd = ['python', 'nest_client.py', str(self.user_id)]
         if self.silent:
             self.client = sp.Popen(cmd + ['-s'], stdout=sp.PIPE)
         else:
@@ -344,10 +344,13 @@ class NESTInterface(object):
 
         :param msg: Nett type message with the status message
         """
+        user_id = msg.value.split()[0]
+        message = ' '.join(msg.value.split()[1:])
         self.print('Received status message:\n' +
-                   '{:>{width}}'.format(msg.value, width=len(msg.value) + 9))
+                   '{:>{width}}'.format(message, width=len(message) + 9))
 
         self.socketio.emit('message',
-                           {'message': msg.value})
+                           {'message': message},
+                           namespace='/message/{}'.format(user_id))
         # TODO: Use namespace to send to different clients
         print('Sent socket msg')

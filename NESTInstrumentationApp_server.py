@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import contextlib
 import pprint
 import subprocess as sp
-import functools
 import gevent
 import gevent.wsgi
 import gevent.queue
@@ -17,22 +17,18 @@ app = flask.Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Turns off caching
 socketio = flask_socketio.SocketIO(app, async_mode='gevent')
 interface = {}
-busy = False
+busy = []
 BUSY_ERRORCODE = 418
-subscriptions = []
+subscriptions = {}
 abort_sub = {}
 
 
-def report_errors_to_client(function):
-    @functools.wraps(function)
-    def exception_handle_wrapper(*args, **kwargs):
-        try:
-            return function(*args, **kwargs)
-        except Exception as exception:
-            print('An exception was raised:', exception)
-            socketio.emit('message',
-                          {'message': str(exception)})
-    return exception_handle_wrapper
+def emit_exception(exception, user_id):
+    print('An exception was raised:', exception)
+    socketio.emit('message',
+                  {'message': "{}: {}".format(type(exception).__name__,
+                                              exception.args[0])},
+                  namespace='/message/{}'.format(user_id))
 
 
 @app.route('/')
@@ -52,54 +48,55 @@ def index():
 
 
 @app.route('/makeNetwork', methods=['POST'])
-@report_errors_to_client
 def make_network():
     """
     Receives the network and construct the interface.
     """
     data = flask.request.json
-    user_id = data['userID']
+    user_id = int(data['userID'])
     global interface
 
-    if user_id in interface:
-        interface[user_id].cease_threads()
-        interface[user_id].terminate_nest_client()
+    try:
+        if user_id in interface:
+            interface[user_id].cease_threads()
+            interface[user_id].terminate_nest_client()
 
-    interface[user_id] = nu.NESTInterface(json.dumps(data['network']),
-                                          user_id,
-                                          socketio=socketio)
+        interface[user_id] = nu.NESTInterface(json.dumps(data['network']),
+                                              user_id,
+                                              socketio=socketio)
 
-    #interface.send_abort_signal()
+    except Exception as exception:
+        emit_exception(exception, user_id)
 
     return flask.Response(status=204)
 
 
 @app.route('/selector', methods=['POST', 'GET'])
-@report_errors_to_client
 def print_GIDs():
     """
     Receives the network and selected areas, and prints the GIDs in the
     selected areas to the terminal.
     """
     if flask.request.method == 'POST':
-        global busy
-
-        if busy:
-            print("Cannot select, NEST is busy!")
-            return flask.Response(status=BUSY_ERRORCODE)
-        busy = True
-
         data = flask.request.json
-        user_id = data['userID']
-        print('Trying to print gids..')
-        interface[user_id].printGIDs(json.dumps(data['info']))
-        busy = False
+        user_id = int(data['userID'])
+
+        global busy
+        try:
+            if user_id in busy:
+                print("Cannot select, NEST is busy!")
+                return flask.Response(status=BUSY_ERRORCODE)
+            busy.append(user_id)
+            print('Trying to print gids..')
+            interface[user_id].printGIDs(json.dumps(data['info']))
+            busy.remove(user_id)
+        except Exception as exception:
+            emit_exception(exception, user_id)
 
         return flask.Response(status=204)
 
 
 @app.route('/connect', methods=['POST'])
-@report_errors_to_client
 def connect_ajax():
     """
     Receives the network and projections, and connects them.
@@ -107,26 +104,28 @@ def connect_ajax():
     print("Connect called")
     if flask.request.method == 'POST':
         global interface
-        if busy:
-            print("Cannot connect, NEST is busy!")
-            return flask.Response(status=BUSY_ERRORCODE)
         data = flask.request.json
         projections = json.dumps(data['projections'])
-        user_id = data['userID']
+        user_id = int(data['userID'])
+        try:
+            if user_id in busy:
+                print("Cannot connect, NEST is busy!")
+                return flask.Response(status=BUSY_ERRORCODE)
 
-        pp = pprint.PrettyPrinter(indent=4)
-        print('Projections:')
-        print(projections)
+            pp = pprint.PrettyPrinter(indent=4)
+            print('Projections:')
+            print(projections)
 
-        interface[user_id].device_projections = projections
-        interface[user_id].send_device_projections()
+            interface[user_id].device_projections = projections
+            interface[user_id].send_device_projections()
 
-        interface[user_id].connect_all()
+            interface[user_id].connect_all()
+        except Exception as exception:
+            emit_exception(exception, user_id)
         return flask.Response(status=204)
 
 
 @app.route('/connections', methods=['GET'])
-@report_errors_to_client
 def get_connections_ajax():
     """
     Sends the number of current connections to the client.
@@ -134,12 +133,14 @@ def get_connections_ajax():
     global interface
     print("Received ", flask.request.args.get('input'))
     user_id = flask.request.args.get('userID')
-    n_connections = interface[user_id].get_num_connections()
+    try:
+        n_connections = interface[user_id].get_num_connections()
+    except Exception as exception:
+        emit_exception(exception, user_id)
     return flask.jsonify(connections=n_connections)
 
 
 @app.route('/simulate', methods=['POST'])
-@report_errors_to_client
 def simulate_ajax():
     """
     Receives the network and projections, connects them and simulates.
@@ -147,28 +148,30 @@ def simulate_ajax():
     global interface
     global busy
 
-    if busy:
-        print("Cannot simulate, NEST is busy!")
-        return flask.Response(status=BUSY_ERRORCODE)
     data = flask.request.json
     projections = json.dumps(data['projections'])
-    user_id = data['userID']
-    t = float(data['time'])
+    user_id = int(data['userID'])
+    try:
+        if user_id in busy:
+            print("Cannot simulate, NEST is busy!")
+            return flask.Response(status=BUSY_ERRORCODE)
+        t = float(data['time'])
 
-    busy = True
-    interface[user_id].device_projections = projections
-    interface[user_id].send_device_projections()
-    interface[user_id].connect_all()
+        busy.append(user_id)
+        interface[user_id].device_projections = projections
+        interface[user_id].send_device_projections()
+        interface[user_id].connect_all()
 
-    print("Simulating for ", t, "ms ...")
-    interface[user_id].simulate(t)
-    interface[user_id].simulate(-1)
-    busy = False
+        print("Simulating for ", t, "ms ...")
+        interface[user_id].simulate(t)
+        interface[user_id].simulate(-1)
+        busy.remove(user_id)
+    except Exception as exception:
+        emit_exception(exception, user_id)
 
     return flask.Response(status=204)
 
 
-@report_errors_to_client
 def g_simulate(network, projections, t, user_id):
     """
     Runs a simulation in steps. This way the client can be updated on the
@@ -180,96 +183,109 @@ def g_simulate(network, projections, t, user_id):
     """
     global interface
     global busy
-    busy = True
+    global subscriptions
 
-    interface[user_id].device_projections = projections
-    interface[user_id].send_device_projections()
-    interface[user_id].connect_all()
-    interface[user_id].device_results = '{}'
+    try:
+        busy.append(user_id)
 
-    q = gevent.queue.Queue()
-    abort_sub[user_id] = q
-
-    steps = 1000
-    sleep_t = 0.1  # sleep time
-    dt = float(t) / steps
-
-    for i in range(steps):
-        print(i)
-        if not q.empty():
-            abort = q.get()
-            if abort:
-                print("Simulation aborted")
-                break
-        interface[user_id].simulate(dt)
-        results = json.loads(interface[user_id].get_device_results())
-        if results:
-            jsonResult = flask.json.dumps(results)
-            for sub in subscriptions:
-                sub.put(jsonResult)
+        interface[user_id].device_projections = projections
+        interface[user_id].send_device_projections()
+        interface[user_id].connect_all()
         interface[user_id].device_results = '{}'
-        # Yield this context to check abort and send data
-        gevent.sleep(sleep_t)
 
-    interface[user_id].simulate(-1)
+        q = gevent.queue.Queue()
+        abort_sub[user_id] = q
 
-    busy = False
+        steps = 1000
+        sleep_t = 0.1  # sleep time
+        dt = float(t) / steps
 
-    for sub in subscriptions:
-        sub.put(flask.json.dumps({"simulation_end": True}))
+        for i in range(steps):
+            print(i)
+            if not q.empty():
+                abort = q.get()
+                if abort:
+                    print("Simulation aborted")
+                    break
+            interface[user_id].simulate(dt)
+            results = json.loads(interface[user_id].get_device_results())
+            if results:
+                jsonResult = flask.json.dumps(results)
+                if user_id in subscriptions:
+                    subscriptions[user_id].put(jsonResult)
+            interface[user_id].device_results = '{}'
+            # Yield this context to check abort and send data
+            gevent.sleep(sleep_t)
+
+        interface[user_id].simulate(-1)
+
+        busy.remove(user_id)
+
+        if user_id in subscriptions:
+            subscriptions[user_id].put(
+                flask.json.dumps({"simulation_end": True}))
+    except Exception as exception:
+        emit_exception(exception, user_id)
 
 
 @app.route('/streamSimulate', methods=['POST'])
-@report_errors_to_client
 def streamSimulate():
     """
     Receive data from the client and run a simulation in steps.
     """
-    if busy:
-        print("Cannot simulate, NEST is busy!")
-        return flask.Response(status=BUSY_ERRORCODE)
-
     data = flask.request.json
     network = json.dumps(data['network'])
     projections = json.dumps(data['projections'])
-    user_id = data['userID']
-    t = data['time']
+    user_id = int(data['userID'])
+    try:
+        if user_id in busy:
+            print("Cannot simulate, NEST is busy!")
+            return flask.Response(status=BUSY_ERRORCODE)
 
-    print("Simulating for ", t, "ms")
-    gevent.spawn(g_simulate, network, projections, t, user_id)
+        t = data['time']
 
+        print("Simulating for ", t, "ms")
+        gevent.spawn(g_simulate, network, projections, t, user_id)
+    except Exception as exception:
+        emit_exception(exception, user_id)
     return flask.Response(status=204)
 
 
 @app.route('/abortSimulation', methods=['POST'])
-@report_errors_to_client
 def abortSimulation():
     """
     Abort the currently running simulation.
     """
-    user_id = flask.request.json['userID']
-    if user_id in abort_sub:
-        abort_sub[user_id].put(True)
+    global abort_sub
+    user_id = int(flask.request.json['userID'])
+    try:
+        if user_id in abort_sub:
+            abort_sub[user_id].put(True)
+    except Exception as exception:
+        emit_exception(exception, user_id)
     return flask.Response(status=204)
 
 
-@app.route('/simulationData')
-@report_errors_to_client
-def simulationData():
+@app.route('/simulationData/<int:user_id>')
+def simulationData(user_id):
     """
     Lets the client listen to this URL to get updates on the simulation status.
     """
+    global subscriptions
 
     def gen():
-        q = gevent.queue.Queue()
-        subscriptions.append(q)
         try:
-            while True:
-                result = q.get()
-                ev = "data: " + result + "\n\n"
-                yield ev
-        except GeneratorExit:
-            subscriptions.remove(q)
+            q = gevent.queue.Queue()
+            subscriptions[user_id] = q
+            try:
+                while True:
+                    result = q.get()
+                    ev = "data: " + result + "\n\n"
+                    yield ev
+            except GeneratorExit:
+                del subscriptions[user_id]
+        except Exception as exception:
+            emit_exception(exception, user_id)
     return flask.Response(gen(), mimetype="text/event-stream")
 
 
