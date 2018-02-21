@@ -387,6 +387,7 @@ class App
     */
     handleModelFileUpload (event) {
         var file = event.target.files;
+
         if (file.length <= 0) {
             return false;
         }
@@ -400,7 +401,7 @@ class App
                 console.log(result)
                 this.is3DLayer = this.modelParameters.is3DLayer;
                 this.brain = new Brain();
-                this.loadModelIntoApp();
+                this.loadModelIntoApp(file[0].name);
             } catch(e) {
                 console.log(e.message)
                 window.alert("Please upload a correct JSON file");
@@ -1055,13 +1056,6 @@ class App
         console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
-        //var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
-
-        //if ( filename === null || filename === "" )
-        //{
-            // User cancelled saving
-        //    return;
-        //}
         var projections = this.makeProjections();
         console.log( "projections", projections );
 
@@ -1074,13 +1068,7 @@ class App
         var dlObject = {
             projections: projections
         };
-        //var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
         hbpStorageSaveToFile(this.modelName, dlObject);
-
-        //var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
-        //dlAnchorElem.setAttribute( "href", jsonStr );
-        //dlAnchorElem.setAttribute( "download", this.modelName + ".json" );
-        //dlAnchorElem.click();
     }
 
     /**
