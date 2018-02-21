@@ -44,6 +44,8 @@ class App
         this.neuronModels = [ 'All' ];
         this.synModels = [];
 
+        this.modelName = "";
+
         // 3D layer is default.
         this.is3DLayer = true;
 
@@ -299,6 +301,29 @@ class App
         }
     }
 
+    getFileName(name)
+    {
+        var startIndx = name.lastIndexOf('/');
+        //var startIndx = (( lastIndx < 0 ) ? 0 : lastIndx);
+        //if ( startIndx === -1 )
+        //{
+        //    startIndx = 0;
+        //}
+        var endIndx = name.search('.json');
+
+        var currentDate = new Date();
+        var sec = currentDate.getSeconds();
+        var min = currentDate.getMinutes();
+        var hour = currentDate.getHours();
+        var day = currentDate.getDate();
+        var month = currentDate.getMonth() + 1;
+        var year = currentDate.getFullYear();
+        var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
+        console.log(dateTime)
+        this.modelName = name.slice(startIndx + 1,endIndx) + '--' + dateTime;
+        console.log("MODELNAME", this.modelName)
+    }
+
     /**
     * Loads the selected model into the app.
     */
@@ -352,6 +377,8 @@ class App
         returnToStart.appendChild( heading );
         fragment.appendChild( returnToStart );
         element.appendChild( fragment );
+
+        this.getFileName(JSONstring);
 
         this.initHelp();
     }
@@ -1032,12 +1059,13 @@ class App
         console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
-        var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
-        if ( filename === null || filename === "" )
-        {
+        //var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
+
+        //if ( filename === null || filename === "" )
+        //{
             // User cancelled saving
-            return;
-        }
+        //    return;
+        //}
         var projections = this.makeProjections();
         console.log( "projections", projections );
 
@@ -1053,7 +1081,7 @@ class App
         var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
         var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
         dlAnchorElem.setAttribute( "href", jsonStr );
-        dlAnchorElem.setAttribute( "download", filename + ".json" );
+        dlAnchorElem.setAttribute( "download", this.modelName + ".json" );
         dlAnchorElem.click();
     }
 
