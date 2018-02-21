@@ -123,12 +123,6 @@ class App
             window.alert('The server encountered the following error:\n\n' + data.message)
         });
 
-        var auth = hello.getAuthResponse('hbp');
-        var token = auth.access_token;
-        var uuid = 'bcad123d-2833-419a-9bfd-a54271a059d7'
-        
-        getFilesInFolder(token, uuid)
-
         this.render();
     }
 

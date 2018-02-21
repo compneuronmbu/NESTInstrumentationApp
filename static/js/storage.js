@@ -54,6 +54,7 @@ function hbpStorage()
       queryPath(storage_this.id, (data) => {
         storage_this.uuid = data.uuid;
         console.log(`Got collab UUID: ${storage_this.uuid}`);
+      getFilesInFolder();
       });
     })
     .fail(function(err) {
@@ -194,16 +195,15 @@ function hbpStorage()
   }
 }
 
-function getFilesInFolder(token, uuid)
+function getFilesInFolder()
 {
-  baseUrl = "https://services.humanbrainproject.eu/storage/v1/api";
   $.ajax(
   {
     beforeSend: function (jqXHR, settings) {
-            jqXHR.setRequestHeader('Authorization', 'Bearer ' + token);
+            jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
         },
     type: "GET",
-    url: 'https://services.humanbrainproject.eu/storage/v1/api/folder/' + uuid + '/children/'
+    url: storage_this.baseUrl + '/folder/' + storage_this.uuid + '/children/'
   })
   .done(function(recv_data)
   {
