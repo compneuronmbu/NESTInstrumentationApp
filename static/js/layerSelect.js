@@ -121,6 +121,8 @@ class App
         });
 
         this.render();
+
+        storage();
     }
 
     /**
