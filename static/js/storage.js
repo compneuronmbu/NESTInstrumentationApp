@@ -83,11 +83,12 @@ function hbpStorage()
     });
   }
 
-  function saveToFile(filename, data)
+  function saveToFile(filename, data, callback)
   {
     this_ = this;
     this_.filename = filename;
     this_.data = data;
+    this_.callback = callback;
 
     function makeAndWriteFile()
     {
@@ -131,6 +132,7 @@ function hbpStorage()
       .done(function(new_data)
       {
         console.log(`Successfully wrote data to ${data.name}`);
+        this_.callback();
       })
       .fail(function(err) {
         console.log("Something went wrong when writing to file: ", JSON.stringify(err, null, 2));

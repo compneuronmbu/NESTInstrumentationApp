@@ -14,6 +14,7 @@ class GuiButtons extends React.Component{
         synapseModels: ['',''],
         loadContents: {},
         hidden: true,
+        saving: false,
         loadDropdown: false,
         modelsLoading: false,
         modelLoading: false
@@ -29,7 +30,7 @@ class GuiButtons extends React.Component{
         // `this` refers to our react component
         this.setState({hidden: !show});
       };
-      app.setState = (state) => {
+      app.setGuiState = (state) => {
         // `this` refers to our react component
         this.setState(state);
       };
@@ -126,13 +127,13 @@ class GuiButtons extends React.Component{
                 <hr/>
                 <div className="button-group">
                     
-                    <SelectionsButton text='Save'
-                                      disabled={this.state.loadDropdown || this.state.modelsLoading}
+                    <SelectionsButton text={this.state.saving ? 'Saving...' : 'Save'}
+                                      disabled={this.state.loadDropdown || this.state.modelsLoading || this.state.saving}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
-                                      disabled={this.state.loadDropdown || this.state.modelsLoading}
+                                      disabled={this.state.loadDropdown || this.state.modelsLoading || this.state.saving}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
                     {this.state.modelsLoading ? (

@@ -54,7 +54,7 @@ class App
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
         this.setShowGUI = function() {};
-        this.setState = function() {};
+        this.setGuiState = function() {};
 
         this.deviceCounter = 1;
 
@@ -1052,6 +1052,7 @@ class App
         console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
+        this.setGuiState({saving: true});
         var projections = this.makeProjections();
         console.log( "projections", projections );
 
@@ -1064,7 +1065,10 @@ class App
         var dlObject = {
             projections: projections
         };
-        this.storage.saveToFile(this.modelName, dlObject);
+        this.storage.saveToFile(this.modelName, dlObject, ()=>{
+            this.setGuiState({saving: false});
+            alert(`Saved to "${this.modelName}.json".`);
+        });
     }
 
     /**
@@ -1074,11 +1078,11 @@ class App
     {
         // document.getElementById( 'uploadAnchorElem' ).click();
         // this.storage.loadFromFile('new_file', console.log);
-        this.setState({modelsLoading: true});
+        this.setGuiState({modelsLoading: true});
         this.storage.getFilesInFolder((data)=>{
             console.log(data);
             // Show selection dropdown.
-            this.setState({loadDropdown: true, modelsLoading: false,
+            this.setGuiState({loadDropdown: true, modelsLoading: false,
                            loadContents: data});
         });
     }
@@ -1089,7 +1093,7 @@ class App
     loadSelected()
     {
         console.log('Load selected');
-        this.setState({modelLoading: true});
+        this.setGuiState({modelLoading: true});
         var oldLoadingText = document.getElementById("loadingText").innerHTML;
         document.getElementById("loadingText").innerHTML = 'Loading projections...';
         document.getElementById("loadingOverlay").style.display = "block";
@@ -1098,7 +1102,7 @@ class App
         this.storage.loadFromFile(selectedFile, (data)=>{
             this.loadFromJSON(data);
             // Hide selection dropdown.
-            this.setState({loadDropdown: false, loadContents: {},
+            this.setGuiState({loadDropdown: false, loadContents: {},
                            modelLoading: false});
             document.getElementById("loadingOverlay").style.display = "none";
             document.getElementById("loadingText").innerHTML = oldLoadingText;
@@ -1111,7 +1115,7 @@ class App
     cancelLoadSelected()
     {
          // Hide selection dropdown.
-        this.setState({loadDropdown: false, loadContents: {}});
+        this.setGuiState({loadDropdown: false, loadContents: {}});
     }
 
     /**
