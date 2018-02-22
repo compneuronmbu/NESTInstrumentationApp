@@ -1074,10 +1074,12 @@ class App
     {
         // document.getElementById( 'uploadAnchorElem' ).click();
         // this.storage.loadFromFile('new_file', console.log);
+        this.setState({modelsLoading: true});
         this.storage.getFilesInFolder((data)=>{
             console.log(data);
             // Show selection dropdown.
-            this.setState({loadDropdown: true, loadContents: data});
+            this.setState({loadDropdown: true, modelsLoading: false,
+                           loadContents: data});
         });
     }
 
@@ -1087,11 +1089,20 @@ class App
     loadSelected()
     {
         console.log('Load selected');
+        this.setState({modelLoading: true});
+        var oldLoadingText = document.getElementById("loadingText").innerHTML;
+        document.getElementById("loadingText").innerHTML = 'Loading projections...';
+        document.getElementById("loadingOverlay").style.display = "block";
         let selectedFile = this.getSelectedDropDown("loadFiles");
         console.log('Selected: ', selectedFile);
-        this.storage.loadFromFile(selectedFile, this.loadFromJSON.bind(this));
-        // Hide selection dropdown.
-        this.setState({loadDropdown: false, loadContents: {}});
+        this.storage.loadFromFile(selectedFile, (data)=>{
+            this.loadFromJSON(data);
+            // Hide selection dropdown.
+            this.setState({loadDropdown: false, loadContents: {},
+                           modelLoading: false});
+            document.getElementById("loadingOverlay").style.display = "none";
+            document.getElementById("loadingText").innerHTML = oldLoadingText;
+        });
     }
 
     /**

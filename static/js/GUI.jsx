@@ -14,7 +14,9 @@ class GuiButtons extends React.Component{
         synapseModels: ['',''],
         loadContents: {},
         hidden: true,
-        loadDropdown: false
+        loadDropdown: false,
+        modelsLoading: false,
+        modelLoading: false
       }
     }
 
@@ -66,14 +68,14 @@ class GuiButtons extends React.Component{
                 <br/>
                 {app.is3DLayer ? (
                   <SelectionsButton text='Make mask box'
-                      disabled={app.is3DLayer}
+                      disabled={!app.is3DLayer}
                       function={function () {app.makeMaskBox();}}
                       button_class ='button'
                       button_id='maskBoxButton' />
                   ) : (null)}
                 {app.isLFP ? (
                   <SelectionsButton text='Make LFP box'
-                      disabled={app.isLFP}
+                      disabled={!app.isLFP}
                       function={function () {app.makeMaskBox(true);}}
                       button_class ='button lfp'
                       button_id='LfpBoxButton' />
@@ -125,27 +127,34 @@ class GuiButtons extends React.Component{
                 <div className="button-group">
                     
                     <SelectionsButton text='Save'
-                                      disabled={!this.state.loadDropdown}
+                                      disabled={this.state.loadDropdown || this.state.modelsLoading}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
-                                      disabled={!this.state.loadDropdown}
+                                      disabled={this.state.loadDropdown || this.state.modelsLoading}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
+                    {this.state.modelsLoading ? (
+                      <div id="gui-box-text">
+                        Loading...
+                      </div>
+                      ) : (null)}
                     {this.state.loadDropdown ? (
                       <div>
                         <DropDown items={Object.entries(this.state.loadContents).map(function(item){return ({text: item[0], value: item[1]});})}
                           id='loadFiles' />
                           <br/>
                         <SelectionsButton text='Load'
-                            function={app.loadSelected.bind(app)}
-                            button_class ='button wide'
-                            button_id='loadSelectedButton' />
+                                          disabled={this.state.modelLoading}
+                                          function={app.loadSelected.bind(app)}
+                                          button_class ='button wide'
+                                          button_id='loadSelectedButton' />
                         <SelectionsButton text='Cancel'
-                            function={app.cancelLoadSelected.bind(app)}
-                            button_class ='button wide'
-                            button_id='cancelLoadButton' />
+                                          disabled={this.state.modelLoading}
+                                          function={app.cancelLoadSelected.bind(app)}
+                                          button_class ='button wide'
+                                          button_id='cancelLoadButton' />
                       </div>
                      ) : (null)}
                 </div>
@@ -232,7 +241,7 @@ class SelectionsButton extends React.Component {
 
   render() {
     return ( 
-      <button className={this.props.button_class} id={this.props.button_id} disabled={this.props.disabled-1} onClick={this.handleClicked}>
+      <button className={this.props.button_class} id={this.props.button_id} disabled={this.props.disabled} onClick={this.handleClicked}>
         {this.props.text}
       </button>
     );
