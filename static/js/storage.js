@@ -54,7 +54,6 @@ function hbpStorage()
       queryPath(storage_this.id, (data) => {
         storage_this.uuid = data.uuid;
         console.log(`Got collab UUID: ${storage_this.uuid}`);
-      getFilesInFolder();
       });
     })
     .fail(function(err) {
@@ -168,7 +167,7 @@ function hbpStorage()
       )
       .done(function(data)
       {
-        console.log('Got data from file');
+        console.log('Got data from file: ', data);
         this_.callback(data);
       })
       .fail(function(err) {
@@ -178,43 +177,47 @@ function hbpStorage()
 
     if (storage_this.token)
     {
-      queryPath(`${storage_this.id}/${filename}.json`, (data)=>{getFileContent(data.uuid)})
+      // TODO: If we only use uuid as input (not filename), don't use nested function.
+      getFileContent(filename);
+      // queryPath(`${storage_this.id}/${filename}.json`, (data)=>{getFileContent(data.uuid)})
     } else
     {
       console.log("data-source: Not Authenticated");
       console.log("user-id: Please login first");
     }
   }
+
+  function getFilesInFolder(callback)
+  {
+    $.ajax(
+    {
+      beforeSend: function (jqXHR, settings) {
+              jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
+          },
+      type: "GET",
+      url: storage_this.baseUrl + '/folder/' + storage_this.uuid + '/children/'
+    })
+    .done(function(recv_data)
+    {
+      file_dict = {}
+      for ( count in recv_data.results )
+      {
+        if ( recv_data.results[count].entity_type === "file" )
+        {
+          file_dict[recv_data.results[count].name] = recv_data.results[count].uuid;
+        }
+      }
+      console.log("FILE DICT", file_dict);
+      callback(file_dict);
+    })
+    .fail(function(err) {
+        console.log("Something went wrong when looking at folder: ", JSON.stringify(err, null, 2));
+    });
+  }
+
   return {
     saveToFile: saveToFile,
-    loadFromFile: loadFromFile
+    loadFromFile: loadFromFile,
+    getFilesInFolder: getFilesInFolder
   }
-}
-
-function getFilesInFolder()
-{
-  $.ajax(
-  {
-    beforeSend: function (jqXHR, settings) {
-            jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
-        },
-    type: "GET",
-    url: storage_this.baseUrl + '/folder/' + storage_this.uuid + '/children/'
-  })
-  .done(function(recv_data)
-  {
-    file_dict = {}
-    for ( count in recv_data.results )
-    {
-      if ( recv_data.results[count].entity_type === "file" )
-      {
-        file_dict[recv_data.results[count].name] = recv_data.results[count].uuid;
-      }
-    }
-    console.log("FILE DICT", file_dict)
-
-  })
-  .fail(function(err) {
-      console.log("Something went wrong when looking at folder: ", JSON.stringify(err, null, 2));
-  });
 }

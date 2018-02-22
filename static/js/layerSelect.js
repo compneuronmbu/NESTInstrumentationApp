@@ -54,6 +54,7 @@ class App
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
         this.setShowGUI = function() {};
+        this.setState = function() {};
 
         this.deviceCounter = 1;
 
@@ -1071,7 +1072,35 @@ class App
      */
     loadSelection()
     {
-        document.getElementById( 'uploadAnchorElem' ).click();
+        // document.getElementById( 'uploadAnchorElem' ).click();
+        // this.storage.loadFromFile('new_file', console.log);
+        this.storage.getFilesInFolder((data)=>{
+            console.log(data);
+            // Show selection dropdown.
+            this.setState({loadDropdown: true, loadContents: data});
+        });
+    }
+
+    /**
+     * Loads selections from HBP storage.
+     */
+    loadSelected()
+    {
+        console.log('Load selected');
+        let selectedFile = this.getSelectedDropDown("loadFiles");
+        console.log('Selected: ', selectedFile);
+        this.storage.loadFromFile(selectedFile, this.loadFromJSON.bind(this));
+        // Hide selection dropdown.
+        this.setState({loadDropdown: false, loadContents: {}});
+    }
+
+    /**
+     * Cancel selection of file to load.
+     */
+    cancelLoadSelected()
+    {
+         // Hide selection dropdown.
+        this.setState({loadDropdown: false, loadContents: {}});
     }
 
     /**

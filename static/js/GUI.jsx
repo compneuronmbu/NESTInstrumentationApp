@@ -12,7 +12,9 @@ class GuiButtons extends React.Component{
       this.state = {
         neuronModels: [''],
         synapseModels: ['',''],
-        hidden: true
+        loadContents: {},
+        hidden: true,
+        loadDropdown: false
       }
     }
 
@@ -24,6 +26,10 @@ class GuiButtons extends React.Component{
       app.setShowGUI = (show) => { // TODO: is using "display: none" needed?
         // `this` refers to our react component
         this.setState({hidden: !show});
+      };
+      app.setState = (state) => {
+        // `this` refers to our react component
+        this.setState(state);
       };
     }
 
@@ -119,12 +125,29 @@ class GuiButtons extends React.Component{
                 <div className="button-group">
                     
                     <SelectionsButton text='Save'
+                                      disabled={!this.state.loadDropdown}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
+                                      disabled={!this.state.loadDropdown}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
+                    {this.state.loadDropdown ? (
+                      <div>
+                        <DropDown items={Object.entries(this.state.loadContents).map(function(item){return ({text: item[0], value: item[1]});})}
+                          id='loadFiles' />
+                          <br/>
+                        <SelectionsButton text='Load'
+                            function={app.loadSelected.bind(app)}
+                            button_class ='button wide'
+                            button_id='loadSelectedButton' />
+                        <SelectionsButton text='Cancel'
+                            function={app.cancelLoadSelected.bind(app)}
+                            button_class ='button wide'
+                            button_id='cancelLoadButton' />
+                      </div>
+                     ) : (null)}
                 </div>
                 <hr/>
                 <div className="button-group">
