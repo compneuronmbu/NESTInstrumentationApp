@@ -121,7 +121,7 @@ class App
             console.log('Socket disconnected');
         });
         this.statusSocket.on('message', function(data){
-            window.alert('The server encountered the following error:\n\n' + data.message)
+            this.setGuiState({modalMessage: `The server encountered the following error:\n\n${data.message}`});
         });
 
         this.render();
@@ -400,7 +400,7 @@ class App
                 this.loadModelIntoApp(file[0].name);
             } catch(e) {
                 console.log(e.message)
-                window.alert("Please upload a correct JSON file");
+                this.setGuiState({modalMessage: "Please upload a correct JSON file"});
             }
         }.bind(this)
 
@@ -1070,6 +1070,7 @@ class App
         console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
+        this.showLoadingOverlay('Saving projections...');
         this.setGuiState({saving: true});
         var projections = this.makeProjections();
         console.log( "projections", projections );
@@ -1077,15 +1078,19 @@ class App
         // abort if there is nothing to save
         if ( Object.keys(projections).length === 0 )
         {
-            alert("Warning: The saved file is empty. Try making some connections.");
+            this.setGuiState({saving: false,
+                              modalMessage: "There are no projections to save! Try making some connections."});
+            return;
         }
 
         var dlObject = {
             projections: projections
         };
         this.storage.saveToFile(this.modelName, dlObject, ()=>{
-            this.setGuiState({saving: false});
-            alert(`Saved to "${this.modelName}.json".`);
+            this.setGuiState({saving: false,
+                              modalMessage: `Saved to "${this.modelName}.json".`});
+            // alert(`Saved to "${this.modelName}.json".`);
+
         });
     }
 
@@ -1121,12 +1126,13 @@ class App
     }
 
     /**
-     * Cancel selection of file to load.
+     * Close the modal.
      */
     closeModal()
     {
          // Hide selection dropdown.
-        this.setGuiState({projectionModal: false, loadContents: {}});
+        this.setGuiState({projectionModal: false, loadContents: {},
+                          modalMessage: ''});
         this.hideLoadingOverlay();
     }
 

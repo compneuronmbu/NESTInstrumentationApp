@@ -15,7 +15,8 @@ class GuiButtons extends React.Component{
         loadContents: {},
         hidden: true,
         saving: false,
-        projectionModal: false
+        projectionModal: false,
+        modalMessage: ''
       }
     }
 
@@ -154,7 +155,11 @@ class GuiButtons extends React.Component{
                                       button_id='abortButton'/>
                 </div>
             </div>
-
+            {this.state.modalMessage ? (
+              <ModalDialog selection={false}
+                           head='Message'
+                           messageText={this.state.modalMessage}/>
+              ) : (null)}
           </div>
         );
     }
@@ -288,7 +293,7 @@ class ModalDialog extends React.Component {
                     <button className="modalButton" onClick={app.closeModal.bind(app)} disabled={this.props.files.length == 0}>Cancel</button>
                   </div>
                   ) : (
-                  <button className="modalButton">Ok</button>
+                  <button className="modalButton" onClick={app.closeModal.bind(app)}>Ok</button>
                   )}
               </div>
           </div>
