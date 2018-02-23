@@ -1076,14 +1076,11 @@ class App
      */
     loadSelection()
     {
-        // document.getElementById( 'uploadAnchorElem' ).click();
-        // this.storage.loadFromFile('new_file', console.log);
-        this.setGuiState({modelsLoading: true});
+        this.setGuiState({projectionModal: true});
         this.storage.getFilesInFolder((data)=>{
             console.log(data);
-            // Show selection dropdown.
-            this.setGuiState({loadDropdown: true, modelsLoading: false,
-                           loadContents: data});
+            // Display files.
+            this.setGuiState({loadContents: data});
         });
     }
 
@@ -1093,29 +1090,22 @@ class App
     loadSelected()
     {
         console.log('Load selected');
-        this.setGuiState({modelLoading: true});
-        var oldLoadingText = document.getElementById("loadingText").innerHTML;
-        document.getElementById("loadingText").innerHTML = 'Loading projections...';
-        document.getElementById("loadingOverlay").style.display = "block";
+        // Hide selection modal.
+        this.setGuiState({projectionModal: false, loadContents: {}});
         let selectedFile = this.getSelectedDropDown("loadFiles");
         console.log('Selected: ', selectedFile);
         this.storage.loadFromFile(selectedFile, (data)=>{
             this.loadFromJSON(data);
-            // Hide selection dropdown.
-            this.setGuiState({loadDropdown: false, loadContents: {},
-                           modelLoading: false});
-            document.getElementById("loadingOverlay").style.display = "none";
-            document.getElementById("loadingText").innerHTML = oldLoadingText;
         });
     }
 
     /**
      * Cancel selection of file to load.
      */
-    cancelLoadSelected()
+    closeModal()
     {
          // Hide selection dropdown.
-        this.setGuiState({loadDropdown: false, loadContents: {}});
+        this.setGuiState({projectionModal: false, loadContents: {}});
     }
 
     /**

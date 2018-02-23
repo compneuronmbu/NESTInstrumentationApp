@@ -663,3 +663,81 @@ hr {
     border-bottom-left-radius: 0;
 }
 
+/* =============================================================================
+   Modal dialog
+   ========================================================================== */
+.modalDialog{
+  position: absolute;
+  text-align: left;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000;
+  background-color: #fff;
+  border-radius: 4px;
+  z-index: 999;
+  transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+}
+
+.modalBody{
+  display: flex;
+  margin: 10px;
+  font:12px/normal sans-serif;
+  /*background-color: rgba(255,255,255,1.0);*/
+}
+
+.modalHeading{
+  background-color: #F1EEEC;
+  font-family: monospace;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-bottom-style: solid;
+  border-top-style: solid;
+  border-radius: 4px;
+  border-width: 1px;
+  border-color: #F1EEEC;
+}
+
+.modalFooting{
+  background-color: rgba(255,255,255,1.0);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-bottom: 1.5em;
+  margin-top: 1.5em;
+  border-bottom-style: solid;
+  border-top-style: solid;
+  border-width: 1px;
+  border-color: #F1EEEC;
+}
+
+.selectionWindow{
+  width: 70%;
+  height: 150px;
+  font:12px/normal sans-serif;
+}
+
+.selectedInfo{
+  width: 30%;
+  margin-left: 5px;
+  padding-left: 5px;
+  font:12px/normal sans-serif;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #F1EEEC;
+}
+
+.modalButton{
+  font:14px/normal sans-serif;
+  padding: 0.5em 1.0em;
+  margin: 0.5em;
+}
+
+.modalButtons{
+  display: flex;
+  flex-direction: row-reverse;
+  padding-top: 0.5em 1.0em;
+  padding-bottom: 0.5em 1.0em;
+}

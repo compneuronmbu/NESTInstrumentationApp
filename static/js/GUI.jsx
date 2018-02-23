@@ -15,9 +15,7 @@ class GuiButtons extends React.Component{
         loadContents: {},
         hidden: true,
         saving: false,
-        loadDropdown: false,
-        modelsLoading: false,
-        modelLoading: false
+        projectionModal: false
       }
     }
 
@@ -128,36 +126,23 @@ class GuiButtons extends React.Component{
                 <div className="button-group">
                     
                     <SelectionsButton text={this.state.saving ? 'Saving...' : 'Save'}
-                                      disabled={this.state.loadDropdown || this.state.modelsLoading || this.state.saving}
+                                      disabled={this.state.projectionModal || this.state.saving}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
-                                      disabled={this.state.loadDropdown || this.state.modelsLoading || this.state.saving}
+                                      disabled={this.state.projectionModal || this.state.saving}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
-                    {this.state.modelsLoading ? (
-                      <div id="gui-box-text">
-                        Loading...
-                      </div>
+
+                    {this.state.projectionModal ? (
+                      <ModalDialog selection={true}
+                                   head='Load projections'
+                                   files={Object.entries(this.state.loadContents).map(function(item){
+                                    return (
+                                      {text: item[0], value: item[1]}
+                                      )})}/>
                       ) : (null)}
-                    {this.state.loadDropdown ? (
-                      <div>
-                        <DropDown items={Object.entries(this.state.loadContents).map(function(item){return ({text: item[0], value: item[1]});})}
-                          id='loadFiles' />
-                          <br/>
-                        <SelectionsButton text='Load'
-                                          disabled={this.state.modelLoading}
-                                          function={app.loadSelected.bind(app)}
-                                          button_class ='button wide'
-                                          button_id='loadSelectedButton' />
-                        <SelectionsButton text='Cancel'
-                                          disabled={this.state.modelLoading}
-                                          function={app.cancelLoadSelected.bind(app)}
-                                          button_class ='button wide'
-                                          button_id='cancelLoadButton' />
-                      </div>
-                     ) : (null)}
                 </div>
                 <hr/>
                 <div className="button-group">
@@ -245,6 +230,69 @@ class SelectionsButton extends React.Component {
       <button className={this.props.button_class} id={this.props.button_id} disabled={this.props.disabled} onClick={this.handleClicked}>
         {this.props.text}
       </button>
+    );
+  }
+}
+
+class ModalDialog extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selection: props.selection,
+      selected: false
+    }
+  }
+
+  handleChange(event) {
+    this.setState({selected: true});
+  }
+
+  render() {
+    return ( 
+      <div className="modalDialog" id={this.props.id}>
+          <div className="modalHeading">
+              <h4>
+                {this.props.head}
+              </h4>
+          </div>
+              {this.state.selection ? (
+                <div className="modalBody">
+                {this.props.files.length > 0 ? (
+                  <select className="selectionWindow" size="2" id='loadFiles' onChange={this.handleChange.bind(this)}>
+                    {this.props.files.map((item, i)=>{
+                        return (<option value={item.value} key={i}>{item.text}</option>)
+                      })}
+                  </select>
+                  ) : (
+                  <select className="selectionWindow" size="2" disabled>
+                    <option value='Loading...' key='0'>Loading...</option>
+                  </select>
+                  )}
+                  <div className="selectedInfo">
+                      <p>File</p>
+                      <p>Type</p>
+                      <p>Date</p>
+                      <p>Author</p>
+                  </div>
+                </div>)
+              : (
+                <div className="modalBody">
+                  <p>{this.props.messageText}</p>
+                </div>
+                )}
+          <div className="modalFooting">
+              <div className="modalButtons">
+              {this.state.selection ? (
+                  <div>
+                    <button className="modalButton" onClick={app.loadSelected.bind(app)} disabled={this.props.files.length == 0 || !this.state.selected}>Load</button>
+                    <button className="modalButton" onClick={app.closeModal.bind(app)} disabled={this.props.files.length == 0}>Cancel</button>
+                  </div>
+                  ) : (
+                  <button className="modalButton">Ok</button>
+                  )}
+              </div>
+          </div>
+      </div>
     );
   }
 }
