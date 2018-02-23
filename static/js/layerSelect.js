@@ -121,7 +121,7 @@ class App
             console.log('Socket disconnected');
         });
         this.statusSocket.on('message', function(data){
-            this.setGuiState({modalMessage: `The server encountered the following error:\n\n${data.message}`});
+            this.showModalMessage(`The server encountered the following error:\n\n${data.message}`);
         });
 
         this.render();
@@ -1078,8 +1078,8 @@ class App
         // abort if there is nothing to save
         if ( Object.keys(projections).length === 0 )
         {
-            this.setGuiState({saving: false,
-                              modalMessage: "There are no projections to save! Try making some connections."});
+            this.setGuiState({saving: false});
+            this.showModalMessage("There are no projections to save! Try making some connections.");
             return;
         }
 
@@ -1087,8 +1087,8 @@ class App
             projections: projections
         };
         this.storage.saveToFile(this.modelName, dlObject, ()=>{
-            this.setGuiState({saving: false,
-                              modalMessage: `Saved to "${this.modelName}.json".`});
+            this.setGuiState({saving: false});
+            this.showModalMessage(`Saved to "${this.modelName}.json".`);
             // alert(`Saved to "${this.modelName}.json".`);
 
         });
@@ -1123,6 +1123,12 @@ class App
             this.loadFromJSON(data);
             this.hideLoadingOverlay();
         });
+    }
+
+    showModalMessage( message )
+    {
+        this.showLoadingOverlay('');
+        this.setGuiState({modalMessage: message});
     }
 
     /**
