@@ -325,7 +325,7 @@ class App
         document.documentElement.style.setProperty('--gui_width', guiWidth);
         this.setShowGUI(true);
         this.controls.onWindowResize();
-        document.getElementById("loadingOverlay").style.display = "block";
+        this.showLoadingOverlay( 'Setting up NEST...' );
         this.$.getJSON( JSONstring, function( data )
         {
             this.modelParameters = data;
@@ -532,6 +532,24 @@ class App
         this.orbitControls.enabled = booleanValue;
     }
 
+    /**
+    * Shows loading overlay.
+    *
+    * @param {String} message Message to display in the overlay
+    */
+    showLoadingOverlay( message )
+    {
+        document.getElementById("loadingText").innerHTML = message;
+        document.getElementById("loadingOverlay").style.display = "block";
+    }
+
+    /**
+    * Hides loading overlay.
+    */
+    hideLoadingOverlay()
+    {
+        document.getElementById("loadingOverlay").style.display = "none";
+    }
 
     /**
      * Handles response from Server-Sent Events.
@@ -1077,6 +1095,7 @@ class App
     loadSelection()
     {
         this.setGuiState({projectionModal: true});
+        this.showLoadingOverlay('');
         this.storage.getFilesInFolder((data)=>{
             console.log(data);
             // Display files.
@@ -1092,10 +1111,12 @@ class App
         console.log('Load selected');
         // Hide selection modal.
         this.setGuiState({projectionModal: false, loadContents: {}});
+        this.showLoadingOverlay('Loading projections...');
         let selectedFile = this.getSelectedDropDown("loadFiles");
         console.log('Selected: ', selectedFile);
         this.storage.loadFromFile(selectedFile, (data)=>{
             this.loadFromJSON(data);
+            this.hideLoadingOverlay();
         });
     }
 
@@ -1106,6 +1127,7 @@ class App
     {
          // Hide selection dropdown.
         this.setGuiState({projectionModal: false, loadContents: {}});
+        this.hideLoadingOverlay();
     }
 
     /**
