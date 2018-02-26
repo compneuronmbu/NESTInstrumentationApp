@@ -44,6 +44,8 @@ class App
         this.neuronModels = [ 'All' ];
         this.synModels = [];
 
+        this.modelName = "";
+
         // 3D layer is default.
         this.is3DLayer = true;
 
@@ -51,7 +53,7 @@ class App
 
         // Callback functions to GUI, function definitions in GUI.jsx
         this.synapseNeuronModelCallback = function() {};
-        this.setShowGUI = function() {};
+        this.setGuiState = function() {};
 
         this.deviceCounter = 1;
 
@@ -82,9 +84,10 @@ class App
 
         this.container = document.getElementById( 'main_body' );
 
-        // HBP Authentication, must happen before we initiate anything.
+        // HBP Authentication"ID, must be defined before we initiate anything.
         this.userID = userID;
         console.log("layerSelect userID:", this.userID);
+        this.storage = hbpStorage();
 
         this.initTHREEScene();
         this.initTHREERenderer();
@@ -117,7 +120,7 @@ class App
             console.log('Socket disconnected');
         });
         this.statusSocket.on('message', function(data){
-            window.alert('The server encountered the following error:\n\n' + data.message)
+            this.showModalMessage(`The server encountered the following error:\n\n${data.message}`);
         });
 
         this.render();
@@ -282,6 +285,17 @@ class App
             // handles the file upload and subsequent allocation to Brain, which displays the model.
             document.getElementById( 'loadLayer' ).click();
         }
+        else if ( target.id === 'loadStorage' )
+        {
+            console.log("Storage model!");
+            this.showLoadingOverlay( '' );
+            this.setGuiState({modalSelection: true, modalHead: 'Load projections',
+                              handleSubmit: this.handleModelFileFromStorage.bind(this)});
+            this.storage.getFilesInFolder((data)=>{
+                // Display files.
+                this.setGuiState({loadContents: data});
+            });
+        }
         else if ( target.id === "LFP" )
         {
             console.log("LFP!");
@@ -295,23 +309,62 @@ class App
         }
     }
 
+    getFileName(name)
+    {
+        var startIndx = name.lastIndexOf('/');
+        var endIndx = name.search('.json');
+        if (endIndx == -1)  // If the filename doesn't end with '.json'.
+        {
+            endIndx = name.length;
+        }
+
+        var currentDate = new Date();
+        var sec = currentDate.getSeconds();
+        var min = currentDate.getMinutes();
+        var hour = currentDate.getHours();
+        var day = currentDate.getDate();
+        var month = currentDate.getMonth() + 1;
+        var year = currentDate.getFullYear();
+        var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
+
+        this.modelName = name.slice(startIndx + 1,endIndx) + '--' + dateTime;
+    }
+
     /**
     * Loads the selected model into the app.
+    *
+    * @param {String} modelFileName Name or path of the model file
+    * @param {Function=} postBrain Function to call when the model is loaded
     */
-    loadModelIntoApp(JSONstring, postBrain=Function)
+    loadModelIntoApp(modelFileName, postBrain=Function)
     {
+        console.log(modelFileName);
         var guiWidth = window.getComputedStyle( document.body ).getPropertyValue( '--gui_target_width' );
         document.documentElement.style.setProperty('--gui_width', guiWidth);
-        this.setShowGUI(true);
         this.controls.onWindowResize();
-        document.getElementById("loadingOverlay").style.display = "block";
-        this.$.getJSON( JSONstring, function( data )
-        {
-            this.modelParameters = data;
-            this.brain = new Brain();
-            postBrain();
-        }.bind(this) );
+        this.showLoadingOverlay( 'Setting up NEST...' );
 
+        // If the modelParameters aren't loaded already, load them from the file
+        if (this.modelParameters === undefined){
+            this.$.getJSON( modelFileName, function( data )
+            {
+                this.modelParameters = data;
+                this.brain = new Brain();
+                try {
+                    this.getFileName(this.modelParameters.modelName);
+                } catch(err) {
+                    this.getFileName(modelFileName);
+                }
+                postBrain();
+            }.bind(this) );
+        } else {
+            try {
+                this.getFileName(this.modelParameters.modelName);
+            } catch(err) {
+                this.getFileName(modelFileName);
+            }
+        }
+        
         // Define orbit controls system here, because we need to know if we have
         // a 2D or 3D model before defining the controls
         // as we do not want to define them if we have a 2D model.
@@ -353,6 +406,37 @@ class App
     }
 
     /**
+    * Loads a model from JSON.
+    *
+    * @param {Object} modelJson Model to load
+    */
+    loadModelJson (modelJson, name) {
+        this.modelParameters = modelJson;
+        this.is3DLayer = this.modelParameters.is3DLayer;
+        this.brain = new Brain();
+        this.loadModelIntoApp(name);
+    }
+
+    /**
+    * Loads a model file.
+    *
+    * @param {Object} file File to load
+    */
+    loadModelFile (file) {
+        var fr = new FileReader();
+        fr.onload = function(e) {
+            try{
+                var result = JSON.parse(e.target.result);
+                this.loadModelJson(result, file.name);
+            } catch(err) {
+                console.log(err.message)
+                this.showModalMessage("Please upload a correct JSON file");
+            }
+        }.bind(this)
+        fr.readAsText(file);
+    }
+
+    /**
     * Function to handle file upload if user has chosen its own model.
     *
     * @event
@@ -360,27 +444,25 @@ class App
     */
     handleModelFileUpload (event) {
         var file = event.target.files;
+
         if (file.length <= 0) {
             return false;
         }
+        this.loadModelFile(file.item(0));
+    }
 
-        var fr = new FileReader();
-
-        fr.onload = function(e) {
-            try{
-                var result = JSON.parse(e.target.result);
-                this.modelParameters = result;
-                console.log(result)
-                this.is3DLayer = this.modelParameters.is3DLayer;
-                this.brain = new Brain();
-                this.loadModelIntoApp();
-            } catch(e) {
-                console.log(e.message)
-                window.alert("Please upload a correct JSON file");
-            }
-        }.bind(this)
-
-        fr.readAsText(file.item(0));
+    /**
+    * Function to handle model loading from storage.
+    */
+    handleModelFileFromStorage () {
+        this.closeModal();
+        this.showLoadingOverlay('Loading model...');
+        let dd = document.getElementById( 'loadFiles' );
+        let selectedUuid = dd.options[ dd.selectedIndex ].value;
+        let fileName = dd.options[ dd.selectedIndex ].innerText;
+        this.storage.loadFromFile(selectedUuid, (data)=>{
+            this.loadModelJson(data, fileName);
+        });
     }
 
     /**
@@ -508,6 +590,24 @@ class App
         this.orbitControls.enabled = booleanValue;
     }
 
+    /**
+    * Shows loading overlay.
+    *
+    * @param {String} message Message to display in the overlay
+    */
+    showLoadingOverlay( message )
+    {
+        document.getElementById("loadingText").innerHTML = message;
+        document.getElementById("loadingOverlay").style.display = "block";
+    }
+
+    /**
+    * Hides loading overlay.
+    */
+    hideLoadingOverlay()
+    {
+        document.getElementById("loadingOverlay").style.display = "none";
+    }
 
     /**
      * Handles response from Server-Sent Events.
@@ -1028,29 +1128,28 @@ class App
         console.log( "selectionBoxArray", this.selectionBoxArray );
         console.log( "##################" );
 
-        var filename = prompt( "Please enter a name for the file:", "Untitled selection" );
-        if ( filename === null || filename === "" )
-        {
-            // User cancelled saving
-            return;
-        }
+        this.showLoadingOverlay('Saving projections...');
+        this.setGuiState({saving: true});
         var projections = this.makeProjections();
         console.log( "projections", projections );
 
         // abort if there is nothing to save
         if ( Object.keys(projections).length === 0 )
         {
-            alert("Warning: The saved file is empty. Try making some connections.");
+            this.setGuiState({saving: false});
+            this.showModalMessage("There are no projections to save! Try making some connections.");
+            return;
         }
 
         var dlObject = {
             projections: projections
         };
-        var jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent( JSON.stringify( dlObject, null, '  ' ) );
-        var dlAnchorElem = document.getElementById( 'downloadAnchorElem' );
-        dlAnchorElem.setAttribute( "href", jsonStr );
-        dlAnchorElem.setAttribute( "download", filename + ".json" );
-        dlAnchorElem.click();
+        this.storage.saveToFile(this.modelName, dlObject, ()=>{
+            this.setGuiState({saving: false});
+            this.showModalMessage(`Saved to "${this.modelName}.json".`);
+            // alert(`Saved to "${this.modelName}.json".`);
+
+        });
     }
 
     /**
@@ -1058,7 +1157,47 @@ class App
      */
     loadSelection()
     {
-        document.getElementById( 'uploadAnchorElem' ).click();
+        this.setGuiState({modalSelection: true, modalHead: 'Load projections',
+                          handleSubmit: this.loadSelected.bind(this)});
+        this.showLoadingOverlay('');
+        this.storage.getFilesInFolder((data)=>{
+            console.log(data);
+            // Display files.
+            this.setGuiState({loadContents: data});
+        });
+    }
+
+    /**
+     * Loads selections from HBP storage.
+     */
+    loadSelected()
+    {
+        console.log('Load selected');
+        this.closeModal();
+        this.showLoadingOverlay('Loading projections...');
+        let selectedFile = this.getSelectedDropDown('loadFiles');
+        console.log('Selected: ', selectedFile);
+        this.storage.loadFromFile(selectedFile, (data)=>{
+            this.loadFromJSON(data);
+            this.hideLoadingOverlay();
+        });
+    }
+
+    showModalMessage( message )
+    {
+        this.showLoadingOverlay('');
+        this.setGuiState({modalMessage: message, modalHead: 'Message'});
+    }
+
+    /**
+     * Close the modal.
+     */
+    closeModal()
+    {
+        // Hide selection dropdown.
+        this.setGuiState({modalSelection: false, loadContents: {},
+                          modalMessage: '', modalHead: ''});
+        this.hideLoadingOverlay();
     }
 
     /**
@@ -1150,6 +1289,8 @@ class App
 
     /**
      * Event handler for file upload when loading a JSON file.
+     *
+     * TODO: This may be obsolete.
      *
      * @event
      */

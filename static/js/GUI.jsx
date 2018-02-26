@@ -12,7 +12,12 @@ class GuiButtons extends React.Component{
       this.state = {
         neuronModels: [''],
         synapseModels: ['',''],
-        hidden: true
+        modalSelection: false,
+        hidden: true,
+        saving: false,
+        loadContents: {},
+        modalMessage: '',
+        modalHead: ''
       }
     }
 
@@ -21,15 +26,15 @@ class GuiButtons extends React.Component{
         // `this` refers to our react component
         this.setState({neuronModels: data[0], synapseModels: data[1]});
       };
-      app.setShowGUI = (show) => { // TODO: is using "display: none" needed?
+      app.setGuiState = (state) => {
         // `this` refers to our react component
-        this.setState({hidden: !show});
+        this.setState(state);
       };
     }
 
     render() {
         return (
-          <div id="reactroot" style={this.state.hidden ? {display: "none"} : {display: "block"}}>
+          <div id="reactroot">
 
             <div id="gui-box">
               <div id="gui-box-title">
@@ -60,14 +65,14 @@ class GuiButtons extends React.Component{
                 <br/>
                 {app.is3DLayer ? (
                   <SelectionsButton text='Make mask box'
-                      disabled={app.is3DLayer}
+                      disabled={!app.is3DLayer}
                       function={function () {app.makeMaskBox();}}
                       button_class ='button'
                       button_id='maskBoxButton' />
                   ) : (null)}
                 {app.isLFP ? (
                   <SelectionsButton text='Make LFP box'
-                      disabled={app.isLFP}
+                      disabled={!app.isLFP}
                       function={function () {app.makeMaskBox(true);}}
                       button_class ='button lfp'
                       button_id='LfpBoxButton' />
@@ -118,12 +123,13 @@ class GuiButtons extends React.Component{
                 <hr/>
                 <div className="button-group">
                     
-                    <SelectionsButton text='Save'
+                    <SelectionsButton text={this.state.saving ? 'Saving...' : 'Save'}
+                                      disabled={this.state.projectionModal || this.state.saving}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
-                    <a id="downloadAnchorElem" style={{display: "none"}}/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
+                                      disabled={this.state.projectionModal || this.state.saving}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
                 </div>
@@ -137,6 +143,22 @@ class GuiButtons extends React.Component{
                                       button_id='abortButton'/>
                 </div>
             </div>
+            {this.state.modalMessage ? (
+              <ModalDialog id='modalMessage'
+                           head='Message'
+                           selection={false}
+                           messageText={this.state.modalMessage}/>
+              ) : (null)}
+            {this.state.modalSelection ? (
+              <ModalDialog id='modalSelection'
+                           head={this.state.modalHead}
+                           selection={true}
+                           handleSubmit={this.state.handleSubmit}
+                           files={Object.entries(this.state.loadContents).map(function(item){
+                            return (
+                              {text: item[0], value: item[1]}
+                              )})}/>
+              ) : (null)}
 
           </div>
         );
@@ -162,7 +184,7 @@ class DropDown extends React.Component {
       this.handleOptionChange = this.handleOptionChange.bind(this);
     }
 
-    componentWillReceiveProps(nextProps)  // called when recieving new Props
+    componentWillReceiveProps(nextProps)  // called when receiving new Props
     {
       this.setState({
         selectedOption: nextProps.items[0].value,
@@ -210,9 +232,79 @@ class SelectionsButton extends React.Component {
 
   render() {
     return ( 
-      <button className={this.props.button_class} id={this.props.button_id} disabled={this.props.disabled-1} onClick={this.handleClicked}>
+      <button className={this.props.button_class} id={this.props.button_id} disabled={this.props.disabled} onClick={this.handleClicked}>
         {this.props.text}
       </button>
+    );
+  }
+}
+
+class ModalDialog extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selection: props.selection,
+      selected: false
+    }
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    // When something is selected, the "Load" button gets active.
+    this.setState({selected: true});
+  }
+
+  handleSubmit()
+  {
+    this.props.handleSubmit();
+  }
+
+  render() {
+    return ( 
+      <div className="modalDialog" id={this.props.id}>
+          <div className="modalHeading">
+              <h4>
+                {this.props.head}
+              </h4>
+          </div>
+              {this.state.selection ? (
+                <div className="modalBody">
+                {this.props.files.length > 0 ? (
+                  <select className="selectionWindow" size="2" id='loadFiles' onChange={this.handleChange.bind(this)}>
+                    {this.props.files.map((item, i)=>{
+                        return (<option value={item.value} key={i}>{item.text}</option>)
+                      })}
+                  </select>
+                  ) : (
+                  <select className="selectionWindow" size="2" disabled>
+                    <option value='Loading...' key='0'>Loading...</option>
+                  </select>
+                  )}
+                  <div className="selectedInfo">
+                      <p>File</p>
+                      <p>Type</p>
+                      <p>Date</p>
+                      <p>Author</p>
+                  </div>
+                </div>)
+              : (
+                <div className="modalBody">
+                  <p>{this.props.messageText}</p>
+                </div>
+                )}
+          <div className="modalFooting">
+              <div className="modalButtons">
+              {this.state.selection ? (
+                  <div>
+                    <button className="modalButton" onClick={this.handleSubmit.bind(this)} disabled={this.props.files.length == 0 || !this.state.selected}>Load</button>
+                    <button className="modalButton" onClick={app.closeModal.bind(app)}>Cancel</button>
+                  </div>
+                  ) : (
+                  <button className="modalButton" onClick={app.closeModal.bind(app)}>Ok</button>
+                  )}
+              </div>
+          </div>
+      </div>
     );
   }
 }

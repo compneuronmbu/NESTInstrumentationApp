@@ -11,7 +11,7 @@
 <body>
 
 <div id="loadingOverlay">
-  <div id="loadingText">Setting up NEST...</div>
+  <div id="loadingText"></div>
 </div>
 
 <div class="unselectable" id="main_body">
@@ -34,8 +34,9 @@
     <button class='button start' id='hillTononi3D'>Hill-Tononi 3D</button>
     <button class='button start' id='potDies'>Potjans-Diesmann</button>
     <input id="loadLayer" type="file" value="Import" style="display: none;"/>
-    <button class='button start' id='loadOwn'>Load your own</button>
     <button class='button start' id='LFP'>LFP</button>
+    <button class='button start' id='loadStorage'>Load from storage</button>
+    <button class='button start' id='loadOwn'>Load your own</button>
   </div>
   <p id='version'>{{ version }}</p>
 </div>
@@ -64,7 +65,9 @@
 <script src="static/js/hbp.hello.js"></script>
 
 <!-- Scripts for the app -->
+<script src="static/js/storage.js"></script>
 <script src="static/js/authentication.js"></script>
+<script src="static/js/storage.js"></script>
 <script src="static/js/devicePlots.js"></script>
 <script src="static/js/makeBrainRepresentation.js"></script>
 <script src="static/js/controls.js"></script>

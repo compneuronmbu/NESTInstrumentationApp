@@ -98,7 +98,7 @@ class Brain
             } ),
             success: function( data )
             {
-                document.getElementById("loadingOverlay").style.display = "none";
+                app.hideLoadingOverlay();
                 // Render to show the points. Render multiple times as the
                 // compiled shaders may be slow to get ready.
                 for (let i = 0; i < 10; ++i)
