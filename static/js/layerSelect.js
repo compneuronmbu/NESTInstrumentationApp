@@ -289,7 +289,7 @@ class App
         {
             console.log("Storage model!");
             this.showLoadingOverlay( '' );
-            this.setGuiState({modalSelection: true, modalHead: 'Load projections',
+            this.setGuiState({modalSelection: true, modalHead: 'Load model',
                               handleSubmit: this.handleModelFileFromStorage.bind(this)});
             this.storage.getFilesInFolder((data)=>{
                 // Display files.

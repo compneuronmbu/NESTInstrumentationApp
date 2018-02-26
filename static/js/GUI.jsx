@@ -145,7 +145,7 @@ class GuiButtons extends React.Component{
             </div>
             {this.state.modalMessage ? (
               <ModalDialog id='modalMessage'
-                           head='Message'
+                           head={this.state.modalHead}
                            selection={false}
                            messageText={this.state.modalMessage}/>
               ) : (null)}
