@@ -7,15 +7,25 @@
   z-index: 100;
 }
 
+#LFPplot {
+  color: #fff;
+  position: absolute;
+  bottom: 200px;
+  left: 20px;
+  width: calc((100% - var(--gui_width)) / 3);
+  padding: 5px;
+  z-index: 100;
+}
+
 .axis line, .axis path {
 	shape-rendering: crispEdges;
 	stroke: white;
 }
 
 .axis text {
-    font-family: sans-serif;
-    font-size: 11px;
-    fill: white;
+  font-family: sans-serif;
+  font-size: 11px;
+  fill: white;
 }
 
 circle {
