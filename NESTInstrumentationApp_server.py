@@ -133,8 +133,9 @@ def get_connections_ajax():
     global interface
     print("Received ", flask.request.args.get('input'))
     user_id = flask.request.args.get('userID')
+    n_connections = 0;
     try:
-        n_connections = interface[user_id].get_num_connections()
+        n_connections = interface[int(user_id)].get_num_connections()
     except Exception as exception:
         emit_exception(exception, user_id)
     return flask.jsonify(connections=n_connections)
