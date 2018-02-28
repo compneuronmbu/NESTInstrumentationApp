@@ -101,3 +101,5 @@ coverage/
 *.h5
 *.hdf5
 *.he5
+
+static/examples/LFP/figures
