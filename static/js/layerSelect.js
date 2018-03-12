@@ -1444,8 +1444,8 @@ class App
         }
         else if ( device === "multimeter" )
         {
-            var col = 0x809980;
-            var mapPath = "static/js/textures/spike_detector.png";
+            var col = 0x809999;
+            var mapPath = "static/js/textures/multimeter_device.png";
             params = {'record_from': ['lfp']};
         }
         else
