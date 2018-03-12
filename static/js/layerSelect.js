@@ -653,6 +653,10 @@ class App
         {
             this.devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
         }
+        if ( this.isLFP )
+        {
+            this.devicePlots.makeLFPPlot(deviceData['lfp_det']);
+        }
     }
 
     /**
@@ -1082,7 +1086,7 @@ class App
                 userID: this.userID,
                 network: this.modelParameters,
                 projections: this.makeProjections( true ),
-                time: "10000"
+                time: "20000"
             } ),
             dataType: "json"
         } ).done( function( data )
@@ -1427,6 +1431,7 @@ class App
     makeRecordingDevice( device, name )
     {
         console.log( "making recording device of type", device )
+        var params = {}
         if ( device === "voltmeter" )
         {
             var col = 0xBDB280;
@@ -1436,6 +1441,12 @@ class App
         {
             var col = 0x809980;
             var mapPath = "static/js/textures/spike_detector.png";
+        }
+        else if ( device === "multimeter" )
+        {
+            var col = 0x809980;
+            var mapPath = "static/js/textures/spike_detector.png";
+            params = {'record_from': ['lfp']};
         }
         else
         {
@@ -1449,7 +1460,7 @@ class App
                 requestAnimationFrame( this.render.bind(this) );
             }.bind(this)
         );
-        this.makeDevice( device, col, map, {}, name );
+        this.makeDevice( device, col, map, params, name );
     }
 
     /**

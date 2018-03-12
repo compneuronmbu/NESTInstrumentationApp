@@ -107,6 +107,12 @@ class GuiButtons extends React.Component{
                     function={function () {app.makeRecordingDevice("spike_detector");}}
                     button_class ='button pill big'
                     button_id='spikeDetectorButton' />
+                <br/>
+                {app.isLFP ? (
+                  <SelectionsButton text='multimeter - lfp'
+                      function={function () {app.makeRecordingDevice("multimeter");}}
+                      button_class ='button pill big'
+                      button_id='spikeDetectorButton' /> ) : (null)}
             </div>
 
             <div id="gui-box">
