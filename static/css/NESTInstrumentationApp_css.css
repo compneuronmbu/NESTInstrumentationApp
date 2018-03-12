@@ -249,6 +249,7 @@ hr {
 {
   width: var(--selection_button_width);
   margin-top: 3px;
+  margin-bottom: 3px;
   text-shadow: 0.5px 0.5px 0 #333;
   color: #fff;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#8BA68B), to(#809980));
@@ -426,7 +427,7 @@ hr {
 }
 
 .collapse-open:checked ~ .helpList {
-  max-height: 100px;
+  max-height: 200px;
   opacity: 100;
   visibility: visible;
 }
