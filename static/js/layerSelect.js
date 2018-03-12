@@ -203,9 +203,9 @@ class App
 
         // Axis labels
         var loader = new THREE.FontLoader();
-        var labelSpecs = {x: {text: 'x', color: 0xff0000, position: {x: 0.82, y: 0.05, z: 0}},
-                          y: {text: 'y', color: 0x00ff00, position: {x: 0.05, y: 0.82, z: -0.05}},
-                          z: {text: 'z', color: 0x3333ff, position: {x: 0, y: 0.05, z: 0.82}},
+        var labelSpecs = {x: {text: 'y', color: 0xff0000, position: {x: 0.82, y: 0.05, z: 0}},
+                          y: {text: 'z', color: 0x00ff00, position: {x: 0.05, y: 0.82, z: -0.05}},
+                          z: {text: 'x', color: 0x3333ff, position: {x: 0, y: 0.05, z: 0.82}},
                          };
         this.labelMeshes = [];
         loader.load( 'static/js/lib/three/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
