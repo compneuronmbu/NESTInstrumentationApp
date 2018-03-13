@@ -120,8 +120,8 @@ class App
             console.log('Socket disconnected');
         });
         this.statusSocket.on('message', function(data){
-            this.showModalMessage(`The server encountered the following error:\n\n${data.message}`);
-        });
+            this.showModalMessage(`The server encountered the following error: ${data.message}`);
+        }.bind(this));
 
         this.render();
     }
@@ -302,6 +302,14 @@ class App
             this.isLFP = true;
             JSONstring = "/static/examples/Potjans_Diesmann_converted.json";
             this.loadModelIntoApp(JSONstring, this.initLFP.bind(this));
+            this.deviceBoxMap[ "LFP" ] = {
+                specs:
+                {
+                    model: "LFP",
+                    params: {}
+                },
+                connectees: []
+            };
         }
         else
         {
@@ -1055,7 +1063,7 @@ class App
                 userID: this.userID,
                 network: this.modelParameters,
                 projections: projections,
-                time: "100000"
+                time: "1000"
             } ),
             dataType: "json"
         } ).done( function( data )
@@ -1189,6 +1197,7 @@ class App
 
     showModalMessage( message )
     {
+        // TODO: Add message subheading inside the message modal body
         this.showLoadingOverlay('');
         this.setGuiState({modalMessage: message, modalHead: 'Message'});
     }
@@ -1404,7 +1413,7 @@ class App
             var col = 0xB28080
             var mapPath = "static/js/textures/poisson.png";
             var params = {
-                rate: 70000.0
+                rate: 700000.0
             }
         }
         else if ( device === "ac_generator" )
@@ -1486,6 +1495,11 @@ class App
         this.controls.boxInFocus = box;
         this.selectionBoxArray.push( box );
         this.controls.boxInFocus.setActive();
+
+        if ( lfp )
+        {
+            this.deviceBoxMap[ 'LFP' ].connectees.push( this.controls.boxInFocus );
+        }
 
         console.log( "Selection box: ", box )
 

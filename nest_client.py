@@ -5,6 +5,7 @@ import json
 import gevent
 import numbers
 import math
+import numpy as np
 import random
 import traceback as tb
 import nett_python as nett
@@ -409,6 +410,11 @@ class NESTClient(object):
         for device_name in self.device_projections:
             model = self.device_projections[device_name]['specs']['model']
             params = self.device_projections[device_name]['specs']['params']
+
+            if model == 'LFP':
+                self.connect_to_lfp()
+                continue
+
             # floatify params
             for key in params:
                 if key in params_to_floatify:
@@ -480,6 +486,73 @@ class NESTClient(object):
             lfp_detectors.append(dummy)
         return lfp_detectors
 
+
+    def connect_to_lfp(self):
+        print('Setting up LFP model...')
+        # Load kernels
+        tau_rise_array = np.zeros([16, 64])
+        tau_decay_array = np.zeros([16, 64])
+        normalizer_array = np.zeros([16, 64])
+        tau_rise2_array = np.zeros([16, 64])
+        tau_decay2_array = np.zeros([16, 64])
+        normalizer2_array = np.zeros([16, 64])
+        borders = []
+
+        # Dictionaries don't save order, so we need to set a fixed order
+        # TODO: Alternatively use collections.OrderedDict.
+        layer_names = ['L23E', 'L23I', 'L4E', 'L4I',
+                       'L5E', 'L5I', 'L6E', 'L6I']
+        for name in layer_names:
+            layer = self.layers[name]
+            nodes = nest.GetNodes(layer)[0]
+            borders.append(min(nodes))
+            borders.append(max(nodes))
+
+        with open('static/examples/LFP/' +
+                  'double_fitted_values.json', 'r') as variables_file:
+            fitted_variables = json.load(variables_file)
+        for ch in range(16):
+            index = 0
+            for from_pop in layer_names:
+                for to_pop in layer_names:
+                    tau_rise_array[ch][index] = (
+                        1. / fitted_variables[str(ch)][from_pop][to_pop]['a'])
+                    tau_decay_array[ch][index] = (
+                        1. / fitted_variables[str(ch)][from_pop][to_pop]['b'])
+                    normalizer_array[ch][index] = (
+                        fitted_variables[str(ch)][from_pop][to_pop]['deta0'])
+
+                    tau_rise2_array[ch][index] = (
+                        1. / fitted_variables[str(ch)][from_pop][to_pop]['a2'])
+                    tau_decay2_array[ch][index] = (
+                        1. / fitted_variables[str(ch)][from_pop][to_pop]['b2'])
+                    normalizer2_array[ch][index] = (
+                        fitted_variables[str(ch)][from_pop][to_pop]['deta02'])
+                    index += 1
+
+        # Create LFP detectors
+        lfp_detectors = [nest.Create('lfp_detector', 1,
+                                     {'tau_rise': tau_rise_array[ch],
+                                      'tau_decay': tau_decay_array[ch],
+                                      'normalizer': normalizer_array[ch],
+                                      'tau_rise2': tau_rise2_array[ch],
+                                      'tau_decay2': tau_decay2_array[ch],
+                                      'normalizer2': normalizer2_array[ch],
+                                      'borders': borders})
+                         for ch in range(16)]
+        multimeters = nest.Create('multimeter', 16,
+                                  {'record_from': ['lfp'],
+                                   'interval': 0.1})
+        self.rec_devices.append(['lfp_multimeters', multimeters])
+
+        print('Connecting to LFP model...')
+        connectees = self.device_projections['LFP']['connectees']
+        selected_neurons = [self.get_gids(s) for s in connectees]
+        for ch, lfp_det in enumerate(lfp_detectors):
+            nest.Connect((multimeters[ch],), lfp_det)
+            for neurons in selected_neurons:
+                nest.Connect(neurons, lfp_det, 'all_to_all',
+                             {'model': 'static_synapse', 'receptor_type': 1})
 
     def handle_get_nconnections(self):
         """
@@ -728,6 +801,15 @@ class NESTClient(object):
         vm_array = []
 
         for device_name, device_gid in self.rec_devices:
+            if 'lfp_multimeters' in device_name:
+                results[device_name] = {}  # TODO: fyll inn resultater
+                # device_gid is a list of GIDs
+                mm_status = nest.GetStatus(device_gid)
+                print('Status: {}'.format(mm_status[0]['events']['lfp']))
+                # for ch in range(len(device_gid)):
+                #     print(mm_status[ch]['events']['lfp'])
+                nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
+                continue
             status = nest.GetStatus(device_gid)[0]
 
             if status['n_events'] > 0:
