@@ -133,7 +133,7 @@ def get_connections_ajax():
     global interface
     print("Received ", flask.request.args.get('input'))
     user_id = flask.request.args.get('userID')
-    n_connections = 0;
+    n_connections = 0
     try:
         n_connections = interface[int(user_id)].get_num_connections()
     except Exception as exception:
@@ -209,7 +209,13 @@ def g_simulate(network, projections, t, user_id):
                     print("Simulation aborted")
                     break
             interface[user_id].simulate(dt)
-            results = json.loads(interface[user_id].get_device_results())
+            device_results = None
+            while device_results is None:
+                device_results = interface[user_id].get_device_results()
+                if device_results is None:
+                    # Waiting for results
+                    gevent.sleep(sleep_t)
+            results = json.loads(device_results)
             if results:
                 jsonResult = flask.json.dumps(results)
                 if user_id in subscriptions:

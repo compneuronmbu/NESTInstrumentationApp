@@ -97,7 +97,7 @@ class NESTInterface(object):
         self.networkSpecs = networkSpecs
         self.device_projections = device_projections
         self.user_id = user_id
-        self.device_results = '{}'
+        self.device_results = None
         self.silent = silent
         self.socketio = socketio
 
@@ -323,6 +323,7 @@ class NESTInterface(object):
 
         :param t: time to simulate
         """
+        self.device_results = None  # Clear device results
         self.send_to_client('simulate', str(t))
 
     def handle_device_results(self, msg):
