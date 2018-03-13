@@ -51,7 +51,7 @@ function hbpStorage()
       // Update the DOM with the context object retrieved by the web service.
       storage_this.id = data.collab.id
       console.log(`Got collab id: ${storage_this.id}`);
-      queryPath(storage_this.id, (data) => {
+      queryProjectId(storage_this.id, (data) => {
         storage_this.uuid = data.uuid;
         console.log(`Got collab UUID: ${storage_this.uuid}`);
       });
@@ -61,7 +61,7 @@ function hbpStorage()
     });
   }
 
-  function queryPath(path, callback)
+  function queryProjectId(id, callback)
   {
     $.ajax(
     {
@@ -69,17 +69,19 @@ function hbpStorage()
         jqXHR.setRequestHeader('Authorization', 'Bearer ' + storage_this.token);
       },
       type: "GET",
-      url: `${storage_this.baseUrl}/entity/?path=/${path}/`,
+      url: `${storage_this.baseUrl}/project/?collab_id=${id}`,
     }
     )
     .done(function(data)
     {
-      // storage_this.uuid = data.uuid;
-      callback(data);
-      // callback(token, new_data);
+      if (data.count > 1)
+      {
+        throw "Ambiguous collab id.";
+      }
+      callback(data.results[0]);
     })
     .fail(function(err) {
-      console.log("Something went wrong when getting collab UUID: ", JSON.stringify(err, null, 2));
+      console.log("Something went wrong when getting project data: ", JSON.stringify(err, null, 2));
     });
   }
 
