@@ -1107,7 +1107,7 @@ class SelectionBox3D
         this.makeBorderLines();
         this.makeTransformControls();
         this.updateColors();
-        !this.lfp && this.makeConnectionHandle();
+        this.makeConnectionHandle();
 
         this.box.rotation.order = "ZYX"; //"YZX";
     }
@@ -1166,7 +1166,7 @@ class SelectionBox3D
     updateBox()
     {
         this.updateColors();
-        !this.lfp && this.updateConnectionHandle();
+        this.updateConnectionHandle();
     }
 
 
@@ -1239,11 +1239,8 @@ class SelectionBox3D
         this.transformControls.attach( this.box );
         this.setBorderLinesColor(this.activeColor);
         this.updateColors();
-        if (!this.lfp)
-        {
-            this.connectionHandle.visible = true;
-            document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
-        }
+        this.connectionHandle.visible = true;
+        document.addEventListener( "mousemove", this.onMouseMove.bind( this ), false );
         
     }
 
@@ -1254,11 +1251,8 @@ class SelectionBox3D
     {
         this.transformControls.detach();
         this.setBorderLinesColor(this.inactiveColor);
-        if (!this.lfp)
-        {
-            this.connectionHandle.visible = false;
-            document.removeEventListener( "mousemove", this.onMouseMove );
-        }
+        this.connectionHandle.visible = false;
+        document.removeEventListener( "mousemove", this.onMouseMove );
     }
     
     /*

@@ -1413,7 +1413,7 @@ class App
             var col = 0xB28080
             var mapPath = "static/js/textures/poisson.png";
             var params = {
-                rate: 700000.0
+                rate: 210000.0
             }
         }
         else if ( device === "ac_generator" )
@@ -1450,12 +1450,6 @@ class App
         {
             var col = 0x809980;
             var mapPath = "static/js/textures/spike_detector.png";
-        }
-        else if ( device === "multimeter" )
-        {
-            var col = 0x809999;
-            var mapPath = "static/js/textures/multimeter_device.png";
-            params = {'record_from': ['lfp']};
         }
         else
         {

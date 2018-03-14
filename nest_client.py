@@ -404,8 +404,7 @@ class NESTClient(object):
 
         self.print("Connecting to devices...")
         params_to_floatify = ['rate', 'amplitude', 'frequency']
-        reverse_connection = ['voltmeter', 'multimeter', 'poisson_generator',
-                              'ac_generator']
+        reverse_connection = ['voltmeter', 'poisson_generator', 'ac_generator']
 
         for device_name in self.device_projections:
             model = self.device_projections[device_name]['specs']['model']
@@ -419,13 +418,7 @@ class NESTClient(object):
             for key in params:
                 if key in params_to_floatify:
                     params[key] = float(params[key])
-            if model == 'multimeter':
-                nest_device = nest.Create(model, 16, params)
-                lfp_detectors = self.create_lfp()
-                for i in range(16):
-                    nest.Connect([nest_device[i]], lfp_detectors[i])
-            else:
-                nest_device = nest.Create(model, 1, params)
+            nest_device = nest.Create(model, 1, params)
 
             # If it is a recording device, add it to the list
             if 'record_to' in nest.GetStatus(nest_device)[0]:
@@ -440,13 +433,6 @@ class NESTClient(object):
                                  in self.rec_devices else 'static_synapse')
                 if model == 'ac_generator':
                     synapse_model = 'static_synapse'
-
-                if model == 'multimeter':
-                    for i in range(16):
-                        nest.Connect(nest_neurons, lfp_detectors[i],
-                                     'all_to_all',
-                                     {'model': 'static_synapse',
-                                      'receptor_type': 1})
                 elif model in reverse_connection:
                     self.print("Connecting {} to {}".format(model, "neurons"))
                     nest.Connect(nest_device, nest_neurons,
@@ -455,37 +441,6 @@ class NESTClient(object):
                     self.print("Connecting {} to {}".format("neurons", model))
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
-    def create_lfp(self):
-        borders = []
-        for name, lyr in self.layers.items():
-            pop = nest.GetNodes(lyr)[0]
-            borders.append(pop[0])
-            borders.append(pop[-1])
-
-        param_dict = {}
-        populations =  ['L23E', 'L23I', 'L4E', 'L4I', 'L5E', 'L5I', 'L6E', 'L6I']
-        data = json.load(open('./static/examples/LFP/double_fitted_values.json'))
-
-        for count in range(16):
-            dat = str(count)
-            param_dict[dat] = {'tau_decay': [], 'tau_rise': [], 'tau_decay2': [],
-                               'tau_rise2': [], 'normalizer': [],
-                               'normalizer2': [], 'borders': borders}
-            for src in populations:
-                for trgt in populations:
-                    param_dict[dat]['tau_decay'].append(1./data[dat][src][trgt]['a'])
-                    param_dict[dat]['tau_rise'].append(1./data[dat][src][trgt]['b'])
-                    param_dict[dat]['normalizer'].append(float(data[dat][src][trgt]['deta0']))
-                    param_dict[dat]['tau_decay2'].append(1./data[dat][src][trgt]['a2'])
-                    param_dict[dat]['tau_rise2'].append(1./data[dat][src][trgt]['b2'])
-                    param_dict[dat]['normalizer2'].append(float(data[dat][src][trgt]['deta02']))
-
-        lfp_detectors = []
-        for i in range(16):
-            dummy = nest.Create('lfp_detector', params=param_dict[str(i)])
-            lfp_detectors.append(dummy)
-        return lfp_detectors
-
 
     def connect_to_lfp(self):
         print('Setting up LFP model...')
@@ -542,7 +497,7 @@ class NESTClient(object):
                          for ch in range(16)]
         multimeters = nest.Create('multimeter', 16,
                                   {'record_from': ['lfp'],
-                                   'interval': 0.1})
+                                   'interval': 1.0})  # 0.1
         self.rec_devices.append(['lfp_multimeters', multimeters])
 
         print('Connecting to LFP model...')
@@ -795,21 +750,13 @@ class NESTClient(object):
         # TODO: Set up on the fly
         recording_events = {'spike_det': {'senders': [], 'times': []},
                             'rec_dev': {'times': [], 'V_m': []},
-                            'lfp_det': {str(i): {'lfp': [], 'times': []} for i in range(16)}}
+                            'lfp_det': {str(i): {'lfp': [], 'times': []}
+                                        for i in range(16)}}
 
         time_array = []
         vm_array = []
 
         for device_name, device_gid in self.rec_devices:
-            if 'lfp_multimeters' in device_name:
-                results[device_name] = {}  # TODO: fyll inn resultater
-                # device_gid is a list of GIDs
-                mm_status = nest.GetStatus(device_gid)
-                print('Status: {}'.format(mm_status[0]['events']['lfp']))
-                # for ch in range(len(device_gid)):
-                #     print(mm_status[ch]['events']['lfp'])
-                nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
-                continue
             status = nest.GetStatus(device_gid)[0]
 
             if status['n_events'] > 0:
@@ -845,12 +792,15 @@ class NESTClient(object):
                         vm_array[vm_count].append(device_events['V_m'][count])
                     recording_events['rec_dev']['times'] += time_array
                     recording_events['rec_dev']['V_m'] += vm_array
-                if 'multimeter' in device_name:
-                    for i in range(16):
-                        ev = nest.GetStatus((device_gid[i],))[0]['events']
-                        recording_events['lfp_det'][str(i)]['times'] += [float(t) for t in ev['times']]
-                        recording_events['lfp_det'][str(i)]['lfp'] += [float(l) for l in ev['lfp']]
-
+                elif 'lfp_multimeters' in device_name:
+                    for ch in range(len(device_gid)):
+                        # device_gid is a list of GIDs
+                        mm_status = nest.GetStatus((device_gid[ch],))
+                        events = mm_status[0]['events']
+                        recording_events['lfp_det'][str(ch)]['times'] += [
+                            float(t) for t in events['times']]
+                        recording_events['lfp_det'][str(ch)]['lfp'] += [
+                            float(l) for l in events['lfp']]
 
                 nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
