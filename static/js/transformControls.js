@@ -515,7 +515,7 @@ var TransformControls = function ( camera, domElement )
     // Scaling sets the space to "local", translation and rotations must therefore handle both
     // "world" and "local".
     this.space = "world";
-    this.size = 1;
+    this.size = 0.5;
     this.axis = null;
 
     var scope = this;
