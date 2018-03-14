@@ -1223,17 +1223,20 @@ class App
         var IDsCreated = [];
         for ( var device in inputObj.projections )
         {
-            var deviceModel = inputObj.projections[ device ].specs.model;
-            if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
+            if ( device != 'LFP' )
             {
-                this.makeStimulationDevice( deviceModel, device );
+                // LFP device is created as part of the model.
+                var deviceModel = inputObj.projections[ device ].specs.model;
+                if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
+                {
+                    this.makeStimulationDevice( deviceModel, device );
+                }
+                else
+                {
+                    this.makeRecordingDevice( deviceModel, device );
+                }
+                var target = this.circle_objects[ this.circle_objects.length - 1 ];
             }
-            else
-            {
-                this.makeRecordingDevice( deviceModel, device );
-            }
-
-            var target = this.circle_objects[ this.circle_objects.length - 1 ];
 
             for ( var i in inputObj.projections[ device ].connectees )
             {
@@ -1251,7 +1254,8 @@ class App
                                                            boxSpecs.depth,
                                                            boxSpecs.center,
                                                            boxSpecs.maskShape,
-                                                           boxSpecs.scale );
+                                                           boxSpecs.scale,
+                                                           device === 'LFP' );
                     }
                     else
                     {
@@ -1270,7 +1274,6 @@ class App
                     box.selectedSynModel = boxSpecs.synModel;
 
                     this.selectionBoxArray.push( box );
-                    //box.makeBox();
                 }
                 // if the box is already created, it must be found
                 else
@@ -1285,10 +1288,13 @@ class App
                     }
                 }
 
-                box.makeLine();
-                var radius = target.geometry.boundingSphere.radius;
-                box.setLineTarget( target.name );
-                box.lineToDevice( target.position, radius, target.name );
+                if ( device != 'LFP' )
+                {
+                    box.makeLine();
+                    var radius = target.geometry.boundingSphere.radius;
+                    box.setLineTarget( target.name );
+                    box.lineToDevice( target.position, radius, target.name );
+                }
 
                 box.updateColors();
                 this.deviceBoxMap[ device ].connectees.push( box );
