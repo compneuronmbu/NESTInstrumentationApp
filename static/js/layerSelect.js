@@ -1612,6 +1612,14 @@ class App
             this.axisRenderer.render( this.axisScene, this.axisCamera );
         }
 
+        if ( this.is3DLayer )
+        {
+            for (var i = 0; i < this.circle_objects.length; ++i)
+            {
+                this.circle_objects[ i ].lookAt(this.camera.position);
+            }
+        }
+
         if ( !this.layerNamesMade && !this.is3DLayer && this.brain )
         {
             this.brain.make_layer_names();
