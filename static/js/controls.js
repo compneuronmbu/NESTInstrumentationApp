@@ -681,7 +681,7 @@ class Controls
             this.removeOutline();
             this.lineInFocus && this.lineInFocus.setInactive();
 
-            if ( this.boxInFocus !== undefined )
+            if ( !app.is3DLayer &&  this.boxInFocus !== undefined )
             {
                 console.log( "Select resize points" )
                 // If a box is selected, check if we click on a resize or rotation point.
@@ -703,9 +703,15 @@ class Controls
             }
             else
             {
-                // If neither of the above, check if we click on a box.
+                if ( this.boxInFocus && this.boxInFocus.transformControls.axis != null )
+                {
+                    // If we are translating the box.
+                    this.translatingBox = true;
+                    return;
+                }
+                // If not selecting a device, check if we click on a box.
                 this.selectBox();
-                if ( this.boxInFocus !== undefined && !this.nothingClicked )
+                if ( this.boxInFocus && !this.nothingClicked )
                 {
                     return;
                 }
