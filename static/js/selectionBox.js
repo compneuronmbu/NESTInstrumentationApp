@@ -494,6 +494,15 @@ class SelectionBox
     }
 
     /**
+     * Makes the selection box inactive by hiding transformation controls and updating border lines colour.
+     */
+    setInactive()
+    {
+        this.removePoints();
+        this.disableConnectionHandle();
+    }
+
+    /**
      * Creates a line representing a connection, that is to be connected to a
      * device.
      */

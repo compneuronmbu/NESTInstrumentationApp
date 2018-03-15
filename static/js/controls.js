@@ -183,8 +183,7 @@ class Controls
         else if ( !app.is3DLayer )
         {
             // This is done by select3DBox if we have a 3D model.
-            this.boxInFocus.removePoints();
-            this.boxInFocus.disableConnectionHandle();
+            this.boxInFocus.setInactive();
             this.boxInFocus = undefined;
         }
     }
