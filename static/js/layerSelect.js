@@ -335,7 +335,8 @@ class App
         var year = currentDate.getFullYear();
         var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
 
-        this.modelName = name.slice(startIndx + 1,endIndx) + '--' + dateTime;
+        var lfpName = this.isLFP ? '_LFP' : '';
+        this.modelName = name.slice(startIndx + 1,endIndx) + lfpName + '--' + dateTime;
     }
 
     /**
@@ -971,35 +972,39 @@ class App
     }
 
     /**
-     * Creates an object with specs and connectees for each device.
+     * Creates an object with current devices, selections, and connections.
      *
-     * @returns {Object} Projections created.
+     * @returns {Object} Current state.
      */
-    makeProjections( convertToRoomCoordinates=false )
+    getCurrentState()
     {
-        var projections = {};
-        // projections['internal'] = this.modelParameters.projections;
-        // this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        var state = {devices: [], selections: []};
         for ( var device in this.deviceBoxMap )
         {
-            projections[ device ] = {
-                specs: this.deviceBoxMap[ device ].specs,
-                connectees: []
-            };
-            for ( var i in this.deviceBoxMap[ device ].connectees )
+            let savingDevice = app.$.extend( {}, this.deviceBoxMap[ device ] );
+            savingDevice.name = device;
+
+            for ( var mesh of this.circle_objects )
             {
-                if ( convertToRoomCoordinates && !this.is3DLayer )
+                if ( mesh.name === device )
                 {
-                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
+                    savingDevice.position = mesh.position;
+                    break;
                 }
-                else
-                {
-                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData();
-                }
-                projections[ device ].connectees.push( data )
             }
+
+            savingDevice.connectees = [];
+            for ( var connectee of this.deviceBoxMap[ device ].connectees )
+            {
+                savingDevice.connectees.push( connectee.uniqueID );
+            }
+            state.devices.push( savingDevice );
         }
-        return projections;
+        for ( var box of this.selectionBoxArray )
+        {
+            state.selections.push( box.getData() );
+        }
+        return state;
     }
 
     /**
@@ -1137,35 +1142,14 @@ class App
      */
     saveSelection()
     {
-        console.log( "##################" );
-        console.log( "    Selections" );
-        console.log( "##################" );
-        console.log( "deviceBoxMap", this.deviceBoxMap );
-        console.log( "circle_objects", this.circle_objects );
-        console.log( "selectionBoxArray", this.selectionBoxArray );
-        console.log( "##################" );
-
         this.showLoadingOverlay('Saving projections...');
         this.setGuiState({saving: true});
-        var projections = this.makeProjections();
-        console.log( "projections", projections );
+        let state = this.getCurrentState();
+        console.log( "state", state );
 
-        // abort if there is nothing to save
-        if ( Object.keys(projections).length === 0 )
-        {
-            this.setGuiState({saving: false});
-            this.showModalMessage("There are no projections to save! Try making some connections.");
-            return;
-        }
-
-        var dlObject = {
-            projections: projections
-        };
-        this.storage.saveToFile(this.modelName, dlObject, ()=>{
+        this.storage.saveToFile(this.modelName, state, ()=>{
             this.setGuiState({saving: false});
             this.showModalMessage(`Saved to "${this.modelName}.json".`);
-            // alert(`Saved to "${this.modelName}.json".`);
-
         });
     }
 
@@ -1195,7 +1179,7 @@ class App
         let selectedFile = this.getSelectedDropDown('loadFiles');
         console.log('Selected: ', selectedFile);
         this.storage.loadFromFile(selectedFile, (data)=>{
-            this.loadFromJSON(data);
+            this.loadState(data);
             this.hideLoadingOverlay();
         });
     }
@@ -1212,7 +1196,6 @@ class App
      */
     closeModal()
     {
-        // Hide selection dropdown.
         this.setGuiState({modalSelection: false, loadContents: {},
                           modalMessage: '', modalHead: ''});
         this.hideLoadingOverlay();
@@ -1246,96 +1229,101 @@ class App
     }
 
     /**
-     * Creates the devices, selections, and connections, given a JSON with
-     * connection data.
+     * Creates devices, selections, and connections from a state.
      */
-    loadFromJSON( inputObj )
+    loadState( state )
     {
-        console.log(inputObj)
-        var IDsCreated = [];
-        for ( var device in inputObj.projections )
+        // TODO: Only load if there are no selections and no devices (except LFP).
+        // Load selection boxes
+        for ( var boxSpecs of state.selections )
         {
-            if ( device != 'LFP' )
+            if ( this.is3DLayer )
             {
-                // LFP device is created as part of the model.
-                var deviceModel = inputObj.projections[ device ].specs.model;
-                if ( deviceModel === "poisson_generator" | deviceModel === "ac_generator" )
-                {
-                    this.makeStimulationDevice( deviceModel, device );
-                }
-                else
-                {
-                    this.makeRecordingDevice( deviceModel, device );
-                }
-                var target = this.circle_objects[ this.circle_objects.length - 1 ];
+                var box = new this.SelectionBox3D( boxSpecs.width,
+                                                   boxSpecs.height,
+                                                   boxSpecs.depth,
+                                                   boxSpecs.center,
+                                                   boxSpecs.maskShape,
+                                                   boxSpecs.scale,
+                                                   boxSpecs.lfp );
             }
-
-            for ( var i in inputObj.projections[ device ].connectees )
+            else
             {
-                var boxSpecs = inputObj.projections[ device ].connectees[ i ];
+                var box = new this.SelectionBox( boxSpecs.ll,
+                                                 boxSpecs.ur,
+                                                 boxSpecs.maskShape,
+                                                 boxSpecs.name );
+            }
+            box.uniqueID = boxSpecs.uniqueID;
 
-                // if not created yet, the box must be created
-                if ( IDsCreated.indexOf( boxSpecs.uniqueID ) === -1 )
+            // update our uniqueID count only if box.uniqueID is greater
+            this.uniqueID = ( boxSpecs.uniqueID > this.uniqueID ) ? boxSpecs.uniqueID : this.uniqueID;
+
+            box.layerName = boxSpecs.name;
+            box.selectedNeuronType = boxSpecs.neuronType;
+            box.selectedSynModel = boxSpecs.synModel;
+            if ( this.is3DLayer )
+            {
+                box.box.setRotationFromEuler(new this.THREE.Euler(boxSpecs.rotationEuler.x,
+                                                              boxSpecs.rotationEuler.y,
+                                                              boxSpecs.rotationEuler.z,
+                                                              boxSpecs.rotationEuler.order));
+                box.updateAzimuthAndPolarAngle();
+                box.updateBorderLines();
+            }
+            box.updateColors();
+            box.setInactive();
+
+            this.selectionBoxArray.push( box );
+        }
+        // Load devices and connections.
+        for ( var currentDevice of state.devices )
+        {
+            var deviceModel = currentDevice.specs.model;
+            // LFP device is created as part of the model.
+            if ( deviceModel != 'LFP' )
+            {
+                if ( deviceModel === "poisson_generator" || deviceModel === "ac_generator" )
                 {
-                    console.log("Creating ", boxSpecs.maskShape);
-                    IDsCreated.push( boxSpecs.uniqueID );
-                    if ( this.is3DLayer )
-                    {
-                        var box = new this.SelectionBox3D( boxSpecs.width,
-                                                           boxSpecs.height,
-                                                           boxSpecs.depth,
-                                                           boxSpecs.center,
-                                                           boxSpecs.maskShape,
-                                                           boxSpecs.scale,
-                                                           device === 'LFP' );
-                    }
-                    else
-                    {
-                        var box = new this.SelectionBox( boxSpecs.ll,
-                                                         boxSpecs.ur,
-                                                         boxSpecs.maskShape,
-                                                         boxSpecs.name );
-                    }
-                    box.uniqueID = boxSpecs.uniqueID;
-
-                    // update our uniqueID count only if box.uniqueID is greater
-                    this.uniqueID = ( boxSpecs.uniqueID > this.uniqueID ) ? boxSpecs.uniqueID : this.uniqueID;
-
-                    box.layerName = boxSpecs.name;
-                    box.selectedNeuronType = boxSpecs.neuronType;
-                    box.selectedSynModel = boxSpecs.synModel;
-
-                    this.selectionBoxArray.push( box );
+                    this.makeStimulationDevice( deviceModel, currentDevice.name );
                 }
-                // if the box is already created, it must be found
                 else
                 {
-                    for ( var j in this.selectionBoxArray )
+                    this.makeRecordingDevice( deviceModel, currentDevice.name );
+                }
+                // Set target to this device's mesh
+                var target = this.circle_objects[ this.circle_objects.length - 1 ];
+                target.position.x = currentDevice.position.x;
+                target.position.y = currentDevice.position.y;
+                target.position.z = currentDevice.position.z;
+                this.controls.makeOutline( target );
+            }
+            // Create connections to this device.
+            for (var id of currentDevice.connectees )
+            {
+                // Find box from id.
+                for ( var box of this.selectionBoxArray )
+                {
+                    if ( box.uniqueID == id )
                     {
-                        if ( this.selectionBoxArray[ j ].uniqueID === boxSpecs.uniqueID )
-                        {
-                            var box = this.selectionBoxArray[ j ];
-                            break;
-                        }
+                        break;
                     }
                 }
-
-                if ( device != 'LFP' )
+                if ( deviceModel != 'LFP' )
                 {
                     box.makeLine();
                     var radius = target.geometry.boundingSphere.radius;
                     box.setLineTarget( target.name );
                     box.lineToDevice( target.position, radius, target.name );
                 }
-
-                box.updateColors();
-                this.deviceBoxMap[ device ].connectees.push( box );
-                this.controls.boxInFocus = box;
+                this.deviceBoxMap[ currentDevice.name ].connectees.push( box );
             }
-            this.is3DLayer && this.controls.boxInFocus.setActive();
-            this.is3DLayer && this.enableOrbitControls( true );
         }
-        requestAnimationFrame( this.render.bind(this) );
+        this.controls.deviceInFocus = undefined;
+        this.controls.removeOutline();
+
+        this.is3DLayer && this.enableOrbitControls( true );
+        this.is3DLayer && this.resetVisibility();
     }
 
     /**

@@ -1634,11 +1634,13 @@ class SelectionBox3D
             center: this.center,
             azimuthAngle: this.azimuthAngle,
             polarAngle: this.polarAngle,
+            rotationEuler: {x: this.box.rotation._x, y: this.box.rotation._y, z: this.box.rotation._z, order: this.box.rotation._order},
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,
             maskShape: this.selectedShape,
             noOfNeuronTypesInLayer: noNeuronPointsDict,
-            uniqueID: this.uniqueID
+            uniqueID: this.uniqueID,
+            lfp: this.lfp
         };
         return selectionInfo;
     }
