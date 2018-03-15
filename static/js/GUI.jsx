@@ -15,6 +15,7 @@ class GuiButtons extends React.Component{
         modalSelection: false,
         hidden: true,
         saving: false,
+        mod: true,
         loadContents: {},
         modalMessage: '',
         modalHead: ''
@@ -65,14 +66,14 @@ class GuiButtons extends React.Component{
                 <br/>
                 {app.is3DLayer ? (
                   <SelectionsButton text='Make mask box'
-                      disabled={!app.is3DLayer}
+                      disabled={!app.is3DLayer || !this.state.mod}
                       function={function () {app.makeMaskBox();}}
                       button_class ='button'
                       button_id='maskBoxButton' />
                   ) : (null)}
                 {app.isLFP ? (
                   <SelectionsButton text='Make LFP box'
-                      disabled={!app.isLFP}
+                      disabled={!app.isLFP || !this.state.mod}
                       function={function () {app.makeMaskBox(true);}}
                       button_class ='button lfp'
                       button_id='LfpBoxButton' />
@@ -84,11 +85,13 @@ class GuiButtons extends React.Component{
                     Stimulation device
                 </div>
                 <SelectionsButton text='poissonGenerator'
+                    disabled={!this.state.mod}
                     function={function () {app.makeStimulationDevice("poisson_generator");}}
                     button_class ='button pill big'
                     button_id='poissonButton' />
                 <br/>
                 <SelectionsButton text=' ac Generator'
+                    disabled={!this.state.mod}
                     function={function () {app.makeStimulationDevice("ac_generator");}}
                     button_class ='button pill big'
                     button_id='acButton' />
@@ -98,12 +101,14 @@ class GuiButtons extends React.Component{
                 <div id="gui-box-title">
                     Recording device
                 </div>
-                <SelectionsButton text='voltmeter' 
+                <SelectionsButton text='voltmeter'
+                    disabled={!this.state.mod}
                     function={function () {app.makeRecordingDevice("voltmeter");}}
                     button_class ='button pill big'
                     button_id='voltmeterButton' />
                 <br/>
                 <SelectionsButton text='spikeDetector'
+                    disabled={!this.state.mod}
                     function={function () {app.makeRecordingDevice("spike_detector");}}
                     button_class ='button pill big'
                     button_id='spikeDetectorButton' />
@@ -114,9 +119,11 @@ class GuiButtons extends React.Component{
                 </div>
                 <div className="button-group">
                     <SelectionsButton text='Connect'
+                                      disabled={!this.state.mod}
                                       function={app.makeConnections.bind(app)} button_class ='button wide'
                                       button_id='getSelectionsButton'/>
                     <SelectionsButton text='Simulate'
+                                      disabled={!this.state.mod}
                                       function={app.runSimulation.bind(app)} button_class ='button wide'
                                       button_id='runSimulationButton'/>
                 </div>
@@ -124,12 +131,12 @@ class GuiButtons extends React.Component{
                 <div className="button-group">
                     
                     <SelectionsButton text={this.state.saving ? 'Saving...' : 'Save'}
-                                      disabled={this.state.projectionModal || this.state.saving}
+                                      disabled={this.state.projectionModal || this.state.saving || !this.state.mod}
                                       function={app.saveSelection.bind(app)} button_class ='button wide'
                                       button_id='saveSelectionButton'/>
                     <input id="uploadAnchorElem" type="file" style={{display: "none"}}/>
                     <SelectionsButton text='Load'
-                                      disabled={this.state.projectionModal || this.state.saving}
+                                      disabled={this.state.projectionModal || this.state.saving || !this.state.mod}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
                 </div>

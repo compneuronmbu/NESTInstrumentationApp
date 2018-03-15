@@ -150,7 +150,7 @@ hr {
   background-image: linear-gradient(#BA8888, #B28080);
 }
 
-#poissonButton:hover{
+#poissonButton:hover:enabled{
     width: var(--selection_button_width);
     border-color: #ADADAD;
     border-bottom-color: #999999;
@@ -188,7 +188,7 @@ hr {
   background-image: linear-gradient(#c97761, #c9725e);
 }
 
-#acButton:hover{
+#acButton:hover:enabled{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -223,7 +223,7 @@ hr {
   background-image: linear-gradient(#C9BE88, #BDB280);
 }
 
-#voltmeterButton:hover{
+#voltmeterButton:hover:enabled{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;
@@ -259,7 +259,7 @@ hr {
   background-image: linear-gradient(#8BA68B, #809980);
 }
 
-#spikeDetectorButton:hover{
+#spikeDetectorButton:hover:enabled{
     border-color: #ADADAD;
     border-bottom-color: #999999;
     text-decoration: none;

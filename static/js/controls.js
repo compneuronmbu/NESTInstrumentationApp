@@ -20,6 +20,7 @@ class Controls
         this.translatingBox = false;
         this.make_selection_box = false;
         this.make_connection = false;
+        this.selectable = true;
 
         this.plane;
         this.raycaster;
@@ -676,6 +677,11 @@ class Controls
             this.mouseDown = true;
             app.mouseDownCoords.x = event.clientX;
             app.mouseDownCoords.y = event.clientY;
+
+            if ( !this.selectable )
+            {
+                return;
+            }
 
             this.deviceInFocus = undefined;
             this.removeOutline();

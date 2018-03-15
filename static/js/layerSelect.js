@@ -641,6 +641,7 @@ class App
             throw err;
         }
 
+        this.hideLoadingOverlay();
         this.$("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
 
         // Color results:
@@ -966,6 +967,7 @@ class App
             abortButton.removeEventListener('transitionend', hideButton, false);
         }
         abortButton.addEventListener("transitionend", hideButton, false);
+        this.setModifiable( true );
     }
 
     /**
@@ -1083,6 +1085,9 @@ class App
         document.getElementById( "streamButton" ).disabled = true;
 
         this.devicePlots.makeDevicePlot();
+
+        this.showLoadingOverlay("Connecting ...");
+        this.setModifiable( false );
 
         this.$.ajax(
         {
@@ -1211,6 +1216,33 @@ class App
         this.setGuiState({modalSelection: false, loadContents: {},
                           modalMessage: '', modalHead: ''});
         this.hideLoadingOverlay();
+    }
+
+
+    /**
+     * Set modifiable system. If true, the app operates as normal. If false,
+     * restricts to non-modifying actions.
+     */
+    setModifiable( mod )
+    {
+        // Make it possible/impossible to select something
+        if ( !mod )
+        {
+            // Unselect device and line
+            this.controls.deviceInFocus = undefined;
+            this.controls.removeOutline();
+            this.controls.lineInFocus && this.lineInFocus.setInactive();
+            // Unselect box
+            if ( this.controls.boxInFocus )
+            {
+                this.controls.boxInFocus.setInactive();
+                this.controls.boxInFocus = undefined;
+            }
+            this.resetVisibility();
+        }
+        this.controls.selectable = mod;
+        // Enable/disable relevant GUI buttons
+        this.setGuiState({mod: mod});
     }
 
     /**
