@@ -132,11 +132,11 @@ class GuiButtons extends React.Component{
                 <hr/>
                 <div className="button-group">
                     <SelectionsButton text='Undo'
-                                      disabled={ this.state.undoDisabled }
+                                      disabled={ this.state.undoDisabled || !this.state.mod }
                                       function={app.undo.bind(app)} button_class ='button wide'
                                       button_id='undoButton'/>
                     <SelectionsButton text='Redo'
-                                      disabled={ this.state.redoDisabled }
+                                      disabled={ this.state.redoDisabled || !this.state.mod }
                                       function={app.redo.bind(app)} button_class ='button wide'
                                       button_id='redoButton'/>
                 </div>

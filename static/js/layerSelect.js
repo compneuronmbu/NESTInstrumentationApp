@@ -972,6 +972,7 @@ class App
             abortButton.removeEventListener('transitionend', hideButton, false);
         }
         abortButton.addEventListener("transitionend", hideButton, false);
+        this.$( "#infoconnected" ).html( "Simulation finished" );
         this.setModifiable( true );
     }
 
@@ -1052,7 +1053,7 @@ class App
         var projections = this.makeProjections( true );
         console.log( projections );
 
-        this.$( "#infoconnected" ).html( "Connecting ..." );
+        this.$( "#infoconnected" ).html( "Connecting..." );
         // send selected connections
         this.$.ajax(
         {
@@ -1127,7 +1128,19 @@ class App
 
         this.devicePlots.makeDevicePlot();
 
-        this.showLoadingOverlay("Connecting ...");
+        var noResults = true;
+        for ( var device in this.deviceBoxMap )
+        {
+            var model = this.deviceBoxMap[ device ].specs.model;
+            if ( (model === "voltmeter" || model === "spike_detector")
+                 && this.deviceBoxMap[ device ].connectees.length > 0)
+            {
+                noResults = false;
+                this.showLoadingOverlay("Connecting...");
+                break;
+            }
+        }
+        noResults && this.$("#infoconnected").html( "Simulating...");
         this.setModifiable( false );
 
         this.$.ajax(
