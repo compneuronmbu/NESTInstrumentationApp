@@ -976,6 +976,38 @@ class App
     }
 
     /**
+     * Creates an object with specs and connectees for each device.
+     *
+     * @returns {Object} Projections created.
+     */
+    makeProjections( convertToRoomCoordinates=false )
+    {
+        var projections = {};
+        // projections['internal'] = this.modelParameters.projections;
+        // this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
+        for ( var device in this.deviceBoxMap )
+        {
+            projections[ device ] = {
+                specs: this.deviceBoxMap[ device ].specs,
+                connectees: []
+            };
+            for ( var i in this.deviceBoxMap[ device ].connectees )
+            {
+                if ( convertToRoomCoordinates && !this.is3DLayer )
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
+                }
+                else
+                {
+                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData();
+                }
+                projections[ device ].connectees.push( data )
+            }
+        }
+        return projections;
+    }
+
+    /**
      * Creates an object with current devices, selections, and connections.
      *
      * @returns {Object} Current state.
