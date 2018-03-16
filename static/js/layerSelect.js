@@ -67,6 +67,8 @@ class App
 
         this.nSelected = 0;
 
+        this.prevStates = [];
+        this.redoStates = [];
     }
 
     /**
@@ -122,6 +124,8 @@ class App
         this.statusSocket.on('message', function(data){
             this.showModalMessage(`The server encountered the following error: ${data.message}`);
         }.bind(this));
+
+        this.stateCheckpoint();
 
         this.render();
     }
@@ -988,7 +992,7 @@ class App
             {
                 if ( mesh.name === device )
                 {
-                    savingDevice.position = mesh.position;
+                    savingDevice.position = new this.THREE.Vector3().copy( mesh.position );
                     break;
                 }
             }
@@ -1233,6 +1237,8 @@ class App
      */
     loadState( state )
     {
+        console.warn('loadState');
+        console.log(state);
         // TODO: Only load if there are no selections and no devices (except LFP).
         // Load selection boxes
         for ( var boxSpecs of state.selections )
@@ -1285,11 +1291,11 @@ class App
             {
                 if ( deviceModel === "poisson_generator" || deviceModel === "ac_generator" )
                 {
-                    this.makeStimulationDevice( deviceModel, currentDevice.name );
+                    this.makeStimulationDevice( deviceModel, currentDevice.name, true );
                 }
                 else
                 {
-                    this.makeRecordingDevice( deviceModel, currentDevice.name );
+                    this.makeRecordingDevice( deviceModel, currentDevice.name, true );
                 }
                 // Set target to this device's mesh
                 var target = this.circle_objects[ this.circle_objects.length - 1 ];
@@ -1430,7 +1436,7 @@ class App
      *
      * @param {string} device Name of the device
      */
-    makeStimulationDevice( device, name )
+    makeStimulationDevice( device, name, noCheckpoint=false )
     {
         console.log( "making stimulation device of type", device )
 
@@ -1456,6 +1462,7 @@ class App
             }.bind(this)
         );
         this.makeDevice( device, col, map, params, name );
+        !noCheckpoint && app.stateCheckpoint();
     }
 
     /**
@@ -1463,7 +1470,7 @@ class App
      *
      * @param {string} device Name of the device
      */
-    makeRecordingDevice( device, name )
+    makeRecordingDevice( device, name, noCheckpoint=false )
     {
         console.log( "making recording device of type", device )
         var params = {}
@@ -1490,6 +1497,7 @@ class App
             }.bind(this)
         );
         this.makeDevice( device, col, map, params, name );
+        !noCheckpoint && app.stateCheckpoint();
     }
 
     /**
@@ -1525,6 +1533,7 @@ class App
 
         this.controls.serverPrintGids();
         requestAnimationFrame( this.render.bind(this) );
+        this.stateCheckpoint();
     }
 
     /**
@@ -1581,6 +1590,54 @@ class App
             points.geometry.attributes.visible.needsUpdate = true;
         }
         requestAnimationFrame( this.render.bind(this) );
+    }
+
+    /**
+     * Saves current state to array.
+     */
+    stateCheckpoint()
+    {
+        console.warn('State checkpoint');
+        this.prevStates.push( this.getCurrentState() );
+        this.redoStates = [];
+        console.log(this.prevStates);
+        this.setGuiState({undoDisabled: this.prevStates.length === 1})
+        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+    }
+
+    /**
+     * Undoes previous action.
+     */
+    undo()
+    {
+        if ( this.prevStates.length === 1 )
+        {
+            return;
+        }
+        this.deleteEverything();
+        this.redoStates.push( this.prevStates.pop() );
+        console.warn('After pop');
+        console.log(this.prevStates);
+        this.setGuiState({undoDisabled: this.prevStates.length === 1})
+        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+        this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
+    }
+
+    /**
+     * Undoes previous undo.
+     */
+    redo()
+    {
+        if ( this.redoStates.length === 0 )
+        {
+            return;
+        }
+        this.deleteEverything();
+        this.prevStates.push( this.redoStates.pop() );
+        console.warn('After pop');
+        console.log(this.redoStates);
+        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+        this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
     }
 
     /**

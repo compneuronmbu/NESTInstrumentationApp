@@ -564,7 +564,6 @@ class Controls
         var bounds = app.findBounds( mouseUpCoords, mouseDownCorrected );
 
         this.boxInFocus = new app.SelectionBox( bounds.ll, bounds.ur, app.getSelectedShape() );
-        this.boxInFocus.uniqueID = app.uniqueID++;
         app.layerSelected = this.boxInFocus.layerName;
 
         // If we didn't click on a layer, it will cause problems further down
@@ -573,8 +572,9 @@ class Controls
             this.boxInFocus.removeBox();
             this.boxInFocus = undefined;
             this.resetButtons();
-            return;
+            return false;
         }
+        this.boxInFocus.uniqueID = app.uniqueID++;
 
         app.selectionBoxArray.push( this.boxInFocus );
 
@@ -586,6 +586,7 @@ class Controls
         this.serverPrintGids();
 
         this.boxInFocus.selectedFirstTime = true;
+        return true;
     }
 
     /**
@@ -608,6 +609,7 @@ class Controls
             this.boxInFocus.lineToDevice( intersect_target.position, radius, intersect_target.name )
 
             app.deviceBoxMap[ intersect_target.name ].connectees.push( this.boxInFocus );
+            app.stateCheckpoint();
         }
         else
         {
@@ -733,12 +735,12 @@ class Controls
      */
     onMouseMove( event )
     {
+        this.mouseMoved = true;
         if ( app.is3DLayer )
         {
             this.boxInFocus && this.boxInFocus.updateBorderLines();
             this.translatingBox && this.boxInFocus.updateAzimuthAndPolarAngle();
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateBox();
-            this.mouseMoved = true;
             this.mouseDown && requestAnimationFrame( app.render.bind(app) );
         }
         if ( this.make_selection_box )
@@ -787,21 +789,30 @@ class Controls
         //event.preventDefault();
         //event.stopPropagation();
 
+        if ( app.is3DLayer )
+        {
+            this.translatingBox && app.stateCheckpoint();
+        }
+
         if ( this.make_selection_box )
         {
+            console.log('make box');
             this.boxInFocus && this.translatingBox && this.boxInFocus.updateBox();
-            this.makeSelectionBox();
+            this.makeSelectionBox() && app.stateCheckpoint();
         }
         else if ( this.resizeSideInFocus !== undefined )
         {
+            console.log('resize side');
             this.resizeSideInFocus = undefined;
             // Check if we have flipped any of the axes of the box.
             this.boxInFocus.checkFlip();
             this.boxInFocus.updateColors();
             this.serverPrintGids();
+            this.mouseMoved && app.stateCheckpoint();
         }
         else if ( this.rotationPoint !== undefined )
         {
+            console.log('rotation points');
             // Update the rotation points
             this.boxInFocus.removePoints();
             this.boxInFocus.makeRotationPoints();
@@ -810,6 +821,8 @@ class Controls
 
             // Print GIDs for debugging purposes
             this.serverPrintGids();
+
+            this.mouseMoved && app.stateCheckpoint();
         }
         else if ( this.make_connection )
         {
@@ -818,14 +831,17 @@ class Controls
         }
         else if ( this.deviceInFocus != undefined )
         {
+            console.log('move device');
             // Dropping a device will reset the cursor.
             this.domElement.style.cursor = 'auto';
 
             // Must enable orbit controls again
             app.is3DLayer && app.enableOrbitControls( true );
+            this.mouseMoved && app.stateCheckpoint();
         }
         else if ( this.nothingClicked && !this.mouseMoved )
         {
+            console.log('nothing clicked and not moved');
             this.boxInFocus.setInactive();
             this.boxInFocus = undefined;
             app.resetVisibility();
@@ -891,14 +907,17 @@ class Controls
                 if ( this.boxInFocus !== undefined )
                 {
                     this.deleteBox();
+                    app.stateCheckpoint();
                 }
                 else if ( this.deviceInFocus !== undefined )
                 {
                     this.deleteDevice();
+                    app.stateCheckpoint();
                 }
                 else if ( this.lineInFocus !== undefined )
                 {
                     this.lineInFocus.remove();
+                    app.stateCheckpoint();
                 }
                 break;
             case 16:  // shift key

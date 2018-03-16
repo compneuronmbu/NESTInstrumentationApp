@@ -16,6 +16,8 @@ class GuiButtons extends React.Component{
         hidden: true,
         saving: false,
         mod: true,
+        undoDisabled: true,
+        redoDisabled: true,
         loadContents: {},
         modalMessage: '',
         modalHead: ''
@@ -126,6 +128,17 @@ class GuiButtons extends React.Component{
                                       disabled={!this.state.mod}
                                       function={app.runSimulation.bind(app)} button_class ='button wide'
                                       button_id='runSimulationButton'/>
+                </div>
+                <hr/>
+                <div className="button-group">
+                    <SelectionsButton text='Undo'
+                                      disabled={ this.state.undoDisabled }
+                                      function={app.undo.bind(app)} button_class ='button wide'
+                                      button_id='undoButton'/>
+                    <SelectionsButton text='Redo'
+                                      disabled={ this.state.redoDisabled }
+                                      function={app.redo.bind(app)} button_class ='button wide'
+                                      button_id='redoButton'/>
                 </div>
                 <hr/>
                 <div className="button-group">

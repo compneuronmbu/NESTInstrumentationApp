@@ -643,10 +643,10 @@ class SelectionBox
         var noNeurons = { [this.layerName]: app.layer_points[this.layerName]['noElements'] };
         var data = {
             name: this.layerName,
-            ll: this.ll,
-            ur: this.ur,
+            ll: app.$.extend( {}, this.ll ),
+            ur: app.$.extend( {}, this.ur ),
             azimuthAngle: this.angle,
-            noOfNeuronTypesInLayer: noNeurons,
+            noOfNeuronTypesInLayer: app.$.extend( {}, noNeurons ),
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,
             maskShape: this.selectedShape,
@@ -676,6 +676,7 @@ class SelectionBox
             data.selection = selectionBox;
             data.name = [data.name];
         }
+        console.log(data);
         return data;
     }
 
@@ -1164,8 +1165,6 @@ class SelectionBox3D
         app.scene.add( this.transformControls );
         //this.transformControls.attach( this.box );
 
-        console.log(this.transformControls)
-
         this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
     }
 
@@ -1585,7 +1584,6 @@ class SelectionBox3D
      */
     lineToDevice( targetPos, radius, target )
     {
-        console.log(targetPos)
         var centreX = ( this.ll.x + this.ur.x ) / 2;
         if ( ( targetPos.x - radius ) < centreX )
         {
@@ -1625,20 +1623,20 @@ class SelectionBox3D
         }
 
         var selectionInfo = {
-            name: nameArray,
-            selection: { "ll": this.ll, "ur": this.ur },
+            name: nameArray.slice(),
+            selection: { "ll": app.$.extend( {}, this.ll ), "ur": app.$.extend( {}, this.ur ) },
             width: this.originalWidth,
             height: this.originalHeight,
             depth: this.originalDepth,
-            scale: this.box.scale,
-            center: this.center,
+            scale: new app.THREE.Vector3().copy( this.box.scale ),
+            center: new app.THREE.Vector3().copy( this.center ),
             azimuthAngle: this.azimuthAngle,
             polarAngle: this.polarAngle,
             rotationEuler: {x: this.box.rotation._x, y: this.box.rotation._y, z: this.box.rotation._z, order: this.box.rotation._order},
             neuronType: this.selectedNeuronType,
             synModel: this.selectedSynModel,
             maskShape: this.selectedShape,
-            noOfNeuronTypesInLayer: noNeuronPointsDict,
+            noOfNeuronTypesInLayer: app.$.extend( {}, noNeuronPointsDict ),
             uniqueID: this.uniqueID,
             lfp: this.lfp
         };
