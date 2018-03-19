@@ -61,11 +61,7 @@ test('Test GUI callbacks', () => {
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
     GUI.makeGUI();
-    app.brain = new brain(app.camera, app.scene);
-
-    expect(document.getElementById('reactroot').style.display).toBe("none");
-    app.setShowGUI(true);
-    expect(document.getElementById('reactroot').style.display).toBe("block");
+    app.brain = new brain(app.camera, app.scene); // implicitly calls synapseNeuronModelCallback
 
     expect(document.getElementById('neuronType').options.length).toBe(3);
     expect(document.getElementById('neuronType').options[0].value).toBe('All');

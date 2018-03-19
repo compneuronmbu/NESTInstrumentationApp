@@ -1282,8 +1282,6 @@ class App
      */
     loadState( state )
     {
-        console.warn('loadState');
-        console.log(state);
         // TODO: Only load if there are no selections and no devices (except LFP).
         // Load selection boxes
         for ( var boxSpecs of state.selections )
@@ -1642,10 +1640,8 @@ class App
      */
     stateCheckpoint()
     {
-        console.warn('State checkpoint');
         this.prevStates.push( this.getCurrentState() );
         this.redoStates = [];
-        console.log(this.prevStates);
         this.setGuiState({undoDisabled: this.prevStates.length === 1})
         this.setGuiState({redoDisabled: this.redoStates.length === 0})
     }

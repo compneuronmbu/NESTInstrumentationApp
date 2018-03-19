@@ -51,7 +51,7 @@ class TestNESTClient(unittest.TestCase):
         nc.nett.slot_out_string_message = MockSlotOutMessage
         nc.nett.slot_in_string_message = MockSlotInMessage
         nc.observe_slot = MockObserveSlot
-        cls.client = nc.NESTClient(silent=True)
+        cls.client = nc.NESTClient(1, silent=True)
 
     def setUp(self):
         self.client.handle_reset()

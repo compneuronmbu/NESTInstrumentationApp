@@ -101,6 +101,7 @@ test('Test main init', () => {
     DevicePlots = jest.fn();
     EventSource = jest.fn();
     app.handleMessage = jest.fn();
+    hbpStorage = jest.fn();
     app.init();
 
     expect(app.initTHREEScene.mock.calls.length).toBe(1);
@@ -141,6 +142,7 @@ test('Test handleSimulationData', () => {
     }
     app.colorFromSpike = jest.fn();
     app.colorFromVm = jest.fn();
+    app.hideLoadingOverlay = jest.fn();
     app.layer_points = {
         "layer1": {points: {geometry: {attributes: {customColor: {needsUpdate: false}}}}},
         "layer2": {points: {geometry: {attributes: {customColor: {needsUpdate: false}}}}}
@@ -457,6 +459,7 @@ test('Test streamSimulate', () => {
     app.devicePlots = {
         makeDevicePlot: jest.fn()
     }
+    app.setModifiable = jest.fn()
     let _getElementById = document.getElementById;
     let _docElementSetProp = document.documentElement.style.setProperty;
     var abortSetProperty = jest.fn();
@@ -480,12 +483,13 @@ test('Test streamSimulate', () => {
         data: JSON.stringify({
             network: MODELPARAMETERS,
             projections: app.makeProjections(),
-            time: "10000"
+            time: "20000"
         }),
         dataType: "json"
     });
     expect(abortSetProperty.mock.calls[0]).toEqual(['visibility', 'visible']);
     expect(document.documentElement.style.setProperty.mock.calls[0]).toEqual(['--stream_button_width', 'calc(0.5*var(--gui_width) - 14px)']);
+    expect(app.setModifiable.mock.calls.length).toBe(1);
     document.getElementById = _getElementById;
     document.documentElement.style.setProperty = _docElementSetProp;
 });
@@ -509,54 +513,35 @@ test('Test abortSimulation', () => {
 });
 
 test('Test saveSelection', () => {
-    let _getElementById = document.getElementById;
-    var setAnchorAttribute = jest.fn();
-    var clickAnchorElement = jest.fn();
-    document.getElementById = function( id )
-    {
-        return {
-            setAttribute: setAnchorAttribute,
-            click: clickAnchorElement
-        }
-    };
-    prompt = jest.fn(function(){return "selection name"});
-    app.deviceBoxMap = {
-        device1: {specs: {model: "device_model"}, connectees: {
-            box1: {getData: function(){return {info: "INFO"}}},
-            box2: {getData: function(){return {info: "INFO"}}}}},
-        device2: {specs: {model: "device_model"}, connectees: {
-            box1: {getData: function(){return {info: "INFO"}}},
-            box2: {getData: function(){return {info: "INFO"}}}}}
+    app.showLoadingOverlay = jest.fn();
+    app.$ = require('jquery');
+    app.getCurrentState = jest.fn();
+    app.storage = {
+        saveToFile: jest.fn()
     }
     app.saveSelection();
-    expect(setAnchorAttribute.mock.calls[0]).toEqual(['href', 'data:text/json;charset=utf-8,%7B%0A%20%20%22projections%22%3A%20%7B%0A%20%20%20%20%22device1%22%3A%20%7B%0A%20%20%20%20%20%20%22specs%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22model%22%3A%20%22device_model%22%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%22connectees%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%2C%0A%20%20%20%20%22device2%22%3A%20%7B%0A%20%20%20%20%20%20%22specs%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%22model%22%3A%20%22device_model%22%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%22connectees%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%22info%22%3A%20%22INFO%22%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D']);
-    expect(clickAnchorElement.mock.calls.length).toBe(1);
-    document.getElementById = _getElementById;
-});
-
-test('Test saveSelection cancelled', () => {
-    prompt = jest.fn(function(){return null});
-    app.saveSelection();
+    expect(app.showLoadingOverlay.mock.calls.length).toBe(1);
+    expect(app.getCurrentState.mock.calls.length).toBe(1);
+    expect(app.storage.saveToFile.mock.calls.length).toBe(1);
 });
 
 test('Test loadSelection', () => {
-    var clickAnchorElement = jest.fn();
-    document.getElementById = jest.fn(function( id )
-    {
-        return {
-            click: clickAnchorElement
-        }
-    });
+    app.showLoadingOverlay = jest.fn();
+    app.storage = {
+        getFilesInFolder: jest.fn()
+    }
     app.loadSelection();
-    expect(document.getElementById.mock.calls[0][0]).toBe('uploadAnchorElem');
-    expect(clickAnchorElement.mock.calls.length).toBe(1);
+    expect(app.showLoadingOverlay.mock.calls.length).toBe(1);
+    expect(app.storage.getFilesInFolder.mock.calls.length).toBe(1);
+
 });
 
-test('Test loadFromJSON', () => {
+test('Test loadState', () => {
     app.THREE = require('three');  // import THREE into the app
     app.$ = require('jquery');  // import jquery into the app
     app.controls = require('../static/js/selectionBox.js');
     app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant here
+    app.controls.removeOutline = jest.fn();  // removeOutline is irrelevant here
     app.SelectionBox = require('../static/js/selectionBox.js');
     var brain = require('../static/js/makeBrainRepresentation.js');
     
@@ -579,8 +564,8 @@ test('Test loadFromJSON', () => {
     app.modelParameters = MODELPARAMETERS
     app.brain = new brain(app.camera, app.scene);
     
-    var textJSON = '{"projections":{"poisson_generator_1":{"specs":{"model":"poisson_generator","params":{"rate":70000}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"voltmeter_2":{"specs":{"model":"voltmeter","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]},"spike_detector_3":{"specs":{"model":"spike_detector","params":{}},"connectees":[{"name":"Inhibitory","ll":{"x":538,"y":618},"ur":{"x":558,"y":635},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Excitatory","ll":{"x":35,"y":616},"ur":{"x":52,"y":640},"azimuthAngle":1.5707963267948966,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]}}}';
-    app.loadFromJSON(JSON.parse(textJSON));
+    var stateString = '{"devices":[{"specs":{"model":"poisson_generator","params":{"rate":210000}},"connectees":[1,2],"name":"poisson_generator_1","position":{"x":0,"y":0,"z":0}},{"specs":{"model":"voltmeter","params":{}},"connectees":[1,2],"name":"voltmeter_2","position":{"x":0,"y":0.15,"z":0}},{"specs":{"model":"spike_detector","params":{}},"connectees":[1,2],"name":"spike_detector_3","position":{"x":0,"y":-0.15,"z":0}}],"selections":[{"name":"Excitatory","ll":{"x":257,"y":456},"ur":{"x":379,"y":569},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Excitatory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":1},{"name":"Inhibitory","ll":{"x":579,"y":448},"ur":{"x":768,"y":602},"azimuthAngle":0,"noOfNeuronTypesInLayer":{"Inhibitory":1},"neuronType":"All","synModel":"static_excitatory","maskShape":"rectangular","uniqueID":2}]}';
+    app.loadState(JSON.parse(stateString));
     expect(app.deviceBoxMap).toMatchObject({
         poisson_generator_1: {connectees: expect.any(Array),
                               specs: {model: "poisson_generator", params: expect.anything()}
@@ -618,6 +603,7 @@ test('Test handleFileUpload', () => {
 
 test('Test makeStimulationDevice and makeRecordingDevice', () => {
     app.THREE = require('three');  // import THREE into the app
+    app.$ = require('jquery');
     app.controls = require('../static/js/controls.js');
     app.controls.makeOutline = jest.fn();  // makeOutline is irrelevant here
 

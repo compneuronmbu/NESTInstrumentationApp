@@ -21,6 +21,7 @@ class TestNESTInterface(unittest.TestCase):
         # nu.nett.slot_in_string_message = MockSlotInMessage
         # nu.observe_slot = MockObserveSlot
         cls.ni = nu.NESTInterface(nett_spec_json,
+                                  1,
                                   device_projections=projections_json,
                                   silent=True)
 
