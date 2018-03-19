@@ -321,6 +321,13 @@ class App
         }
     }
 
+    /**
+    * Creates a filename to be used when saving. Uses the name of the model and
+    * the current data and time.
+    *
+    * @param {String} path or name of model to be used
+    * @event
+    */
     getFileName(name)
     {
         var startIndx = name.lastIndexOf('/');
@@ -797,6 +804,7 @@ class App
 
     /**
      * Returns the currently selected selection shape.
+     * @returns {String} selected shape
      */
     getSelectedShape()
     {
@@ -960,7 +968,8 @@ class App
     }
 
     /**
-     * Resets buttons at the end of the simulation.
+     * Handles end of simulation. Resets buttons, text and makes it possible to 
+     * modify the system again.
      */
     onSimulationEnd()
     {
@@ -1120,7 +1129,8 @@ class App
     }
 
     /**
-     * Runs a simulation.
+     * Runs a streaming simulation. Results from recording devices are returned
+     * to the client.
      */
     streamSimulate()
     {
@@ -1165,7 +1175,7 @@ class App
     }
 
     /**
-     * Aborts the current simulation.
+     * Aborts the current streaming simulation.
      */
     abortSimulation()
     {
@@ -1187,7 +1197,7 @@ class App
     }
 
     /**
-     * Saves selections to file.
+     * Saves selections to a file in HBP colaboratory storage.
      */
     saveSelection()
     {
@@ -1203,7 +1213,8 @@ class App
     }
 
     /**
-     * Loads selections from a file.
+     * Load selections from a file in HBP colaboratory storage. This function 
+     * gets files from storage and displays them in a modal.
      */
     loadSelection()
     {
@@ -1218,7 +1229,7 @@ class App
     }
 
     /**
-     * Loads selections from HBP storage.
+     * Loads the selected file from HBP colaboratory storage.
      */
     loadSelected()
     {
@@ -1233,6 +1244,9 @@ class App
         });
     }
 
+    /**
+     * Shows a message in a modal.
+     */
     showModalMessage( message )
     {
         // TODO: Add message subheading inside the message modal body
@@ -1253,7 +1267,8 @@ class App
 
     /**
      * Set modifiable system. If true, the app operates as normal. If false,
-     * restricts to non-modifying actions.
+     * restricts to non-modifying actions, e.g. moving the camera or 
+     * aborting the simulation.
      */
     setModifiable( mod )
     {
@@ -1378,12 +1393,12 @@ class App
     /**
      * Event handler for file upload when loading a JSON file.
      *
-     * TODO: This may be obsolete.
-     *
      * @event
      */
     handleFileUpload( event )
     {
+        // TODO: This function may be obsolete.
+
         console.log( "file uploaded" )
         // TODO: need some checks here
         var fr = new FileReader();
@@ -1636,7 +1651,7 @@ class App
     }
 
     /**
-     * Saves current state to array.
+     * Saves current state to an array containing previous states.
      */
     stateCheckpoint()
     {

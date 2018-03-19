@@ -47,6 +47,9 @@ class ConnectionLine
     /**
      * Given the mouse position and current box dimensions, 
      * updates the connection line.
+     *
+     * @param {Object} newEndPos x and y coordinates of new end position
+     * @param {Float} radius radius of the device, to offset the end position
      */
     updateLine(newEndPos, radius)
     {
@@ -97,6 +100,9 @@ class ConnectionLine
 
     /**
      * Updates the start position of all lines of this selection box.
+     *
+     * @param {Object} ll lower left position
+     * @param {Object} ur upper right position
      */
     updateLineStart(ll, ur)
     {
@@ -107,6 +113,10 @@ class ConnectionLine
 
     /**
      * Updates the end positions of lines connecting to a specific target device.
+     *
+     * @param {Object} newPos new end position
+     * @param {Object} target target device
+     * @param {Object} radius offset of the end position
      */
     updateLineEnd( newPos, target, radius = 0 )
     {
@@ -521,6 +531,8 @@ class SelectionBox
 
     /**
      * Sets a target for the line that was created last.
+     *
+     * param {Object} device device to be set as target
      */
     setLineTarget( device )
     {
@@ -541,6 +553,10 @@ class SelectionBox
 
     /**
      * Updates the end positions of lines connecting to a specific target device.
+     *
+     * @param {Object} newPos new end position
+     * @param {Object} target target device
+     * @param {Object} radius offset of the end position
      */
     updateLineEnd( newPos, target, radius = 0 )
     {
@@ -552,6 +568,10 @@ class SelectionBox
 
     /**
      * Connects a line to a target device.
+     *
+     * @param {Object} targetPos position of target device
+     * @param {Object} radius offset of the end position
+     * @param {Object} target target device
      */
     lineToDevice( targetPos, radius, target )
     {
@@ -635,6 +655,8 @@ class SelectionBox
     /**
      * Gets data of this selection box to be saved or sent to the server for
      * connecting.
+     *
+     * @param {Bool} convertToRoomCoordinates if true, converts resulting coordinates to room coordinates.
      *
      * @returns {Object} Data of this selection box.
      */
@@ -1046,6 +1068,8 @@ class SelectionBox
  * @param {Number} depth Depth of the selection.
  * @param {Object} center Centre coordinates of the selection.
  * @param {String} shape Shape of the selection.
+ * @param {Object} scale Initial scale of the box, in x-, y-, and z-direction.
+ * @param {Bool} lfp True if LFP is recorded for neurons in the box.
  */
 class SelectionBox3D
 {
@@ -1340,6 +1364,9 @@ class SelectionBox3D
                     z: this.center.z + this.depth / 2 };
     }
 
+    /**
+     * Updates azimuth and polar angles.
+     */
     updateAzimuthAndPolarAngle()
     {
         this.azimuthAngle = this.box.rotation.z;
@@ -1539,6 +1566,10 @@ class SelectionBox3D
 
     /*
      * Updates the end positions of lines connecting to a specific target device.
+     *
+     * @param {Object} newPos new end position
+     * @param {Object} target target device
+     * @param {Object} radius offset of the end position
      */
     updateLineEnd( newPos, target, radius = 0 )
     {
@@ -1560,6 +1591,8 @@ class SelectionBox3D
     /*
      * Removes all lines, or optionally a line connected to a specific target
      * device.
+     *
+     * @param {String} target name of the device to which connection lines are to be removed.
      */
     removeLines( target = "" )
     {
@@ -1584,6 +1617,8 @@ class SelectionBox3D
 
     /*
      * Sets a target for the line that was created last.
+     *
+     * @param {Object} device target device
      */
     setLineTarget( device )
     {
@@ -1592,6 +1627,10 @@ class SelectionBox3D
 
     /*
      * Connects a line to a target device.
+     *
+     * @param {Object} targetPos position of target device
+     * @param {Object} radius offset of the end position
+     * @param {Object} target target device
      */
     lineToDevice( targetPos, radius, target )
     {

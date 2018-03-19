@@ -400,6 +400,9 @@ class Controls
 
     /**
      * Given the mouse position, updates the marquee dimensions.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
      */
     updateMarquee( mouseX, mouseY )
     {
@@ -427,6 +430,9 @@ class Controls
     /**
      * Given the mouse position, resizes the selected box according to which
      * resize point has been clicked.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
      */
     resizeBox( mouseX, mouseY )
     {
@@ -469,9 +475,12 @@ class Controls
         this.boxInFocus.updateConnectionHandle();
     }
 
-    /*
-    * Finds the angle of rotation above the x-axis, and updates the ellipse to be tilted with the angle.
-    */
+    /**
+     * Finds the angle of rotation above the x-axis, and updates the ellipse to be tilted with the angle.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
+     */
     rotateBox( mouseX, mouseY )
     {
         console.log(this.boxInFocus.box)
@@ -499,6 +508,9 @@ class Controls
 
     /**
      * Given the mouse position, updates the connection line.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
      */
     updateLine( mouseX, mouseY )
     {
@@ -518,6 +530,9 @@ class Controls
     /**
      * Given the mouse position, updates the position of the device selected,
      * and its connected lines.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
      */
     updateDevicePosition( mouseX, mouseY )
     {
@@ -592,6 +607,9 @@ class Controls
     /**
      * Checks if the mouse is over a device, if so creates a connection between
      * the device and the selected selection box.
+     *
+     * @param {Int} mouseX x-coordinate of the mouse
+     * @param {Int} mouseY y-coordinate of the mouse
      */
     makeConnection( mouseX, mouseY )
     {
@@ -618,7 +636,7 @@ class Controls
     }
 
     /**
-     * Delete the selected selection box.
+     * Deletes the selected selection box.
      */
     deleteBox()
     {
@@ -641,7 +659,7 @@ class Controls
     }
 
     /**
-     * Delete the selected device.
+     * Deletes the selected device.
      */
     deleteDevice()
     {
@@ -850,7 +868,7 @@ class Controls
         requestAnimationFrame( app.render.bind(app) );
     }
 
-        /**
+    /**
      * Event handler for mouse wheel.
      *
      * @event
