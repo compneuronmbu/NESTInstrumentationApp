@@ -300,12 +300,6 @@ class ModalDialog extends React.Component {
                     <option value='Loading...' key='0'>Loading...</option>
                   </select>
                   )}
-                  <div className="selectedInfo">
-                      <p>File</p>
-                      <p>Type</p>
-                      <p>Date</p>
-                      <p>Author</p>
-                  </div>
                 </div>)
               : (
                 <div className="modalBody">
