@@ -1708,8 +1708,8 @@ class App
         }
         this.deleteEverything();
         this.redoStates.push( this.prevStates.pop() );
-        this.setGuiState({undoDisabled: this.prevStates.length === 1});
-        this.setGuiState({redoDisabled: this.redoStates.length === 0});
+        this.setGuiState({undoDisabled: this.prevStates.length === 1,
+                          redoDisabled: false});
         this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
     }
 
@@ -1725,7 +1725,8 @@ class App
         }
         this.deleteEverything();
         this.prevStates.push( this.redoStates.pop() );
-        this.setGuiState({redoDisabled: this.redoStates.length === 0});
+        this.setGuiState({undoDisabled: false,
+                          redoDisabled: this.redoStates.length === 0});
         this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
     }
 
