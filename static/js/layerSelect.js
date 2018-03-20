@@ -1414,10 +1414,11 @@ class App
     /**
      * Creates a device, with given colour, texture map, and optional parameters.
      *
-     * @param {string} device Name of the device
+     * @param {string} device Model of the device
      * @param {Object} col Colour of the device
      * @param {Object} map Texture of the device
      * @param {Object=} params Optional parameters of the device
+     * @param {String} name Device name
      */
     makeDevice( device, col, map, params = {}, name )
     {
@@ -1461,14 +1462,12 @@ class App
         }
         circle.name = deviceName;
 
+        // Alternate positions of created devices.
+        circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
         if ( this.is3DLayer )
         {
-            circle.position.x = this.newDevicePos[ this.newDeviceIndex ];
-            circle.position.y = 0.75;
-        }
-        else
-        {
-            circle.position.y = this.newDevicePos[ this.newDeviceIndex ];
+            // Shift position out of the layers.
+            circle.position.x = 0.75;
         }
         this.newDeviceIndex = ( this.newDeviceIndex + 1 === this.newDevicePos.length ) ? 0 : ++this.newDeviceIndex;
 
