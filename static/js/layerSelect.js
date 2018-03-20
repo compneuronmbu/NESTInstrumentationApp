@@ -293,11 +293,19 @@ class App
         {
             console.log("Storage model!");
             this.showLoadingOverlay( '' );
-            this.setGuiState({modalSelection: true, modalHead: 'Load model',
-                              handleSubmit: this.handleModelFileFromStorage.bind(this)});
-            this.storage.getFilesInFolder((data)=>{
+            this.setGuiState( { modalSelection: true, modalHead: 'Load model',
+                                handleSubmit: this.handleModelFileFromStorage.bind( this ) } );
+            this.storage.getFilesInFolder( ( data ) => {
                 // Display files.
-                this.setGuiState({loadContents: data});
+                console.log(data);
+                for (let key in data)
+                {
+                    if ( !key.endsWith( ".json" ) )
+                    {
+                        delete data[ key ];
+                    }
+                }
+                this.setGuiState( { loadContents: data } );
             });
         }
         else if ( target.id === "LFP" )
@@ -305,7 +313,7 @@ class App
             console.log("LFP!");
             this.isLFP = true;
             JSONstring = "/static/examples/Potjans_Diesmann_converted.json";
-            this.loadModelIntoApp(JSONstring, this.initLFP.bind(this));
+            this.loadModelIntoApp( JSONstring, this.initLFP.bind( this ) );
             this.deviceBoxMap[ "LFP" ] = {
                 specs:
                 {
@@ -431,6 +439,15 @@ class App
     * @param {Object} modelJson Model to load
     */
     loadModelJson (modelJson, name) {
+        if ( !modelJson.hasOwnProperty('layers')
+             || !modelJson.hasOwnProperty('models')
+             || !modelJson.hasOwnProperty('syn_models')
+             || !modelJson.hasOwnProperty('modelName')
+             || !modelJson.hasOwnProperty('projections') )
+        {
+            this.showModalMessage("Please choose a model in correct JSON format.");
+            return;
+        }
         this.modelParameters = modelJson;
         this.is3DLayer = this.modelParameters.is3DLayer;
         this.brain = new Brain();
@@ -1223,6 +1240,13 @@ class App
         this.showLoadingOverlay('');
         this.storage.getFilesInFolder((data)=>{
             console.log(data);
+            for (let key in data)
+            {
+                if ( !key.endsWith( ".json" ) )
+                {
+                    delete data[ key ];
+                }
+            }
             // Display files.
             this.setGuiState({loadContents: data});
         });
@@ -1297,6 +1321,13 @@ class App
      */
     loadState( state )
     {
+        if ( !state.hasOwnProperty('devices')
+             || !state.hasOwnProperty('selections') )
+        {
+            this.showModalMessage("Could not load state: Wrong state object properties.");
+            return;
+        }
+
         // TODO: Only load if there are no selections and no devices (except LFP).
         // Load selection boxes
         for ( var boxSpecs of state.selections )
