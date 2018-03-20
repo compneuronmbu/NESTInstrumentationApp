@@ -1474,6 +1474,11 @@ class App
         this.scene.add( circle );
         this.circle_objects.push( circle );
 
+        if ( this.controls.boxInFocus !== undefined )
+        {
+            this.controls.boxInFocus.setInactive();
+            this.controls.boxInFocus = undefined;
+        }
         this.controls.deviceInFocus = circle;
         this.controls.makeOutline( this.controls.deviceInFocus );
 
@@ -1665,16 +1670,15 @@ class App
      */
     undo()
     {
+        // Make sure the initial state is always in the array.
         if ( this.prevStates.length === 1 )
         {
             return;
         }
         this.deleteEverything();
         this.redoStates.push( this.prevStates.pop() );
-        console.warn('After pop');
-        console.log(this.prevStates);
-        this.setGuiState({undoDisabled: this.prevStates.length === 1})
-        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+        this.setGuiState({undoDisabled: this.prevStates.length === 1});
+        this.setGuiState({redoDisabled: this.redoStates.length === 0});
         this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
     }
 
@@ -1683,15 +1687,14 @@ class App
      */
     redo()
     {
+        // Make sure there is a state to redo.
         if ( this.redoStates.length === 0 )
         {
             return;
         }
         this.deleteEverything();
         this.prevStates.push( this.redoStates.pop() );
-        console.warn('After pop');
-        console.log(this.redoStates);
-        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+        this.setGuiState({redoDisabled: this.redoStates.length === 0});
         this.loadState( this.prevStates[ this.prevStates.length - 1 ] );
     }
 
