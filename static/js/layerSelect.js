@@ -1153,7 +1153,20 @@ class App
     {
         document.getElementById( "streamButton" ).disabled = true;
 
-        this.devicePlots.makeDevicePlot();
+        var devices = {};
+        for ( var devName in this.deviceBoxMap)
+        {
+            model = this.deviceBoxMap[devName].specs.model;
+            if (model === 'LFP' && this.deviceBoxMap[devName].connectees.length === 0)
+            {
+                continue;
+            }
+            if (!devices.hasOwnProperty(model))
+            {
+                devices[model] = true;
+            }
+        }
+        this.devicePlots.makeDevicePlot(devices);
 
         var noResults = true;
         for ( var device in this.deviceBoxMap )

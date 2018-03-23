@@ -8,8 +8,6 @@ class DevicePlots {
         this.height = 200;
         this.lfpMargin = {top: 30, right: 75, bottom: 2, left: 50};
 
-        this.madePlot = false;
-
         // The three plots
         this.spikeTrain;
         this.membrane;
@@ -22,6 +20,14 @@ class DevicePlots {
         this.lfpY;
         this.lfpX;
 
+        this.reset();
+    }
+
+    /**
+    * Reset graph content.
+    */
+    reset()
+    {
         this.lfpDict = {};
 
         this.lastTime = 1;
@@ -35,9 +41,14 @@ class DevicePlots {
 
     /**
     * Make graph plots of the device output.
+    *
+    * @param {Object} devices Indicates whether devices exist.
     */
-    makeDevicePlot()
+    makeDevicePlot(devices)
     {
+        this.madePlot = false;
+        d3.selectAll("svg").remove();
+        this.reset();
         var width = app.container.clientWidth / 2;
 
         this.x = d3.scaleLinear().range([this.margin.left, width - this.margin.right]);
@@ -48,28 +59,22 @@ class DevicePlots {
         var yAxis = d3.axisLeft(this.y).ticks(5);
         var yAxisPot = d3.axisLeft(this.y).ticks(5);
 
-        if( !this.madePlot )
-        {
-            // Make the framework for the spikeTrain and membrane plots.
-            var svg = d3.select("#spikeTrain")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", this.height);
+        // Make the framework for the spikeTrain and membrane plots.
+        var svg = d3.select("#spikeTrain")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", this.height);
 
+        if ( devices.spike_detector || devices.voltmeter )
+        {
             this.spikeTrain = svg.append("g")
                                 .attr("class", "spikeTrain")
                                 .attr("transform", "translate(0," + this.height/2 + ")");
-            this.membrane = svg.append("g").attr("class", "membrane");
 
             this.spikeTrain.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0, "+ (this.height / 2 - this.margin.top - this.margin.bottom ) +")")
                 .call(xAxis);
-         
-            this.spikeTrain.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate("+( this.margin.left )+", 0)")
-                .call(yAxis);
 
             this.spikeTrain.append("text")
                 .attr("class", "axis")
@@ -79,6 +84,14 @@ class DevicePlots {
                 .attr("y", this.height/2 - this.margin.bottom)
                 .text("Time [ms]");
 
+        }
+        if ( devices.spike_detector )
+        {
+            this.spikeTrain.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate("+( this.margin.left )+", 0)")
+                .call(yAxis);
+
             this.spikeTrain.append("text")
                 .attr("class", "axis")
                 .attr("text-anchor", "middle")
@@ -86,6 +99,14 @@ class DevicePlots {
                 .attr("dy", ".75em")
                 .attr("transform", "translate( 3, "+ (this.height / 2 - this.margin.top) / 2 +")rotate(-90)")
                 .text("Neuron ID");
+        }
+
+        if ( devices.voltmeter )
+        {
+            let yTranslate = devices.spike_detector ? 0 : this.height / 2;
+            this.membrane = svg.append("g")
+                .attr("class", "membrane")
+                .attr("transform", "translate(0," + yTranslate + ")");
 
             this.membrane.append("g")
                 .attr("class", "y axis")
@@ -99,84 +120,66 @@ class DevicePlots {
                 .attr("dy", ".75em")
                 .attr("transform", "translate( 3, "+ (this.height / 2 - this.margin.top) / 2 +")rotate(-90)")
                 .text("Mem.pot. [mv]");
+        }
 
-            if( app.isLFP )
+        if( devices.LFP )
+        {
+            var height = app.container.clientHeight / 2;
+            width = app.container.clientWidth / 3;
+            this.lfpX = d3.scaleLinear().range([this.lfpMargin.left, width - this.lfpMargin.right]);
+            this.lfpY = d3.scaleLinear().domain([0.5, 16.5]).range([height - this.lfpMargin.top - this.lfpMargin.bottom, 0]);
+            var xAxisLFP = d3.axisBottom(this.lfpX).ticks(10);
+            var yAxisLFP = d3.axisLeft(this.lfpY).ticks(16);
+
+            var LFPsvg = d3.select("#LFPplot")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+            this.lfpPlot = LFPsvg.append("g")
+                                .attr("class", "LFPplot")
+                                .attr("transform", "translate(0, 0)");
+            this.lfpPlot.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0, "+ (height - this.lfpMargin.top - this.lfpMargin.bottom ) +")")
+                .call(xAxisLFP);
+         
+            this.lfpPlot.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
+                .call(yAxisLFP);
+
+            this.lfpPlot.append("text")
+                .attr("class", "axis")
+                .attr("text-anchor", "middle")
+                .attr("fill","white")
+                .attr("x", width/2)
+                .attr("y", height - this.lfpMargin.bottom)
+                .text("Time [ms]");
+
+            this.lfpPlot.append("text")
+                .attr("class", "axis")
+                .attr("text-anchor", "middle")
+                .attr("fill","white")
+                .attr("dy", ".75em")
+                .attr("transform", "translate( 3, "+ (height - this.lfpMargin.top) / 2 +")rotate(-90)")
+                .text("Channel");
+
+            for ( var i = 1 ; i <= 16 ; ++i )
             {
-                var height = app.container.clientHeight / 2;
-                width = app.container.clientWidth / 3;
-                this.lfpX = d3.scaleLinear().range([this.lfpMargin.left, width - this.lfpMargin.right]);
-                this.lfpY = d3.scaleLinear().domain([0.5, 16.5]).range([height - this.lfpMargin.top - this.lfpMargin.bottom, 0]);
-                var xAxisLFP = d3.axisBottom(this.lfpX).ticks(10);
-                var yAxisLFP = d3.axisLeft(this.lfpY).ticks(16);
+                this.lfpDict[i] = {};
+                this.lfpDict[i]['axis'] = d3.scaleLinear().range([height/32,0]);
+                var yAxis = d3.axisLeft(this.lfpDict[i]['axis']).tickValues([]).tickSizeOuter(0);
 
-                var LFGsvg = d3.select("#LFPplot")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height);
-
-                this.lfpPlot = LFGsvg.append("g")
-                                    .attr("class", "LFPplot")
-                                    .attr("transform", "translate(0, 0)");
-                this.lfpPlot.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform", "translate(0, "+ (height - this.lfpMargin.top - this.lfpMargin.bottom ) +")")
-                    .call(xAxisLFP);
-             
-                this.lfpPlot.append("g")
+                this.lfpDict[i]['graph'] = LFPsvg.append("g")
+                    .attr("class", "LFPplot")
+                    .attr("transform", "translate(0, "+ (height - (i+1)*height/17 ) +")");
+                this.lfpDict[i]['graph'].append("g")
                     .attr("class", "y axis")
                     .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
-                    .call(yAxisLFP);
-
-                this.lfpPlot.append("text")
-                    .attr("class", "axis")
-                    .attr("text-anchor", "middle")
-                    .attr("fill","white")
-                    .attr("x", width/2)
-                    .attr("y", height - this.lfpMargin.bottom)
-                    .text("Time [ms]");
-
-                this.lfpPlot.append("text")
-                    .attr("class", "axis")
-                    .attr("text-anchor", "middle")
-                    .attr("fill","white")
-                    .attr("dy", ".75em")
-                    .attr("transform", "translate( 3, "+ (height - this.lfpMargin.top) / 2 +")rotate(-90)")
-                    .text("Channel");
-
-                for ( var i = 1 ; i <= 16 ; ++i )
-                {
-                    this.lfpDict[i] = {};
-                    this.lfpDict[i]['axis'] = d3.scaleLinear().range([height/32,0]);
-                    var yAxis = d3.axisLeft(this.lfpDict[i]['axis']).tickValues([]).tickSizeOuter(0);
-
-                    this.lfpDict[i]['graph'] = LFGsvg.append("g")
-                        .attr("class", "LFPplot")
-                        .attr("transform", "translate(0, "+ (height - (i+1)*height/17 ) +")");
-                    this.lfpDict[i]['graph'].append("g")
-                        .attr("class", "y axis")
-                        .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
-                        .call(yAxis);
-                }
-            } // app.isLFP
-
-            this.madePlot = true;
-        } // if
-        else
-        {
-            // Have to reset these values in case we press stream button again.
-            // We don't want to remake the framework, just remove the old data.
-            this.lastTime = 1;
-            this.firstTime = 1;
-
-            this.spikeTrain.selectAll("circle").remove();
-            this.membrane.selectAll("path.line").remove();
-            //this.LFPplot.selectAll("path.line").remove(); //might not work
-
-            this.spikeTime = [];
-            this.senders = [];
-            this.VmTime  = [];
-            this.Vm = [];
-        }
+                    .call(yAxis);
+            }
+        } // app.isLFP
     }
 
     /**
@@ -186,6 +189,10 @@ class DevicePlots {
     */
     makeXAxis(timestamp)
     {
+        if ( this.spikeTrain === undefined )
+        {
+            return;
+        }
         // Make the shared x-axis for both plots.
 
         this.lastTime = timestamp;
@@ -331,6 +338,10 @@ class DevicePlots {
 
     makeLFPPlot(events)
     {
+        if ( d3.select('#LFPplot').select('svg').empty() )
+        {
+            return;
+        }
         var lastTime = events[0]['times'][events[0]['times'].length - 1];
         var firstTime = events[0]['times'][0];
 
