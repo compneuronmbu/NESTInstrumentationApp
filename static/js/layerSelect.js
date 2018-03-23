@@ -330,13 +330,11 @@ class App
     }
 
     /**
-    * Creates a filename to be used when saving. Uses the name of the model and
-    * the current data and time.
+    * Creates a model name.
     *
     * @param {String} path or name of model to be used
-    * @event
     */
-    getFileName(name)
+    makeModelName(name)
     {
         var startIndx = name.lastIndexOf('/');
         var endIndx = name.search('.json');
@@ -344,7 +342,17 @@ class App
         {
             endIndx = name.length;
         }
+        this.modelName = this.isLFP ? `${name.slice(startIndx + 1,endIndx)}_LFP` : name.slice(startIndx + 1,endIndx);
+    }
 
+    /**
+    * Creates a file name to be used when saving. Uses the name of the model and
+    * the current data and time.
+    *
+    * @returns {String} File name consisting of model name and current date and time.
+    */
+    getFileName()
+    {
         var currentDate = new Date();
         var sec = currentDate.getSeconds();
         var min = currentDate.getMinutes();
@@ -354,8 +362,7 @@ class App
         var year = currentDate.getFullYear();
         var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
 
-        var lfpName = this.isLFP ? '_LFP' : '';
-        this.modelName = name.slice(startIndx + 1,endIndx) + lfpName + '--' + dateTime;
+        return this.modelName + '--' + dateTime;
     }
 
     /**
@@ -379,17 +386,17 @@ class App
                 this.modelParameters = data;
                 this.brain = new Brain();
                 try {
-                    this.getFileName(this.modelParameters.modelName);
+                    this.makeModelName(this.modelParameters.modelName);
                 } catch(err) {
-                    this.getFileName(modelFileName);
+                    this.makeModelName(modelFileName);
                 }
                 postBrain();
             }.bind(this) );
         } else {
             try {
-                this.getFileName(this.modelParameters.modelName);
+                this.makeModelName(this.modelParameters.modelName);
             } catch(err) {
-                this.getFileName(modelFileName);
+                this.makeModelName(modelFileName);
             }
         }
         
@@ -1236,9 +1243,10 @@ class App
         let state = this.getCurrentState();
         console.log( "state", state );
 
-        this.storage.saveToFile(this.modelName, state, ()=>{
+        var filename = this.getFileName();
+        this.storage.saveToFile(filename, state, ()=>{
             this.setGuiState({saving: false});
-            this.showModalMessage(`Saved to "${this.modelName}.json".`);
+            this.showModalMessage(`Saved to "${filename}.json".`);
         });
     }
 
