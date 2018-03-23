@@ -299,10 +299,10 @@ test( 'Test makeConnection', () => {
         y: app.renderer.getSize().height - app.mouseDownCoords.y
     };
 
+    app.makeStimulationDevice( "poisson_generator" );
+
     app.getSelectedDropDown = jest.fn(); // mocking because no react here
     app.controls.makeSelectionBox();
-
-    app.makeStimulationDevice( "poisson_generator" );
 
     app.controls.getMouseIntersecting = ( cX, cY, objects ) => {
         return [ {
@@ -331,10 +331,11 @@ test( 'Test deleteBox', () => {
         y: app.renderer.getSize().height - app.mouseDownCoords.y
     };
 
+    app.makeStimulationDevice( "poisson_generator" );
+
     app.getSelectedDropDown = jest.fn(); // mocking because no react here
     app.controls.makeSelectionBox();
 
-    app.makeStimulationDevice( "poisson_generator" );
     var target = app.circle_objects[ 0 ];
     var radius = target.geometry.boundingSphere.radius;
     app.controls.boxInFocus.makeLine();
@@ -363,10 +364,11 @@ test( 'Test deleteDevice', () => {
         y: app.renderer.getSize().height - app.mouseDownCoords.y
     };
 
+    app.makeStimulationDevice( "poisson_generator" );
+
     app.getSelectedDropDown = jest.fn(); // mocking because no react here
     app.controls.makeSelectionBox();
 
-    app.makeStimulationDevice( "poisson_generator" );
     var target = app.circle_objects[ 0 ];
     var radius = target.geometry.boundingSphere.radius;
     app.controls.boxInFocus.makeLine();
