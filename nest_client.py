@@ -128,10 +128,8 @@ class NESTClient(object):
 
         self.networkSpecs = {}
         self.layers = {}
-        self.rec_devices = []
-        self.prepared_simulation = False
         self.device_projections = None
-        self.last_results = None
+        self.reset_saved_network()
 
         self.print('Setting up slot messages..')
         self.slot_out_complete = nett.slot_out_float_message(
@@ -208,6 +206,14 @@ class NESTClient(object):
         self.make_nodes()
         self.make_synapse_models()
         self.send_complete_signal()
+
+    def reset_saved_network(self):
+        """
+        Empty device array, reset other saved variables.
+        """
+        self.rec_devices = []
+        self.prepared_simulation = False
+        self.last_results = None
 
     def make_models(self):
         """
@@ -399,6 +405,7 @@ class NESTClient(object):
         """
         Makes connections from selections specified by the user.
         """
+        self.reset_saved_network()
         if self.device_projections is None:
             return
 
