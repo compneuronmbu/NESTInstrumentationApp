@@ -1241,6 +1241,8 @@ class App
         this.showLoadingOverlay('Saving projections...');
         this.setGuiState({saving: true});
         let state = this.getCurrentState();
+        state.metadata = {type: 'selection',
+                          model: this.modelName};
         console.log( "state", state );
 
         var filename = this.getFileName();
@@ -1284,8 +1286,26 @@ class App
         let selectedFile = this.getSelectedDropDown('loadFiles');
         console.log('Selected: ', selectedFile);
         this.storage.loadFromFile(selectedFile, (data)=>{
-            this.loadState(data);
-            this.hideLoadingOverlay();
+            if ( data.metadata )
+            {
+                if ( data.metadata.type !== 'selection' )
+                {
+                    this.showModalMessage(`Cannot load! File contains ${data.metadata.type}, not selection.`)
+                }
+                else if (data.metadata.model === this.modelName)
+                {
+                    this.loadState(data);
+                    this.hideLoadingOverlay();
+                }
+                else
+                {
+                    this.showModalMessage(`Cannot load! Wrong model of selection: ${data.metadata.model} not ${this.modelName}`)
+                }
+            }
+            else
+            {
+                this.showModalMessage('Cannot load! File has no metadata.')
+            }
         });
     }
 
@@ -1345,7 +1365,7 @@ class App
         if ( !state.hasOwnProperty('devices')
              || !state.hasOwnProperty('selections') )
         {
-            this.showModalMessage("Could not load state: Wrong state object properties.");
+            this.showModalMessage("Could not load state: State object does not contain the necessary properties.");
             return;
         }
 
