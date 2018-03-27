@@ -131,6 +131,18 @@ class GuiButtons extends React.Component{
                 </div>
                 <hr/>
                 <div className="button-group">
+                    <SelectionsButton text='Stream'
+                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
+                                      button_id='streamButton'/>
+                    <SelectionsButton text='Abort'
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
+                                      button_id='abortButton'/>
+                </div>
+            </div>
+            <div id="gui-box">
+                <div id="gui-box-title">
+                </div>
+                <div className="button-group">
                     <SelectionsButton text='Undo'
                                       disabled={ this.state.undoDisabled || !this.state.mod }
                                       function={app.undo.bind(app)} button_class ='button wide'
@@ -152,15 +164,6 @@ class GuiButtons extends React.Component{
                                       disabled={this.state.projectionModal || this.state.saving || !this.state.mod}
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
-                </div>
-                <hr/>
-                <div className="button-group">
-                    <SelectionsButton text='Stream'
-                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
-                                      button_id='streamButton'/>
-                    <SelectionsButton text='Abort'
-                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
-                                      button_id='abortButton'/>
                 </div>
             </div>
             {this.state.modalMessage ? (
