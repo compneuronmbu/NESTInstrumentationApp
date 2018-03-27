@@ -547,7 +547,7 @@ class NESTClient(object):
                                    lower_left[1] - cntr[1]],
                     'upper_right': [upper_right[0] - cntr[0],
                                     upper_right[1] - cntr[1]],
-                    # 'azimuth_angle': azimuth_angle
+                    'azimuth_angle': azimuth_angle
                     }
         elif mask_type == 'elliptical':
             # Calculate centre of ellipse

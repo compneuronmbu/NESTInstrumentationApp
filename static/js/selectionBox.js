@@ -154,6 +154,12 @@ class ConnectionLine
 }
 
 
+
+/* ----------------------------------------------------------------------------
+ * SELECTION BOX IN 2D   
+ *---------------------------------------------------------------------------*/ 
+
+
 /**
  * Represents a selection of neurons in 2D space.
  *
@@ -173,8 +179,8 @@ class SelectionBox
 
         this.majorAxis = Math.max( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
         this.minorAxis = Math.min( ( ur.x - ll.x ) / 2, ( ur.y - ll.y ) / 2 );
-        this.angle = ( this.majorAxis == ( ur.x - ll.x )  / 2 ) ? 0.0: Math.PI / 2;
-
+        this.angle = shape == 'rectangular' ? 0.0: ( this.majorAxis == ( ur.x - ll.x )  / 2 ) ? 0.0: Math.PI / 2;
+        
         this.selectedNeuronType = app.getSelectedDropDown( "neuronType" );
         this.selectedSynModel = app.getSelectedDropDown( "synapseModel" );
         this.selectedShape = shape;
@@ -340,7 +346,7 @@ class SelectionBox
 
         this.box = new app.THREE.Mesh( geometry, material );
 
-        // Centre of box
+        // Center of box
         var boxPosition = {
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
@@ -365,6 +371,7 @@ class SelectionBox
         if ( this.selectedShape == "rectangular" )
         {
             var geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+            this.box.rotation.z = this.angle;
         }
         else if ( this.selectedShape == "elliptical" )
         {
@@ -780,7 +787,7 @@ class SelectionBox
     {
         var selectionBounds = this.getSelectionBounds();
 
-        if ( this.majorAxis == Math.abs( ( this.ur.x - this.ll.x ) / 2 ) )
+        if ( this.selectedShape == 'rectangular' || this.majorAxis == Math.abs( ( this.ur.x - this.ll.x ) / 2 ) )
         {
             var angle = this.angle;
         }
@@ -945,39 +952,34 @@ class SelectionBox
      */
     makeRotationPoints()
     {
-        if( this.selectedShape == 'rectangular' )
-        {
-            this.makeSelectionPoints();
-            // We currently only allow elliptical masks to be rotated.
-            return;
-        }
-
         this.box.geometry.computeBoundingBox();
         var bbox = this.box.geometry.boundingBox;
         var pos = this.box.position;
+
+        var angle = this.selectedShape == 'rectangular' ? this.angle : 0.0;
 
         // We have to move the points a tiny bit towards the camera to make it 
         // appear over everything else.
         // Rotation point in every corner.
         var posArray = [
         {
-            x: bbox.min.x + pos.x,
-            y: bbox.min.y + pos.y,
+            x: bbox.min.x * Math.cos( angle ) - bbox.min.y * Math.sin( angle ) + pos.x,
+            y: bbox.min.x * Math.sin( angle ) + bbox.min.y * Math.cos( angle ) + pos.y,
             z: 0.0001
         },
         {
-            x: bbox.max.x + pos.x,
-            y: bbox.min.y + pos.y,
+            x: bbox.max.x * Math.cos( angle ) - bbox.min.y * Math.sin( angle ) + pos.x,
+            y: bbox.max.x * Math.sin( angle ) + bbox.min.y * Math.cos( angle ) + pos.y,
             z: 0.0001
         },
         {
-            x: bbox.max.x + pos.x,
-            y: bbox.max.y + pos.y,
+            x: bbox.max.x * Math.cos( angle ) - bbox.max.y * Math.sin( angle ) + pos.x,
+            y: bbox.max.x * Math.sin( angle ) + bbox.max.y * Math.cos( angle ) + pos.y,
             z: 0.0001
         },
         {
-            x: bbox.min.x + pos.x,
-            y: bbox.max.y + pos.y,
+            x: bbox.min.x * Math.cos( angle ) - bbox.max.y * Math.sin( angle ) + pos.x,
+            y: bbox.min.x * Math.sin( angle ) + bbox.max.y * Math.cos( angle ) + pos.y,
             z: 0.0001
         } ];
 
@@ -998,7 +1000,7 @@ class SelectionBox
         this.minorAxis = Math.min( Math.abs( ( this.ur.x - this.ll.x ) / 2 ),
                                    Math.abs( ( this.ur.y - this.ll.y ) / 2 ) );
 
-        if ( Math.abs( this.angle - 0.0 ) <= 0.1 || Math.abs( this.angle - Math.PI / 2 ) <= 0.1 )
+        if ( this.selectedShape == 'elliptical' && Math.abs( this.angle - 0.0 ) <= 0.1 || Math.abs( this.angle - Math.PI / 2 ) <= 0.1 )
         {
             this.angle = ( this.majorAxis ===
                 Math.abs( ( this.ur.x - this.ll.x ) / 2 ) ) ? 0.0: Math.PI / 2;
@@ -1031,7 +1033,15 @@ class SelectionBox
      */
     withinRectangleBounds( pos )
     {
-        return ( ( pos.x >= this.ll.x ) && ( pos.x <= this.ur.x ) && ( pos.y >= this.ll.y ) && ( pos.y <= this.ur.y ) );
+        var center = {
+            x: ( this.ur.x + this.ll.x ) / 2.0,
+            y: ( this.ur.y + this.ll.y ) / 2.0
+        };
+
+        var new_x = ( pos.x - center.x ) * Math.cos( this.angle ) + ( pos.y - center.y ) * Math.sin( this.angle ) + center.x; // center??
+        var new_y = -( pos.x - center.x ) * Math.sin( this.angle ) + ( pos.y - center.y ) * Math.cos( this.angle ) + center.y;
+
+        return ( ( new_x >= this.ll.x ) && ( new_x <= this.ur.x ) && ( new_y >= this.ll.y ) && ( new_y <= this.ur.y ) );
     }
 
     /**
@@ -1058,6 +1068,11 @@ class SelectionBox
         this.removeConnectionHandle();
     }
 }
+
+
+/* ----------------------------------------------------------------------------
+ * SELECTION BOX IN 3D   
+ *---------------------------------------------------------------------------*/ 
 
 
 /**
