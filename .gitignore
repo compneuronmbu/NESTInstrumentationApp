@@ -103,3 +103,5 @@ coverage/
 *.he5
 
 static/examples/LFP/figures
+nest_lfp_module/bld
+
