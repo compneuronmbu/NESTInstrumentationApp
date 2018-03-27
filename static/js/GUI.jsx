@@ -20,7 +20,8 @@ class GuiButtons extends React.Component{
         redoDisabled: true,
         loadContents: {},
         modalMessage: '',
-        modalHead: ''
+        modalHead: '',
+        selectionDisabledText: 'Loading...'
       }
     }
 
@@ -177,6 +178,7 @@ class GuiButtons extends React.Component{
                            head={this.state.modalHead}
                            selection={true}
                            handleSubmit={this.state.handleSubmit}
+                           disabledText={this.state.selectionDisabledText}
                            files={Object.entries(this.state.loadContents).map(function(item){
                             return (
                               {text: item[0], value: item[1]}
@@ -300,7 +302,7 @@ class ModalDialog extends React.Component {
                   </select>
                   ) : (
                   <select className="selectionWindow" size="2" disabled>
-                    <option value='Loading...' key='0'>Loading...</option>
+                    <option value={this.props.disabledText} key='0'>{this.props.disabledText}</option>
                   </select>
                   )}
                 </div>)

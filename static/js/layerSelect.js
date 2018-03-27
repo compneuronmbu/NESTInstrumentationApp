@@ -297,7 +297,6 @@ class App
                                 handleSubmit: this.handleModelFileFromStorage.bind( this ) } );
             this.storage.getFilesInFolder( ( data ) => {
                 // Display files.
-                console.log(data);
                 for (let key in data)
                 {
                     if ( !key.endsWith( ".json" ) )
@@ -305,7 +304,16 @@ class App
                         delete data[ key ];
                     }
                 }
-                this.setGuiState( { loadContents: data } );
+                if (Object.keys(data).length === 0)
+                {
+                    this.setGuiState({selectionDisabledText: "No files found"})
+                }
+                else
+                {
+                    this.setGuiState( { loadContents: data } );
+                }
+            }, (message) => {
+                this.setGuiState({selectionDisabledText: message})
             });
         }
         else if ( target.id === "LFP" )
@@ -1261,8 +1269,8 @@ class App
         this.setGuiState({modalSelection: true, modalHead: 'Load projections',
                           handleSubmit: this.loadSelected.bind(this)});
         this.showLoadingOverlay('');
-        this.storage.getFilesInFolder((data)=>{
-            console.log(data);
+        this.storage.getFilesInFolder( ( data ) => {
+            // Display files.
             for (let key in data)
             {
                 if ( !key.endsWith( ".json" ) )
@@ -1270,8 +1278,16 @@ class App
                     delete data[ key ];
                 }
             }
-            // Display files.
-            this.setGuiState({loadContents: data});
+            if (Object.keys(data).length === 0)
+            {
+                this.setGuiState({selectionDisabledText: "No files found"})
+            }
+            else
+            {
+                this.setGuiState( { loadContents: data } );
+            }
+        }, (message) => {
+            this.setGuiState({selectionDisabledText: message})
         });
     }
 
@@ -1325,7 +1341,8 @@ class App
     closeModal()
     {
         this.setGuiState({modalSelection: false, loadContents: {},
-                          modalMessage: '', modalHead: ''});
+                          modalMessage: '', modalHead: '',
+                          selectionDisabledText: 'Loading...'});
         this.hideLoadingOverlay();
     }
 
