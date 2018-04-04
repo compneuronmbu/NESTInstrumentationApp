@@ -191,7 +191,7 @@ function hbpStorage()
     }
   }
 
-  function getFilesInFolder(callback)
+  function getFilesInFolder(callback, fail_callback)
   {
     $.ajax(
     {
@@ -216,6 +216,7 @@ function hbpStorage()
     })
     .fail(function(err) {
         console.log("Something went wrong when looking at folder: ", JSON.stringify(err, null, 2));
+        fail_callback("ERROR: " + err.responseJSON[0]);
     });
   }
 

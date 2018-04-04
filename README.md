@@ -12,6 +12,8 @@ The app client is implemented in JavaScript, with the libraries [three.js](https
 
 You need NEST built with Python support, and importable from Python. To run simulations directly from the app, you need the NEST developer version with tag [`External/TopologySelectNodes`](https://github.com/nest/nest-simulator/tree/External/TopologySelectNodes) or later.
 
+For using the LFP detector, you have to compile and install the module found in `nest_lfp_module`, as explained [here](https://nest.github.io/nest-simulator/extension_modules).
+
 The communication between the Flask server and NEST is done with the included nett module. However, using the nett module requires some paths to be added to ```PYTHONPATH``` and ```LD_LIBRARY_PATH```. To easily add these, run
 
 ```

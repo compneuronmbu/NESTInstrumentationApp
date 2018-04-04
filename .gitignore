@@ -86,7 +86,7 @@ ENV/
 .ropeproject
 
 # GitEye
-/.project
+*.project
 
 # Saved selections
 *.pkl
@@ -102,6 +102,11 @@ coverage/
 *.hdf5
 *.he5
 
+# Eclipse things
+*.cproject
+*.settings
+
+# LFP things
 static/examples/LFP/figures
 nest_lfp_module/bld
 

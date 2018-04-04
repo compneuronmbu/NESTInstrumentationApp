@@ -20,7 +20,8 @@ class GuiButtons extends React.Component{
         redoDisabled: true,
         loadContents: {},
         modalMessage: '',
-        modalHead: ''
+        modalHead: '',
+        selectionDisabledText: 'Loading...'
       }
     }
 
@@ -131,6 +132,18 @@ class GuiButtons extends React.Component{
                 </div>
                 <hr/>
                 <div className="button-group">
+                    <SelectionsButton text='Stream'
+                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
+                                      button_id='streamButton'/>
+                    <SelectionsButton text='Abort'
+                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
+                                      button_id='abortButton'/>
+                </div>
+            </div>
+            <div id="gui-box">
+                <div id="gui-box-title">
+                </div>
+                <div className="button-group">
                     <SelectionsButton text='Undo'
                                       disabled={ this.state.undoDisabled || !this.state.mod }
                                       function={app.undo.bind(app)} button_class ='button wide'
@@ -153,15 +166,6 @@ class GuiButtons extends React.Component{
                                       function={app.loadSelection.bind(app)} button_class ='button wide'
                                       button_id='loadSelectionButton'/>
                 </div>
-                <hr/>
-                <div className="button-group">
-                    <SelectionsButton text='Stream'
-                                      function={app.streamSimulate.bind(app)} button_class ='button animated'
-                                      button_id='streamButton'/>
-                    <SelectionsButton text='Abort'
-                                      function={app.abortSimulation.bind(app)} button_class ='button danger animated'
-                                      button_id='abortButton'/>
-                </div>
             </div>
             {this.state.modalMessage ? (
               <ModalDialog id='modalMessage'
@@ -174,6 +178,7 @@ class GuiButtons extends React.Component{
                            head={this.state.modalHead}
                            selection={true}
                            handleSubmit={this.state.handleSubmit}
+                           disabledText={this.state.selectionDisabledText}
                            files={Object.entries(this.state.loadContents).map(function(item){
                             return (
                               {text: item[0], value: item[1]}
@@ -297,7 +302,7 @@ class ModalDialog extends React.Component {
                   </select>
                   ) : (
                   <select className="selectionWindow" size="2" disabled>
-                    <option value='Loading...' key='0'>Loading...</option>
+                    <option value={this.props.disabledText} key='0'>{this.props.disabledText}</option>
                   </select>
                   )}
                 </div>)

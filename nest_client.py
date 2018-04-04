@@ -154,6 +154,11 @@ class NESTClient(object):
         self.print('Starting observe slot..')
         observe_slot_data.start()
 
+        try:
+            nest.Install('lfpmodule')
+        except nest.NESTError:
+            self.print('LFP module not found.')
+
         self.send_complete_signal()  # let the server know the client is ready
         gevent.sleep()  # Yield context to let greenlets work.
 
