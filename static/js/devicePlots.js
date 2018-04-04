@@ -52,7 +52,7 @@ class DevicePlots {
         var width = app.container.clientWidth / 2;
 
         this.x = d3.scaleLinear().range([this.margin.left, width - this.margin.right]);
-        this.y = d3.scaleLinear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
+        this.y = d3.scaleLinear().domain([0, 1]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
         this.potY = d3.scaleLinear().domain([0, -70]).range([this.height / 2 - this.margin.top - this.margin.bottom, 0]);
         
         var xAxis = d3.axisBottom(this.x).ticks(10);
@@ -127,7 +127,7 @@ class DevicePlots {
             var height = app.container.clientHeight / 2;
             width = app.container.clientWidth / 3;
             this.lfpX = d3.scaleLinear().range([this.lfpMargin.left, width - this.lfpMargin.right]);
-            this.lfpY = d3.scaleLinear().domain([0.5, 16.5]).range([height - this.lfpMargin.top - this.lfpMargin.bottom, 0]);
+            this.lfpY = d3.scaleLinear().domain([16.5, 0.5]).range([height - this.lfpMargin.top - this.lfpMargin.bottom, 0]);
             var xAxisLFP = d3.axisBottom(this.lfpX).ticks(10);
             var yAxisLFP = d3.axisLeft(this.lfpY).ticks(16);
 
@@ -165,7 +165,8 @@ class DevicePlots {
                 .attr("transform", "translate( 3, "+ (height - this.lfpMargin.top) / 2 +")rotate(-90)")
                 .text("Channel");
 
-            for ( var i = 1 ; i <= 16 ; ++i )
+            var j;
+            for ( var i = 16, j = 1 ; i >= 1 ; --i, ++j )
             {
                 this.lfpDict[i] = {};
                 this.lfpDict[i]['axis'] = d3.scaleLinear().range([height/32,0]);
@@ -173,7 +174,7 @@ class DevicePlots {
 
                 this.lfpDict[i]['graph'] = LFPsvg.append("g")
                     .attr("class", "LFPplot")
-                    .attr("transform", "translate(0, "+ (height - (i+1)*height/17 ) +")");
+                    .attr("transform", "translate(0, "+ (height - (j+1)*height/17 ) +")");
                 this.lfpDict[i]['graph'].append("g")
                     .attr("class", "y axis")
                     .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
