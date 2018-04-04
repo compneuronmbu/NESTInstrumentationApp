@@ -1360,7 +1360,7 @@ class App
             // Unselect device and line
             this.controls.deviceInFocus = undefined;
             this.controls.removeOutline();
-            this.controls.lineInFocus && this.lineInFocus.setInactive();
+            this.controls.lineInFocus && this.controls.lineInFocus.setInactive();
             // Unselect box
             if ( this.controls.boxInFocus )
             {
