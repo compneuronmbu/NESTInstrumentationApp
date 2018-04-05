@@ -516,6 +516,7 @@ test('Test saveSelection', () => {
     app.showLoadingOverlay = jest.fn();
     app.$ = require('jquery');
     app.getCurrentState = jest.fn();
+    app.getCurrentState.mockReturnValue({metadata: {}});
     app.storage = {
         saveToFile: jest.fn()
     }
