@@ -347,6 +347,7 @@ class Controls
         var boxIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
                     app.mouseDownCoords.y,
                     app.getMaskBoxes() );
+        var selectedBox;
         if ( boxIntersects.length > 0 )
         {
             //console.log(pointIntersects[ 0 ].object);
@@ -379,6 +380,7 @@ class Controls
      */
     selectLine()
     {
+        var selectedLine;
         var lines = app.getConnectionLines();
         app.tmpLine = lines[0];
         var lineIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
