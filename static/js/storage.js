@@ -49,7 +49,7 @@ function hbpStorage()
     .done(function(data)
     {
       // Update the DOM with the context object retrieved by the web service.
-      storage_this.id = data.collab.id
+      storage_this.id = data.collab.id;
       console.log(`Got collab id: ${storage_this.id}`);
       queryProjectId(storage_this.id, (data) => {
         storage_this.uuid = data.uuid;
@@ -203,8 +203,8 @@ function hbpStorage()
     })
     .done(function(recv_data)
     {
-      file_dict = {}
-      for ( count in recv_data.results )
+      file_dict = {};
+      for ( var count in recv_data.results )
       {
         if ( recv_data.results[count].entity_type === "file" )
         {
@@ -224,5 +224,5 @@ function hbpStorage()
     saveToFile: saveToFile,
     loadFromFile: loadFromFile,
     getFilesInFolder: getFilesInFolder
-  }
+  };
 }

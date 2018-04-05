@@ -250,7 +250,7 @@ class SelectionBox
                 }
             }
         }
-        console.log(this.layerName)
+        console.log(this.layerName);
     }
 
     /**
@@ -268,10 +268,11 @@ class SelectionBox
         var newPoints = [];
 
         var colorID;
-
         var xypos;
 
-        for ( var i = 0; i < oldPointIDs.length; ++i )
+        var i;
+
+        for ( i = 0; i < oldPointIDs.length; ++i )
         {
             colorID = oldPointIDs[ i ];
 
@@ -279,10 +280,10 @@ class SelectionBox
             colors[ colorID + 1 ] = app.color.g;
             colors[ colorID + 2 ] = app.color.b;
 
-            this.nSelected -= 1
+            this.nSelected -= 1;
         }
 
-        for ( var i = 0; i < positions.length; i += 3 )
+        for ( i = 0; i < positions.length; i += 3 )
         {
             var p = {
                 x: positions[ i ],
@@ -294,7 +295,7 @@ class SelectionBox
             if ( this.withinBounds( xypos ) )
             {
                 newPoints.push( i );
-                colors[ i ] = 1.;
+                colors[ i ] = 1.0;
                 colors[ i + 1 ] = 0.96;
                 colors[ i + 2 ] = 0.00;
 
@@ -317,16 +318,17 @@ class SelectionBox
      */
     makeBox()
     {
-        console.log(this.ll)
-        console.log(this.ur)
+        console.log(this.ll);
+        console.log(this.ur);
         var objectBoundsLL = app.toObjectCoordinates( this.ll );
         var objectBoundsUR = app.toObjectCoordinates( this.ur );
         var xLength = objectBoundsUR.x - objectBoundsLL.x;
         var yLength = objectBoundsUR.y - objectBoundsLL.y;
+        var geometry;
 
         if ( this.selectedShape == "rectangular" )
         {
-            var geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+            geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
         }
         else if ( this.selectedShape == "elliptical" )
         {
@@ -334,7 +336,7 @@ class SelectionBox
             var major = Math.max( Math.abs(xLength), Math.abs(yLength) );
             var minor = Math.min( Math.abs(xLength), Math.abs(yLength) );
             ellipseShape.ellipse( 0, 0, major / 2, minor / 2, 0, 2 * Math.PI, 0, this.angle );
-            var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
+            geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
 
         var material = new app.THREE.MeshBasicMaterial(
@@ -351,7 +353,7 @@ class SelectionBox
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
             z: 0.0
-        }
+        };
 
         this.box.position.copy( boxPosition );
         app.scene.add( this.box );
@@ -367,10 +369,11 @@ class SelectionBox
         var objectBoundsUR = app.toObjectCoordinates( this.ur );
         var xLength = objectBoundsUR.x - objectBoundsLL.x;
         var yLength = objectBoundsUR.y - objectBoundsLL.y;
+        var geometry;
 
         if ( this.selectedShape == "rectangular" )
         {
-            var geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
+            geometry = new app.THREE.BoxBufferGeometry( xLength, yLength, 0.0 );
             this.box.rotation.z = this.angle;
         }
         else if ( this.selectedShape == "elliptical" )
@@ -379,7 +382,7 @@ class SelectionBox
             var major = Math.max( Math.abs(xLength), Math.abs(yLength) );
             var minor = Math.min( Math.abs(xLength), Math.abs(yLength) );
             ellipseShape.ellipse( 0, 0, major / 2, minor / 2, 0, 2 * Math.PI, 0, this.angle );
-            var geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
+            geometry = new app.THREE.ShapeBufferGeometry( ellipseShape, 200 );
         }
         this.box.geometry = geometry;
 
@@ -387,7 +390,7 @@ class SelectionBox
             x: ( objectBoundsUR.x + objectBoundsLL.x ) / 2,
             y: -( objectBoundsUR.y + objectBoundsLL.y ) / 2,
             z: 0.0
-        }
+        };
 
         this.box.position.copy( boxPosition );
     }
@@ -418,7 +421,7 @@ class SelectionBox
                 colors[ colorID + 1 ] = app.color.g;
                 colors[ colorID + 2 ] = app.color.b;
 
-                this.nSelected -= 1
+                this.nSelected -= 1;
             }
             points.geometry.attributes.customColor.needsUpdate = true;
 
@@ -669,7 +672,7 @@ class SelectionBox
      */
     getData( convertToRoomCoordinates=false )
     {
-        var noNeurons = { [this.layerName]: app.layer_points[this.layerName]['noElements'] };
+        var noNeurons = { [this.layerName]: app.layer_points[this.layerName].noElements };
         var data = {
             name: this.layerName,
             ll: app.$.extend( {}, this.ll ),
@@ -786,14 +789,15 @@ class SelectionBox
     makeSelectionPoints()
     {
         var selectionBounds = this.getSelectionBounds();
+        var angle;
 
         if ( this.selectedShape == 'rectangular' || this.majorAxis == Math.abs( ( this.ur.x - this.ll.x ) / 2 ) )
         {
-            var angle = this.angle;
+            angle = this.angle;
         }
         else
         {
-            var angle = this.angle + Math.PI / 2;
+            angle = this.angle + Math.PI / 2;
         }
 
         // We have to move the points a tiny bit towards the camera to make it 
@@ -934,13 +938,14 @@ class SelectionBox
      */
     removePoints()
     {
-        for ( var i = 0; i < this.resizePoints.length; ++i )
+        var i;
+        for ( i = 0; i < this.resizePoints.length; ++i )
         {
             app.scene.remove( this.resizePoints[ i ] );
         }
         this.resizePoints = [];
 
-        for ( var i = 0; i < this.rotationPoints.length; ++i )
+        for ( i = 0; i < this.rotationPoints.length; ++i )
         {
             app.scene.remove( this.rotationPoints[ i ] );
         }
@@ -1140,15 +1145,16 @@ class SelectionBox3D
      */
     makeBox()
     {
+        var geometry;
         if ( this.selectedShape === "box" )
         {
-            var geometry = new app.THREE.BoxBufferGeometry(this.originalWidth, this.originalHeight, this.originalDepth);
+            geometry = new app.THREE.BoxBufferGeometry(this.originalWidth, this.originalHeight, this.originalDepth);
         }
         else if ( this.selectedShape === "ellipsoidal" )
         {
             // For now we set the radius to be the largest of the dimensions
-            var radius = Math.max( this.originalWidth, this.originalHeight, this.originalDepth );
-            var geometry = new app.THREE.SphereBufferGeometry( radius / 2, 32, 32 );
+            let radius = Math.max( this.originalWidth, this.originalHeight, this.originalDepth );
+            geometry = new app.THREE.SphereBufferGeometry( radius / 2, 32, 32 );
         }
         console.log(geometry);
         var matColour = this.lfp ? 0x77ff77 : undefined;
@@ -1209,7 +1215,7 @@ class SelectionBox3D
         app.scene.add( this.transformControls );
         //this.transformControls.attach( this.box );
 
-        this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) )
+        this.transformControls.addEventListener( 'change', this.updateAfterTransformations.bind( this ) );
     }
 
     /**
@@ -1343,7 +1349,7 @@ class SelectionBox3D
 
             for ( var i = 0; i < oldPoints[ layer ].length; ++i )
             {
-                var colorID = oldPoints[ layer ][ i ].index;
+                colorID = oldPoints[ layer ][ i ].index;
 
                 colors[ colorID ] = oldPoints[ layer ][ i ].color.r;
                 colors[ colorID + 1 ] = oldPoints[ layer ][ i ].color.g;
@@ -1397,9 +1403,9 @@ class SelectionBox3D
         this.sinPol = Math.sin( this.polarAngle );
         this.cosPol = Math.cos( this.polarAngle );
 
-        console.log("azimuthAngle:", this.azimuthAngle * 180 / Math.PI)
-        console.log("polarAngle:", this.polarAngle * 180 / Math.PI)
-        console.log("xAngle:", this.box.rotation.x * 180 / Math.PI)
+        console.log("azimuthAngle:", this.azimuthAngle * 180 / Math.PI);
+        console.log("polarAngle:", this.polarAngle * 180 / Math.PI);
+        console.log("xAngle:", this.box.rotation.x * 180 / Math.PI);
     }
 
     /**
@@ -1413,6 +1419,7 @@ class SelectionBox3D
         var visibility;
         var oldColor;
         var oldPoints = this.selectedPoints;
+        var i;
 
         for ( var layer in app.layer_points )
         {
@@ -1424,7 +1431,7 @@ class SelectionBox3D
 
             if ( oldPoints[ layer ] )
             {
-                for ( var i = 0; i < oldPoints[ layer ].length; ++i )
+                for ( i = 0; i < oldPoints[ layer ].length; ++i )
                 {
                     var colorID = oldPoints[ layer ][ i ].index;
 
@@ -1432,9 +1439,10 @@ class SelectionBox3D
                     colors[ colorID + 1 ] = oldPoints[ layer ][ i ].color.g;
                     colors[ colorID + 2 ] = oldPoints[ layer ][ i ].color.b;
                 }
+                points.geometry.attributes.customColor.needsUpdate = true;
             }
 
-            for ( var i = 0; i < positions.length; i += 3 )
+            for ( i = 0; i < positions.length; i += 3 )
             {
                 var p = {};
                 p.x = positions[ i ];
@@ -1528,9 +1536,9 @@ class SelectionBox3D
         var new_z = ( pos.x - this.center.x ) * this.sinPol +
                     ( pos.z - this.center.z ) * this.cosPol + this.center.z;*/
 
-        return new_x > this.ll.x && new_x < this.ur.x
-            && new_y > this.ll.y && new_y < this.ur.y
-            && new_z > this.ll.z && new_z < this.ur.z;
+        return new_x > this.ll.x && new_x < this.ur.x &&
+               new_y > this.ll.y && new_y < this.ur.y &&
+               new_z > this.ll.z && new_z < this.ur.z;
     }
 
     /*
@@ -1680,11 +1688,11 @@ class SelectionBox3D
     getData()
     {
         var nameArray = [];
-        var noNeuronPointsDict = {}
+        var noNeuronPointsDict = {};
         for ( var layerName in app.layer_points )
         {
             nameArray.push(layerName);
-            noNeuronPointsDict[layerName] = app.layer_points[layerName]['noElements']
+            noNeuronPointsDict[layerName] = app.layer_points[layerName].noElements;
         }
 
         var selectionInfo = {

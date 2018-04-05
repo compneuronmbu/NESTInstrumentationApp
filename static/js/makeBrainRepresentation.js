@@ -15,8 +15,11 @@ class Brain
     {
         var layers = app.modelParameters.layers;
         var number_of_layers = 0;
+        var layer;
+        var i;
+        var no_cols;
 
-        for ( var layer in layers )
+        for ( layer in layers )
         {
             if ( layers.hasOwnProperty( layer ) )
             {
@@ -39,14 +42,14 @@ class Brain
         }
         else
         {
-            var no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
+            no_cols = Math.ceil( Math.sqrt( number_of_layers ) );
 
             offset_x = ( number_of_layers > 1 ) ? -0.6 * ( no_cols - 1 ) : 0.0;
             offset_y = ( no_rows > 1 ) ? 0.6 * ( no_rows - 1 ) : 0.0;
-            var i = 1;
+            i = 1;
         }
 
-        for ( var layer in layers )
+        for ( layer in layers )
         {
             if ( layers.hasOwnProperty( layer ) )
             {
@@ -136,12 +139,12 @@ class Brain
 
         // if undefined, make a requestAnimationFrame function (mostly for testsuite)
         if (window.requestAnimationFrame === undefined) {
-          let targetTime = 0
+          let targetTime = 0;
           window.requestAnimationFrame = function (callbackFun) {
-            const currentTime = +new Date()
-            const timeoutCb = function () { callbackFun(+new Date()) }
-            return window.setTimeout(timeoutCb, Math.max(targetTime + 16, currentTime) - currentTime)
-          }
+            const currentTime = +new Date();
+            const timeoutCb = function () { callbackFun(+new Date()); };
+            return window.setTimeout(timeoutCb, Math.max(targetTime + 16, currentTime) - currentTime);
+          };
         }
 
         // requestAnimationFrame( app.render.bind(app) );
@@ -203,7 +206,7 @@ class Brain
             i += 3;
         }
 
-        for (var i = 0; i < visible.length; ++i) {
+        for (i = 0; i < visible.length; ++i) {
             visible[i] = 1.0;
         }
 
@@ -299,13 +302,13 @@ class Brain
                 text.style.width = 100;
                 text.style.height = 100;
                 text.style.color = "white";
-                text.style.fontSize = 18 + 'px'
+                text.style.fontSize = 18 + 'px';
                 text.innerHTML = layer_name;
                 // text.style.top = screenCenter.y + 'px';
                 document.body.appendChild( text );
                 // adjust the position to align the center with the center of the layer
                 // text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
-                this.updateLayerNamePosition(text)
+                this.updateLayerNamePosition(text);
             }
         }
     }
@@ -320,7 +323,7 @@ class Brain
         var name_pos;
         var screenCenter;
 
-        var layer_name = layerNameNode.id.substr(0, layerNameNode.id.lastIndexOf('_'))
+        var layer_name = layerNameNode.id.substr(0, layerNameNode.id.lastIndexOf('_'));
 
         center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
         bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
@@ -370,7 +373,7 @@ class Brain
             if ( typeof elements[elem] === "string" )
             {
                 // If we have a string, we have the type of element, and we add it to noElem
-                noElem += 1
+                noElem += 1;
             }
             else if ( typeof elements[elem] === "number" )
             {
@@ -378,7 +381,7 @@ class Brain
                 // previous element in the element array. We therefore have to add the number, and 
                 // subtract 1, as the previous value in the elements array is the
                 // type of element, which we have added to number of elements above.
-                noElem += elements[elem] - 1
+                noElem += elements[elem] - 1;
             }
         }
         return noElem;
@@ -401,7 +404,7 @@ class Brain
             }
         }
 
-        console.log("makeModelNameLists")
+        console.log("makeModelNameLists");
         app.synapseNeuronModelCallback([app.neuronModels, app.synModels]);
     }
 

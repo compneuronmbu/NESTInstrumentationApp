@@ -23,14 +23,14 @@ function authentication() {
 
     $(document).ready(function() {
       retrieveCurrentContext();
-    })
+    });
 
 }
 
 var retrieveCurrentContext = function() {
     // Retrieve the user auth informations
     var auth = hello.getAuthResponse('hbp');
-    console.log(auth)
+    console.log(auth);
     if (auth && auth.access_token) {
       var token = auth.access_token;
       // Query the collaboratory service to retrieve the current context

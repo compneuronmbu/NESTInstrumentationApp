@@ -146,7 +146,8 @@ class NESTClient(object):
 
         self.slot_in_data = nett.slot_in_string_message()
         self.print('Connecting to data input stream..')
-        self.slot_in_data.connect('tcp://127.0.0.1:2001', 'data_{}'.format(self.user_id))
+        self.slot_in_data.connect(
+            'tcp://127.0.0.1:2001', 'data_{}'.format(self.user_id))
         self.print('Initializing observe slot..')
         observe_slot_data = observe_slot(self.slot_in_data,
                                          sm.string_message(),

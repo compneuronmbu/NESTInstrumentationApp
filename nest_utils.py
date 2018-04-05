@@ -103,7 +103,8 @@ class NESTInterface(object):
 
         atexit.register(self.terminate_nest_client)
 
-        self.slot_out_data = nett.slot_out_string_message('data_{}'.format(self.user_id))
+        self.slot_out_data = nett.slot_out_string_message(
+            'data_{}'.format(self.user_id))
 
         self.slot_in_complete = nett.slot_in_float_message()
         self.slot_in_nconnections = nett.slot_in_float_message()
@@ -116,13 +117,13 @@ class NESTInterface(object):
         client_address = 'tcp://127.0.0.1:{}'.format(8000 + port_increment)
         self.slot_in_complete.connect(client_address,
                                       'task_complete_{}'.format(self.user_id))
-        self.slot_in_nconnections.connect(client_address,
-                                          'nconnections_{}'.format(self.user_id))
+        self.slot_in_nconnections.connect(
+            client_address, 'nconnections_{}'.format(self.user_id))
         # self.slot_in_gids.connect(client_address, 'GIDs')
-        self.slot_in_device_results.connect(client_address,
-                                            'device_results_{}'.format(self.user_id))
-        self.slot_in_status_message.connect(client_address,
-                                            'status_message_{}'.format(self.user_id))
+        self.slot_in_device_results.connect(
+            client_address, 'device_results_{}'.format(self.user_id))
+        self.slot_in_status_message.connect(
+            client_address, 'status_message_{}'.format(self.user_id))
 
         self.observe_slot_ready = observe_slot(self.slot_in_complete,
                                                fm.float_message(),
