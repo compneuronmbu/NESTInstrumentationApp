@@ -1432,6 +1432,7 @@ class SelectionBox3D
                     colors[ colorID + 1 ] = oldPoints[ layer ][ i ].color.g;
                     colors[ colorID + 2 ] = oldPoints[ layer ][ i ].color.b;
                 }
+                points.geometry.attributes.customColor.needsUpdate = true;
             }
 
             for ( var i = 0; i < positions.length; i += 3 )
