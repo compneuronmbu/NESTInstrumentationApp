@@ -215,7 +215,7 @@ class App
         loader.load( 'static/js/lib/three/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
             for (var label in labelSpecs)
             {
-                let specs = labelSpecs[ label ]
+                let specs = labelSpecs[ label ];
                 var geometry = new THREE.TextGeometry( specs.text, {
                         font: font,
                         size: 10,
@@ -229,9 +229,9 @@ class App
                 var material = new this.THREE.MeshBasicMaterial({color: specs.color} );
                 var mesh = new THREE.Mesh(geometry, material);
                 mesh.scale.setScalar(0.02);
-                mesh.position.x = specs.position.x
-                mesh.position.y = specs.position.y
-                mesh.position.z = specs.position.z
+                mesh.position.x = specs.position.x;
+                mesh.position.y = specs.position.y;
+                mesh.position.z = specs.position.z;
                 this.labelMeshes.push( mesh );
                 this.axisScene.add(mesh);
             }
@@ -306,14 +306,14 @@ class App
                 }
                 if (Object.keys(data).length === 0)
                 {
-                    this.setGuiState({selectionDisabledText: "No files found"})
+                    this.setGuiState({selectionDisabledText: "No files found"});
                 }
                 else
                 {
                     this.setGuiState( { loadContents: data } );
                 }
             }, (message) => {
-                this.setGuiState({selectionDisabledText: message})
+                this.setGuiState({selectionDisabledText: message});
             });
         }
         else if ( target.id === "LFP" )
@@ -322,7 +322,7 @@ class App
             this.isLFP = true;
             JSONstring = "/static/examples/Potjans_Diesmann_converted.json";
             this.loadModelIntoApp( JSONstring, this.initLFP.bind( this ) );
-            this.deviceBoxMap[ "LFP" ] = {
+            this.deviceBoxMap.LFP = {
                 specs:
                 {
                     model: "LFP",
@@ -368,7 +368,7 @@ class App
         var day = currentDate.getDate();
         var month = currentDate.getMonth() + 1;
         var year = currentDate.getFullYear();
-        var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec
+        var dateTime = day + '-' + month + '-' + year + '--' + hour + '-' + min + '-' + sec;
 
         return this.modelName + '--' + dateTime;
     }
@@ -411,16 +411,17 @@ class App
         // Define orbit controls system here, because we need to know if we have
         // a 2D or 3D model before defining the controls
         // as we do not want to define them if we have a 2D model.
+        var coordinateHelper;
         if ( this.is3DLayer )
         {
             this.orbitControls = new this.THREE.OrbitControls( this.camera, this.renderer.domElement );
-            var coordinateHelper = document.getElementById('coordinateHelper');
+            coordinateHelper = document.getElementById('coordinateHelper');
             coordinateHelper.style.display = "block";
         }
         else
         {
             // remove the axis window
-            var coordinateHelper = document.getElementById('coordinateHelper');
+            coordinateHelper = document.getElementById('coordinateHelper');
             coordinateHelper.parentElement.removeChild( coordinateHelper );
             this.axisRenderer = undefined;
         }
@@ -454,11 +455,11 @@ class App
     * @param {Object} modelJson Model to load
     */
     loadModelJson (modelJson, name) {
-        if ( !modelJson.hasOwnProperty('layers')
-             || !modelJson.hasOwnProperty('models')
-             || !modelJson.hasOwnProperty('syn_models')
-             || !modelJson.hasOwnProperty('modelName')
-             || !modelJson.hasOwnProperty('projections') )
+        if ( !modelJson.hasOwnProperty('layers') ||
+             !modelJson.hasOwnProperty('models') ||
+             !modelJson.hasOwnProperty('syn_models') ||
+             !modelJson.hasOwnProperty('modelName') ||
+             !modelJson.hasOwnProperty('projections') )
         {
             this.showModalMessage("Please choose a model in correct JSON format.");
             return;
@@ -481,10 +482,10 @@ class App
                 var result = JSON.parse(e.target.result);
                 this.loadModelJson(result, file.name);
             } catch(err) {
-                console.log(err.message)
+                console.log(err.message);
                 this.showModalMessage("Please upload a correct JSON file");
             }
-        }.bind(this)
+        }.bind(this);
         fr.readAsText(file);
     }
 
@@ -542,9 +543,10 @@ class App
      {
         var element = document.getElementById( 'main_body' );
         var fragment = document.createDocumentFragment();
+        var helpPoints;
         if ( this.is3DLayer )
         {
-            var helpPoints = [ [ 'R:', 'rotate box' ],
+            helpPoints = [ [ 'R:', 'rotate box' ],
                                [ 'S:', 'scale box' ],
                                [ 'Delete:', 'delete selected box/device' ],
                                [ 'Left click + drag:', 'orbit camera' ],
@@ -556,7 +558,7 @@ class App
         }
         else
         {
-            var helpPoints = [ [ 'Click + drag:', 'make box' ],
+            helpPoints = [ [ 'Click + drag:', 'make box' ],
                                [ 'Click box-handle + drag:', 'connect' ],
                                [ 'Delete:', 'delete selected box/device' ],
                                [ 'Shift + click:', 'select device' ],
@@ -569,7 +571,7 @@ class App
         helpBox.onclick = function() {
             var collapsed = document.getElementById('collapse-1');
             collapsed.checked = !collapsed.checked;
-            console.log(collapsed.checked)
+            console.log(collapsed.checked);
         };
 
         var checkbox = document.createElement( 'input' );
@@ -668,16 +670,20 @@ class App
      */
     handleSimulationData( e )
     {
+        var data;
+        var recordedData;
+        var deviceData;
+        var time;
         try 
         {
-            var data = JSON.parse(e.data);
-            var recordedData = data['stream_results'];
-            var deviceData = data['plot_results'];
-            var t = deviceData['time'];
+            data = JSON.parse(e.data);
+            recordedData = data.stream_results;
+            deviceData = data.plot_results;
+            time = deviceData.time;
         }
         catch ( err )
         {
-            if (data['simulation_end'])
+            if (data.simulation_end)
             {
                 this.onSimulationEnd();
                 return;
@@ -686,7 +692,7 @@ class App
         }
 
         this.hideLoadingOverlay();
-        this.$("#infoconnected").html( "Simulating | " + t.toString() + " ms" );
+        this.$("#infoconnected").html( "Simulating | " + time.toString() + " ms" );
 
         // Color results:
         var spiked = this.colorFromSpike(recordedData);
@@ -698,17 +704,17 @@ class App
         }
 
         // Plot results:
-        if ( deviceData['spike_det']['senders'].length >= 1 )
+        if ( deviceData.spike_det.senders.length >= 1 )
         {
-            this.devicePlots.makeSpikeTrain(deviceData['spike_det'], t);
+            this.devicePlots.makeSpikeTrain(deviceData.spike_det, time);
         }
-        if ( deviceData['rec_dev']['times'].length >= 1 )
+        if ( deviceData.rec_dev.times.length >= 1 )
         {
-            this.devicePlots.makeVoltmeterPlot(deviceData['rec_dev'], t);
+            this.devicePlots.makeVoltmeterPlot(deviceData.rec_dev, time);
         }
         if ( this.isLFP )
         {
-            this.devicePlots.makeLFPPlot(deviceData['lfp_det']);
+            this.devicePlots.makeLFPPlot(deviceData.lfp_det);
         }
     }
 
@@ -754,7 +760,7 @@ class App
 
         var pos = this.camera.position.clone().add( dir.multiplyScalar( distance ) );
 
-        return pos
+        return pos;
     }
 
     /**
@@ -910,7 +916,7 @@ class App
                         point = this.getGIDPoint( gid );
                         V_m = response[ device ][ gid ][ 1 ];
                         // TODO: Vm range should be variable
-                        var colorVm = this.mapVmToColor( V_m, -70., -50. );
+                        var colorVm = this.mapVmToColor( V_m, -70.0, -50.0 );
 
                         var points = this.layer_points[ point.layer ].points;
                         var colors = points.geometry.getAttribute( "customColor" ).array;
@@ -1011,7 +1017,7 @@ class App
             abortButton.style.setProperty('visibility', 'hidden');
             document.getElementById( "streamButton" ).disabled = false;
             abortButton.removeEventListener('transitionend', hideButton, false);
-        }
+        };
         abortButton.addEventListener("transitionend", hideButton, false);
         this.$( "#infoconnected" ).html( "Simulation finished" );
         this.setModifiable( true );
@@ -1035,15 +1041,16 @@ class App
             };
             for ( var i in this.deviceBoxMap[ device ].connectees )
             {
+                var data;
                 if ( convertToRoomCoordinates && !this.is3DLayer )
                 {
-                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
+                    data = this.deviceBoxMap[ device ].connectees[ i ].getData( true );
                 }
                 else
                 {
-                    var data = this.deviceBoxMap[ device ].connectees[ i ].getData();
+                    data = this.deviceBoxMap[ device ].connectees[ i ].getData();
                 }
-                projections[ device ].connectees.push( data )
+                projections[ device ].connectees.push( data );
             }
         }
         return projections;
@@ -1169,6 +1176,7 @@ class App
         document.getElementById( "streamButton" ).disabled = true;
 
         var devices = {};
+        var model;
         for ( var devName in this.deviceBoxMap)
         {
             model = this.deviceBoxMap[devName].specs.model;
@@ -1186,16 +1194,16 @@ class App
         var noResults = true;
         for ( var device in this.deviceBoxMap )
         {
-            var model = this.deviceBoxMap[ device ].specs.model;
-            if ( (model === "voltmeter" || model === "spike_detector")
-                 && this.deviceBoxMap[ device ].connectees.length > 0)
+            model = this.deviceBoxMap[ device ].specs.model;
+            if ( ( model === "voltmeter" || model === "spike_detector" ) &&
+                 this.deviceBoxMap[ device ].connectees.length > 0 )
             {
                 noResults = false;
                 this.showLoadingOverlay("Connecting...");
                 break;
             }
         }
-        noResults && this.$("#infoconnected").html( "Simulating...");
+        noResults && this.$("#infoconnected").html( "Simulating..." );
         this.setModifiable( false );
 
         this.$.ajax(
@@ -1280,14 +1288,14 @@ class App
             }
             if (Object.keys(data).length === 0)
             {
-                this.setGuiState({selectionDisabledText: "No files found"})
+                this.setGuiState({selectionDisabledText: "No files found"});
             }
             else
             {
                 this.setGuiState( { loadContents: data } );
             }
         }, (message) => {
-            this.setGuiState({selectionDisabledText: message})
+            this.setGuiState({selectionDisabledText: message});
         });
     }
 
@@ -1306,7 +1314,7 @@ class App
             {
                 if ( data.metadata.type !== 'selection' )
                 {
-                    this.showModalMessage(`Cannot load! File contains ${data.metadata.type}, not selection.`)
+                    this.showModalMessage(`Cannot load! File contains ${data.metadata.type}, not selection.`);
                 }
                 else if (data.metadata.model === this.modelName)
                 {
@@ -1315,12 +1323,12 @@ class App
                 }
                 else
                 {
-                    this.showModalMessage(`Cannot load! Wrong model of selection: ${data.metadata.model} not ${this.modelName}`)
+                    this.showModalMessage(`Cannot load! Wrong model of selection: ${data.metadata.model} not ${this.modelName}`);
                 }
             }
             else
             {
-                this.showModalMessage('Cannot load! File has no metadata.')
+                this.showModalMessage('Cannot load! File has no metadata.');
             }
         });
     }
@@ -1379,8 +1387,8 @@ class App
      */
     loadState( state )
     {
-        if ( !state.hasOwnProperty('devices')
-             || !state.hasOwnProperty('selections') )
+        if ( !state.hasOwnProperty('devices') ||
+             !state.hasOwnProperty('selections') )
         {
             this.showModalMessage("Could not load state: State object does not contain the necessary properties.");
             return;
@@ -1388,11 +1396,13 @@ class App
 
         // TODO: Only load if there are no selections and no devices (except LFP).
         // Load selection boxes
+        var box;
+        var target;
         for ( var boxSpecs of state.selections )
         {
             if ( this.is3DLayer )
             {
-                var box = new this.SelectionBox3D( boxSpecs.width,
+                box = new this.SelectionBox3D( boxSpecs.width,
                                                    boxSpecs.height,
                                                    boxSpecs.depth,
                                                    boxSpecs.center,
@@ -1402,7 +1412,7 @@ class App
             }
             else
             {
-                var box = new this.SelectionBox( boxSpecs.ll,
+                box = new this.SelectionBox( boxSpecs.ll,
                                                  boxSpecs.ur,
                                                  boxSpecs.maskShape,
                                                  boxSpecs.name );
@@ -1445,7 +1455,7 @@ class App
                     this.makeRecordingDevice( deviceModel, currentDevice.name, true );
                 }
                 // Set target to this device's mesh
-                var target = this.circle_objects[ this.circle_objects.length - 1 ];
+                target = this.circle_objects[ this.circle_objects.length - 1 ];
                 target.position.x = currentDevice.position.x;
                 target.position.y = currentDevice.position.y;
                 target.position.z = currentDevice.position.z;
@@ -1455,7 +1465,7 @@ class App
             for (var id of currentDevice.connectees )
             {
                 // Find box from id.
-                for ( var box of this.selectionBoxArray )
+                for ( box of this.selectionBoxArray )
                 {
                     if ( box.uniqueID == id )
                     {
@@ -1488,7 +1498,7 @@ class App
     {
         // TODO: This function may be obsolete.
 
-        console.log( "file uploaded" )
+        console.log( "file uploaded" );
         // TODO: need some checks here
         var fr = new FileReader();
         var result;
@@ -1509,11 +1519,13 @@ class App
      * @param {Object=} params Optional parameters of the device
      * @param {String} name Device name
      */
-    makeDevice( device, col, map, params = {}, name )
+    makeDevice( device, col, map, params, name )
     {
+        var geometry;
+        var deviceName;
         if ( this.is3DLayer )
         {
-            var geometry = new this.THREE.SphereGeometry( 0.05, 32, 32 );
+            geometry = new this.THREE.SphereGeometry( 0.05, 32, 32 );
             // Need to properly map the 2D image onto the 3D sphere.
             var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
             for ( var i = 0; i < faceVertexUvs.length; ++i )
@@ -1530,7 +1542,7 @@ class App
         }
         else
         {
-            var geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
+            geometry = new this.THREE.CircleBufferGeometry( 0.05, 32 );
         }
 
         geometry.computeBoundingSphere(); // needed for loading
@@ -1543,11 +1555,11 @@ class App
         var circle = new this.THREE.Mesh( geometry, material );
         if ( name !== undefined )
         {
-            var deviceName = name;
+            deviceName = name;
         }
         else
         {
-            var deviceName = device + "_" + String( this.deviceCounter++ );
+            deviceName = device + "_" + String( this.deviceCounter++ );
         }
         circle.name = deviceName;
 
@@ -1589,21 +1601,24 @@ class App
      */
     makeStimulationDevice( device, name, noCheckpoint=false )
     {
-        console.log( "making stimulation device of type", device )
+        console.log( "making stimulation device of type", device );
 
+        var col;
+        var mapPath;
+        var params;
         if ( device === "poisson_generator" )
         {
-            var col = 0xB28080
-            var mapPath = "static/js/textures/poisson.png";
-            var params = {
+            col = 0xB28080;
+            mapPath = "static/js/textures/poisson.png";
+            params = {
                 rate: 210000.0
-            }
+            };
         }
         else if ( device === "ac_generator" )
         {
-            var col = 0xc9725e
-            var mapPath = "static/js/textures/sinus.png";
-            var params = {'amplitude': 50., 'frequency': 35.}
+            col = 0xc9725e;
+            mapPath = "static/js/textures/sinus.png";
+            params = {'amplitude': 50.0, 'frequency': 35.0};
         }
         var map = new this.THREE.TextureLoader().load(
             mapPath,
@@ -1623,22 +1638,25 @@ class App
      */
     makeRecordingDevice( device, name, noCheckpoint=false )
     {
-        console.log( "making recording device of type", device )
-        var params = {}
+        console.log( "making recording device of type", device );
+
+        var col;
+        var mapPath;
+        var params = {};
         if ( device === "voltmeter" )
         {
-            var col = 0xBDB280;
-            var mapPath = "static/js/textures/voltmeter.png";
+            col = 0xBDB280;
+            mapPath = "static/js/textures/voltmeter.png";
         }
         else if ( device === "spike_detector" )
         {
-            var col = 0x809980;
-            var mapPath = "static/js/textures/spike_detector.png";
+            col = 0x809980;
+            mapPath = "static/js/textures/spike_detector.png";
         }
         else
         {
-            var col = 0xBDB280;
-            var mapPath = "static/js/textures/recording_device.png";
+            col = 0xBDB280;
+            mapPath = "static/js/textures/recording_device.png";
         }
         var map = new this.THREE.TextureLoader().load(
             mapPath,
@@ -1677,10 +1695,10 @@ class App
 
         if ( lfp )
         {
-            this.deviceBoxMap[ 'LFP' ].connectees.push( this.controls.boxInFocus );
+            this.deviceBoxMap.LFP.connectees.push( this.controls.boxInFocus );
         }
 
-        console.log( "Selection box: ", box )
+        console.log( "Selection box: ", box );
 
         this.controls.serverPrintGids();
         requestAnimationFrame( this.render.bind(this) );
@@ -1694,7 +1712,7 @@ class App
      */
     getMaskBoxes()
     {
-        var boxes = []
+        var boxes = [];
         for ( var i in this.selectionBoxArray )
         {
             boxes.push( this.selectionBoxArray[ i ].box );
@@ -1750,8 +1768,8 @@ class App
     {
         this.prevStates.push( this.getCurrentState() );
         this.redoStates = [];
-        this.setGuiState({undoDisabled: this.prevStates.length === 1})
-        this.setGuiState({redoDisabled: this.redoStates.length === 0})
+        this.setGuiState({undoDisabled: this.prevStates.length === 1});
+        this.setGuiState({redoDisabled: this.redoStates.length === 0});
     }
 
     /**
@@ -1815,7 +1833,7 @@ class App
      */
     render()
     {
-        console.log('Rendering..')
+        console.log('Rendering..');
         if ( this.orbitControls )
         {
             this.orbitControls.update();
@@ -1825,21 +1843,22 @@ class App
         this.renderer.render( this.outlineScene, this.camera );
         this.renderer.render( this.scene, this.camera );
 
+        var i;
         if ( this.axisRenderer !== undefined )
         {
             let normalizedCamera = this.camera.position.clone().normalize();
             this.axisCamera.position.copy( normalizedCamera.multiplyScalar(5) );
             this.axisCamera.lookAt( this.axisScene.position );
-            for (var i = 0; i < this.labelMeshes.length; ++i)
+            for (i = 0; i < this.labelMeshes.length; ++i)
             {
-                this.labelMeshes[ i ].lookAt(this.axisCamera.position)
+                this.labelMeshes[ i ].lookAt(this.axisCamera.position);
             }
             this.axisRenderer.render( this.axisScene, this.axisCamera );
         }
 
         if ( this.is3DLayer )
         {
-            for (var i = 0; i < this.circle_objects.length; ++i)
+            for (i = 0; i < this.circle_objects.length; ++i)
             {
                 this.circle_objects[ i ].lookAt(this.camera.position);
             }

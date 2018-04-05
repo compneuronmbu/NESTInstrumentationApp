@@ -22,7 +22,7 @@ class GuiButtons extends React.Component{
         modalMessage: '',
         modalHead: '',
         selectionDisabledText: 'Loading...'
-      }
+      };
     }
 
     componentWillMount() {

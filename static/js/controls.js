@@ -198,7 +198,7 @@ class Controls
 
         var intersects = this.getMouseIntersecting( app.mouseDownCoords.x,
             app.mouseDownCoords.y,
-            this.drag_objects )
+            this.drag_objects );
 
         if ( intersects.length > 0 )
         {
@@ -344,7 +344,6 @@ class Controls
      */
     getBoxClicked3D()
     {
-        var selectedBox = undefined;
         var boxIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
                     app.mouseDownCoords.y,
                     app.getMaskBoxes() );
@@ -380,7 +379,6 @@ class Controls
      */
     selectLine()
     {
-        var selectedLine = undefined;
         var lines = app.getConnectionLines();
         app.tmpLine = lines[0];
         var lineIntersects = this.getMouseIntersecting( app.mouseDownCoords.x,
@@ -483,22 +481,22 @@ class Controls
      */
     rotateBox( mouseX, mouseY )
     {
-        console.log(this.boxInFocus.box)
+        console.log(this.boxInFocus.box);
 
         var cntr = app.toScreenXY(this.boxInFocus.box.position);
 
         // The length between the centre of the ellipse and the mouse position.
         var hyp = Math.sqrt( Math.pow( app.renderer.getSize().height - cntr.y - mouseY, 2 ) + Math.pow( mouseX - cntr.x, 2 ) );
-
+        var angle;
         if(  app.renderer.getSize().height - cntr.y - mouseY >= 0 )
         {
             // If the mouse position is at the upper half of the ellipse.
-            var angle = Math.acos( ( mouseX - cntr.x ) / hyp );
+            angle = Math.acos( ( mouseX - cntr.x ) / hyp );
         }
         else
         {
             // If the mouse position is at the bottom half of the ellipse.
-            var angle = 2*Math.PI - Math.acos( ( mouseX - cntr.x ) / hyp ) ;
+            angle = 2*Math.PI - Math.acos( ( mouseX - cntr.x ) / hyp ) ;
         }
 
         this.boxInFocus.angle = angle;
@@ -524,7 +522,7 @@ class Controls
             x: relScreenPos.x,
             y: relScreenPos.y,
             z: 0.0
-        }, "" )
+        }, "" );
     }
 
     /**
@@ -546,7 +544,7 @@ class Controls
             } );
             this.deviceInFocus.position.copy( relScreenPos );
             this.makeOutline( this.deviceInFocus );
-            var deviceName = this.deviceInFocus.name
+            var deviceName = this.deviceInFocus.name;
             var radius = this.deviceInFocus.geometry.boundingSphere.radius;
             for ( var i in app.deviceBoxMap[ deviceName ].connectees )
             {
@@ -617,14 +615,15 @@ class Controls
 
         var intersects = this.getMouseIntersecting( mouseX,
             mouseY,
-            this.drag_objects )
-        if ( intersects.length > 0
-             && app.deviceBoxMap[ intersects[ 0 ].object.name ].connectees.indexOf( this.boxInFocus ) === -1 )
+            this.drag_objects );
+        if ( intersects.length > 0 &&
+             app.deviceBoxMap[ intersects[ 0 ].object.name ]
+             .connectees.indexOf( this.boxInFocus ) === -1 )
         {
             var intersect_target = intersects[ 0 ].object;
             var radius = intersect_target.geometry.boundingSphere.radius;
             this.boxInFocus.setLineTarget( intersect_target.name );
-            this.boxInFocus.lineToDevice( intersect_target.position, radius, intersect_target.name )
+            this.boxInFocus.lineToDevice( intersect_target.position, radius, intersect_target.name );
 
             app.deviceBoxMap[ intersect_target.name ].connectees.push( this.boxInFocus );
             app.stateCheckpoint();
@@ -665,12 +664,13 @@ class Controls
     {
         // remove connection lines
         var deviceName = this.deviceInFocus.name;
-        for ( var i in app.deviceBoxMap[ deviceName ].connectees )
+        var i;
+        for ( i in app.deviceBoxMap[ deviceName ].connectees )
         {
             app.deviceBoxMap[ deviceName ].connectees[ i ].removeLines( deviceName );
         }
-        this.removeOutline()
-        for ( var i in app.circle_objects )
+        this.removeOutline();
+        for ( i in app.circle_objects )
         {
             if ( app.circle_objects[ i ].name === deviceName )
             {
@@ -708,7 +708,7 @@ class Controls
 
             if ( !app.is3DLayer &&  this.boxInFocus !== undefined )
             {
-                console.log( "Select resize points" )
+                console.log( "Select resize points" );
                 // If a box is selected, check if we click on a resize or rotation point.
                 this.selectResizeOrRotationPoints( event.clientX, event.clientY );
                 if ( this.resizeSideInFocus !== undefined || this.rotationPoint !== undefined )
@@ -718,7 +718,7 @@ class Controls
             }
             if ( event.shiftKey )
             {
-                console.log( "Select device" )
+                console.log( "Select device" );
                 // If the shift key is down, check if we click on a device.
                 this.selectDevice( event.clientX, event.clientY );
 
@@ -900,14 +900,14 @@ class Controls
                 this.shiftDown = true;
                 break;
             case 82:
-                this.boxInFocus
-                    && this.boxInFocus.transformControls
-                    && this.boxInFocus.transformControls.setMode( "rotate" );
+                this.boxInFocus &&
+                this.boxInFocus.transformControls &&
+                this.boxInFocus.transformControls.setMode( "rotate" );
                 break;
             case 83:  // S key
-                this.boxInFocus
-                    && this.boxInFocus.transformControls
-                    && this.boxInFocus.transformControls.setMode( "scale" );
+                this.boxInFocus &&
+                this.boxInFocus.transformControls &&
+                this.boxInFocus.transformControls.setMode( "scale" );
         }
         this.keyDown = true;
     }
@@ -944,15 +944,15 @@ class Controls
                 console.log(app.deviceBoxMap);
                 break;
             case 82:  // R key
-                this.boxInFocus
-                    && this.boxInFocus.transformControls
-                    && this.boxInFocus.transformControls.setMode( "translate" );
-                console.log(this.boxInFocus)
+                this.boxInFocus &&
+                this.boxInFocus.transformControls &&
+                this.boxInFocus.transformControls.setMode( "translate" );
+                console.log(this.boxInFocus);
                 break;
             case 83:  // S key
-                this.boxInFocus
-                    && this.boxInFocus.transformControls
-                    && this.boxInFocus.transformControls.setMode( "translate" );
+                this.boxInFocus &&
+                this.boxInFocus.transformControls &&
+                this.boxInFocus.transformControls.setMode( "translate" );
         }
         this.keyDown = false;
         requestAnimationFrame( app.render.bind(app) );
@@ -977,7 +977,7 @@ class Controls
         }
         requestAnimationFrame( app.render.bind(app) );
     }
-};
+}
 
 // Try exporting Controls for testing
 try

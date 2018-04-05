@@ -184,7 +184,7 @@ Transformer.prototype.update = function ( rotation, eye )
     var vec1 = new THREE.Vector3( 0, 0, 0 );
     var vec2 = new THREE.Vector3( 0, 1, 0 );
     var lookAtMatrix = new THREE.Matrix4();
-    this.parent.rotation.fromArray([0, 0, 0])
+    this.parent.rotation.fromArray([0, 0, 0]);
 
     this.traverse( function( child )
     {
@@ -655,7 +655,7 @@ var TransformControls = function ( camera, domElement )
 
     this.setSpace = function ( space )
     {
-        console.log( "space: ", space)
+        console.log( "space: ", space);
         scope.space = space;
         this.update();
         scope.dispatchEvent( changeEvent );

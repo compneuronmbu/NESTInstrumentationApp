@@ -165,17 +165,16 @@ class DevicePlots {
                 .attr("transform", "translate( 3, "+ (height - this.lfpMargin.top) / 2 +")rotate(-90)")
                 .text("Channel");
 
-            var j;
             for ( var i = 16, j = 1 ; i >= 1 ; --i, ++j )
             {
                 this.lfpDict[i] = {};
-                this.lfpDict[i]['axis'] = d3.scaleLinear().range([height/32,0]);
-                var yAxis = d3.axisLeft(this.lfpDict[i]['axis']).tickValues([]).tickSizeOuter(0);
+                this.lfpDict[i].axis = d3.scaleLinear().range([height/32,0]);
+                yAxis = d3.axisLeft(this.lfpDict[i].axis).tickValues([]).tickSizeOuter(0);
 
-                this.lfpDict[i]['graph'] = LFPsvg.append("g")
+                this.lfpDict[i].graph = LFPsvg.append("g")
                     .attr("class", "LFPplot")
                     .attr("transform", "translate(0, "+ (height - (j+1)*height/17 ) +")");
-                this.lfpDict[i]['graph'].append("g")
+                this.lfpDict[i].graph.append("g")
                     .attr("class", "y axis")
                     .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
                     .call(yAxis);
@@ -223,7 +222,7 @@ class DevicePlots {
             if( this.spikeTime[t] >= this.firstTime )
             {
                 toRemove = t;
-                break
+                break;
             }
         }
 
@@ -286,7 +285,7 @@ class DevicePlots {
             if( this.VmTime[t] >= this.firstTime )
             {
                 toRemove = t;
-                break
+                break;
             }
         }
 
@@ -301,8 +300,8 @@ class DevicePlots {
         var no_neurons = events.V_m[0].length;
 
         // Update y-axis to handle changing membrane potential.
-        var maxVms = events.V_m.map(function(d) { return d3.max(d)});
-        var minVms = events.V_m.map(function(d) { return d3.min(d)});
+        var maxVms = events.V_m.map(function(d) { return d3.max(d);});
+        var minVms = events.V_m.map(function(d) { return d3.min(d);});
 
         var yMin = this.potY.domain()[0];
         var yMax = this.potY.domain()[1];
@@ -343,8 +342,8 @@ class DevicePlots {
         {
             return;
         }
-        var lastTime = events[0]['times'][events[0]['times'].length - 1];
-        var firstTime = events[0]['times'][0];
+        var lastTime = events[0].times[events[0].times.length - 1];
+        var firstTime = events[0].times[0];
 
         this.lfpX.domain([firstTime, lastTime]);
         var xAxis = d3.axisBottom(this.lfpX).ticks(10);
@@ -360,20 +359,20 @@ class DevicePlots {
         for ( var i = 1 ; i <= 16 ; ++i )
         {
             ev = events[i-1];
-            updated_lfp = ev['lfp'];
-            updated_time = ev['times'];
+            updated_lfp = ev.lfp;
+            updated_time = ev.times;
             min_lfp = d3.min(updated_lfp);
             max_lfp = d3.max(updated_lfp);
 
-            this.lfpDict[i]['axis'].domain([min_lfp, max_lfp]);
-            var yAxis = d3.axisLeft(this.lfpDict[i]['axis']).tickValues([]).tickSizeOuter(0);
-            this.lfpDict[i]['graph'].select(".y.axis").transition().duration(0).call(yAxis);
+            this.lfpDict[i].axis.domain([min_lfp, max_lfp]);
+            var yAxis = d3.axisLeft(this.lfpDict[i].axis).tickValues([]).tickSizeOuter(0);
+            this.lfpDict[i].graph.select(".y.axis").transition().duration(0).call(yAxis);
 
             var line = d3.line()
                 .x((d, j) => { return this.lfpX(updated_time[j]); })
-                .y((d, j) => { return this.lfpDict[i]['axis'](updated_lfp[j]); });
+                .y((d, j) => { return this.lfpDict[i].axis(updated_lfp[j]); });
 
-            var path = this.lfpDict[i]['graph'].selectAll('path').data(updated_lfp);
+            var path = this.lfpDict[i].graph.selectAll('path').data(updated_lfp);
           
             path.attr('d', line(updated_lfp));
             path.enter().append('path').attr('d', line(updated_lfp))
