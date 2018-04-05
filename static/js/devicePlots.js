@@ -37,6 +37,8 @@ class DevicePlots {
         this.senders = [];
         this.VmTime = [];
         this.Vm = [];
+        this.lfpTime = [];
+        this.lfpVal = {};
     }
 
     /**
@@ -179,6 +181,8 @@ class DevicePlots {
                     .attr("class", "y axis")
                     .attr("transform", "translate("+( this.lfpMargin.left )+", 0)")
                     .call(yAxis);
+
+                this.lfpVal[i] = [];
             }
         } // app.isLFP
     }
@@ -343,10 +347,16 @@ class DevicePlots {
         {
             return;
         }
-        var lastTime = events[0]['times'][events[0]['times'].length - 1];
-        var firstTime = events[0]['times'][0];
 
-        this.lfpX.domain([firstTime, lastTime]);
+        this.lfpTime.push.apply(this.lfpTime, events.times);
+        if ( this.lfpTime.length > 100 )
+        {
+            // We remove all times at beginning of our lfpTime, up to the
+            // length of the array of times coming in.
+            this.lfpTime = this.lfpTime.slice(events['times'].length);
+        }
+
+        this.lfpX.domain([this.lfpTime[0], this.lfpTime[this.lfpTime.length - 1]]);
         var xAxis = d3.axisBottom(this.lfpX).ticks(10);
 
         this.lfpPlot.select(".x.axis").transition().duration(0).call(xAxis);
@@ -355,28 +365,32 @@ class DevicePlots {
         var max_lfp;
         var ev;
         var updated_lfp;
-        var updated_time;
 
         for ( var i = 1 ; i <= 16 ; ++i )
         {
             ev = events[i-1];
             updated_lfp = ev['lfp'];
-            updated_time = ev['times'];
-            min_lfp = d3.min(updated_lfp);
-            max_lfp = d3.max(updated_lfp);
+            this.lfpVal[i].push.apply(this.lfpVal[i], updated_lfp);
+            if ( this.lfpVal[i].length > 100 )
+            {
+                this.lfpVal[i] = this.lfpVal[i].slice(updated_lfp.length);
+            }
+
+            min_lfp = d3.min(this.lfpVal[i]);
+            max_lfp = d3.max(this.lfpVal[i]);
 
             this.lfpDict[i]['axis'].domain([min_lfp, max_lfp]);
             var yAxis = d3.axisLeft(this.lfpDict[i]['axis']).tickValues([]).tickSizeOuter(0);
             this.lfpDict[i]['graph'].select(".y.axis").transition().duration(0).call(yAxis);
 
             var line = d3.line()
-                .x((d, j) => { return this.lfpX(updated_time[j]); })
-                .y((d, j) => { return this.lfpDict[i]['axis'](updated_lfp[j]); });
+                .x((d, j) => { return this.lfpX(this.lfpTime[j]); })
+                .y((d, j) => { return this.lfpDict[i]['axis'](this.lfpVal[i][j]); });
 
-            var path = this.lfpDict[i]['graph'].selectAll('path').data(updated_lfp);
+            var path = this.lfpDict[i]['graph'].selectAll('path').data(this.lfpVal[i]);
           
-            path.attr('d', line(updated_lfp));
-            path.enter().append('path').attr('d', line(updated_lfp))
+            path.attr('d', line(this.lfpVal[i]));
+            path.enter().append('path').attr('d', line(this.lfpVal[i]))
                 .classed('line', true)
                 .style('stroke-width', 2)
                 .style('stroke', 'steelblue');

@@ -762,8 +762,9 @@ class NESTClient(object):
         # TODO: Set up on the fly
         recording_events = {'spike_det': {'senders': [], 'times': []},
                             'rec_dev': {'times': [], 'V_m': []},
-                            'lfp_det': {str(i): {'lfp': [], 'times': []}
+                            'lfp_det': {str(i): {'lfp': []}
                                         for i in range(16)}}
+        recording_events['lfp_det']['times'] = []
 
         time_array = []
         vm_array = []
@@ -809,10 +810,10 @@ class NESTClient(object):
                         # device_gid is a list of GIDs
                         mm_status = nest.GetStatus((device_gid[ch],))
                         events = mm_status[0]['events']
-                        recording_events['lfp_det'][str(ch)]['times'] += [
-                            float(t) for t in events['times']]
                         recording_events['lfp_det'][str(ch)]['lfp'] += [
                             float(l) for l in events['lfp']]
+                    recording_events['lfp_det']['times'] += [
+                        float(t) for t in events['times']]
 
                 nest.SetStatus(device_gid, 'n_events', 0)  # reset the device
 
