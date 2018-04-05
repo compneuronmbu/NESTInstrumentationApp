@@ -424,6 +424,7 @@ class NESTClient(object):
 
             if model == 'LFP':
                 self.connect_to_lfp()
+                self.connect_to_poisson()
                 continue
 
             # floatify params
@@ -453,6 +454,46 @@ class NESTClient(object):
                     self.print("Connecting {} to {}".format("neurons", model))
                     nest.Connect(nest_neurons, nest_device,
                                  syn_spec=synapse_model)
+
+    def connect_to_poisson(self):
+        net_dict = {'bg_rate': 8.,
+                    'poisson_delay': 1.5,
+                    'K_ext': np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100]),
+                    'K_scaling': 0.1, 'C_m': 250.0, 'tau_m': 10.0, 'tau_syn_ex': 0.5, 'PSP_e': 0.15}
+        K_ext = net_dict['K_ext'] * net_dict['K_scaling']
+
+        C_m = net_dict['C_m']
+        tau_m = net_dict['tau_m']
+        tau_syn_ex = net_dict['tau_syn_ex']
+        PSP_val = net_dict['PSP_e']
+
+        PSC_e_over_PSP_e = (((C_m) ** (-1) * tau_m * tau_syn_ex / (
+            tau_syn_ex - tau_m) * ((tau_m / tau_syn_ex) ** (
+                - tau_m / (tau_m - tau_syn_ex)) - (tau_m / tau_syn_ex) ** (
+                    - tau_syn_ex / (tau_m - tau_syn_ex)))) ** (-1))
+        PSC_e = (PSC_e_over_PSP_e * PSP_val)
+
+        w_ext = PSC_e
+
+        rate_ext = net_dict['bg_rate'] * K_ext
+        poisson = []
+        for i in range(len(self.layers)):
+            poiss = nest.Create('poisson_generator')
+            nest.SetStatus(poiss, {'rate': rate_ext[i]})
+            poisson.append(poiss)
+
+        for i, target_pop in enumerate(self.layers):
+            conn_dict_poisson = {'rule': 'all_to_all'}
+            syn_dict_poisson = {
+                'model': 'static_synapse',
+                'weight': w_ext,
+                'delay': net_dict['poisson_delay']
+                }
+            nest.Connect(
+                poisson[i], nest.GetNodes(self.layers[target_pop])[0],
+                conn_spec=conn_dict_poisson,
+                syn_spec=syn_dict_poisson
+                )
 
     def connect_to_lfp(self):
         print('Setting up LFP model...')
