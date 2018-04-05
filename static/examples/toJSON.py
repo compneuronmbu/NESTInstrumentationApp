@@ -14,7 +14,9 @@ def convert(specs, conn_specs, file_name, model_name=None):
 
     for layer in layers:
         name = layer[0]
-        if "meter" in name.lower() or "detector" in name.lower() or "generator" in name.lower():
+        skip_layer = ("meter" in name.lower() or "detector" in name.lower() or
+                      "generator" in name.lower())
+        if skip_layer:
             continue
 
         layer_dict = {"neurons": []}

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import contextlib
 import pprint
 import subprocess as sp
 import gevent
@@ -44,7 +43,8 @@ def index():
     """
     Renders the index page template and sends it to the client.
     """
-    return flask.render_template('NESTInstrumentationApp.html', version=VERSION)
+    return flask.render_template('NESTInstrumentationApp.html',
+                                 version=VERSION)
 
 
 @app.route('/makeNetwork', methods=['POST'])
@@ -112,7 +112,6 @@ def connect_ajax():
                 print("Cannot connect, NEST is busy!")
                 return flask.Response(status=BUSY_ERRORCODE)
 
-            pp = pprint.PrettyPrinter(indent=4)
             print('Projections:')
             print(projections)
 
