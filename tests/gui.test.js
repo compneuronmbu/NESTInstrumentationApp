@@ -6,7 +6,7 @@ const GUI = require( '../static/js/GUI.jsx' );
 console.log = jest.fn();  // suppress output
 
 var JSONstring = '../static/examples/brunel_converted.json';
-var MODELPARAMETERS = require(JSONstring)
+var MODELPARAMETERS = require(JSONstring);
 
 beforeEach( () => {
     app = new App();
@@ -18,15 +18,15 @@ beforeEach( () => {
     app.container = {
         clientWidth: 800,
         clientHeight: 600
-    }
+    };
     app.renderer = {
         getSize: function() {
             return {
                 height: 600,
                 width: 800
-            }
+            };
         },
-    }
+    };
     app.controls = new Controls( undefined, {
         addEventListener: jest.fn(),
         style: {}
@@ -126,17 +126,18 @@ test( 'Test DropDown multiple', () => {
 } );
 
 test( 'Test SelectionsButton', () => {
-            const buttonComponent = renderer.create( < GUI.SelectionsButton button_class = 'selectionsButton'
-                button_id = 'rectangleButton'
-                text = "&#x25FC;"
-                function = {
-                    function() {
-                        app.makeRectangularShape();
-                    }
-                }
-                />);
-                let tree = buttonComponent.toJSON(); tree.props.onClick();
-            } );
+    const buttonComponent = renderer.create(
+        < GUI.SelectionsButton button_class = 'selectionsButton'
+        button_id = 'rectangleButton'
+        text = "&#x25FC;"
+        function = {
+            function() {
+                app.makeRectangularShape();
+            }
+        }
+        />);
+    let tree = buttonComponent.toJSON(); tree.props.onClick();
+} );
 
         /*
         test('Test GUI add dropdown item', () => {

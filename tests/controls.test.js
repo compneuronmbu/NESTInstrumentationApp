@@ -3,7 +3,7 @@ const Controls = require( '../static/js/controls.js' );
 console.log = jest.fn(); // suppress output
 
 var JSONstring = '../static/examples/brunel_converted.json';
-var MODELPARAMETERS = require(JSONstring)
+var MODELPARAMETERS = require(JSONstring);
 
 // Test setup
 beforeEach( () => {
@@ -15,22 +15,22 @@ beforeEach( () => {
     app.container = {
         clientWidth: 800,
         clientHeight: 600
-    }
+    };
     app.renderer = {
         getSize: function() {
             return {
                 height: 600,
                 width: 800
-            }
+            };
         },
         domElement: {
             addEventListener: jest.fn(),
             getBoundingClientRect: function(){
-                return {left: 0, top: 0, width: 1200, height: 800}
+                return {left: 0, top: 0, width: 1200, height: 800};
             },
             style: {}
         }
-    }
+    };
     app.controls = new Controls( undefined, app.renderer.domElement );
     app.initTHREEScene();
     app.modelParameters = MODELPARAMETERS;
@@ -43,7 +43,7 @@ beforeEach( () => {
 
     // mock the matrixWorldInverse as it is only updated at render
     var matrixWorldInverse = new app.THREE.Matrix4();
-    matrixWorldInverse.set( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -2.5, 0, 0, 0, 1 )
+    matrixWorldInverse.set( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -2.5, 0, 0, 0, 1 );
     app.camera.matrixWorldInverse = matrixWorldInverse;
 } );
 
@@ -149,7 +149,7 @@ test( 'Test resizeBox', () => {
             x: 100,
             y: 100
         };
-    }
+    };
 
     checkResize( "lowerLeft", 75, 525, 75, 75, 100, 100 );
     checkResize( "lowerMiddle", 75, 525, 50, 75, 100, 100 );
@@ -261,7 +261,7 @@ test( 'Test box checkFlip', () => {
     app.controls.makeSelectionBox();
 
     app.controls.boxInFocus.ll.x = 350;
-    app.controls.boxInFocus.checkFlip()
+    app.controls.boxInFocus.checkFlip();
     expect( app.controls.boxInFocus.ll ).toMatchObject( {
         x: 300,
         y: 300
@@ -272,7 +272,7 @@ test( 'Test box checkFlip', () => {
     } );
 
     app.controls.boxInFocus.ur.y = 250;
-    app.controls.boxInFocus.checkFlip()
+    app.controls.boxInFocus.checkFlip();
     expect( app.controls.boxInFocus.ll ).toMatchObject( {
         x: 300,
         y: 250
@@ -307,12 +307,12 @@ test( 'Test makeConnection', () => {
     app.controls.getMouseIntersecting = ( cX, cY, objects ) => {
         return [ {
             object: objects[ 0 ]
-        } ]
+        } ];
     };
     app.controls.drag_objects = app.circle_objects;
     app.controls.boxInFocus.makeLine();
     app.controls.makeConnection( 0, 0 ); // mouse coordinates are irrelevant
-    expect( app.deviceBoxMap[ 'poisson_generator_1' ].connectees ).toEqual( [ app.controls.boxInFocus ] );
+    expect( app.deviceBoxMap.poisson_generator_1.connectees ).toEqual( [ app.controls.boxInFocus ] );
 } );
 
 test( 'Test deleteBox', () => {
@@ -341,7 +341,7 @@ test( 'Test deleteBox', () => {
     app.controls.boxInFocus.makeLine();
     app.controls.boxInFocus.setLineTarget( target.name );
     app.controls.boxInFocus.lineToDevice( target.position, radius, target.name );
-    app.deviceBoxMap[ "poisson_generator_1" ].connectees.push( app.controls.boxInFocus );
+    app.deviceBoxMap.poisson_generator_1.connectees.push( app.controls.boxInFocus );
 
     app.controls.deleteBox();
     expect( app.scene.children.length ).toBe( 3 ); // two points objects, one device
@@ -375,7 +375,7 @@ test( 'Test deleteDevice', () => {
     app.controls.boxInFocus.setLineTarget( target.name );
     app.controls.boxInFocus.lineToDevice( target.position, radius, target.name );
     app.controls.boxInFocus.removePoints();
-    app.deviceBoxMap[ "poisson_generator_1" ].connectees.push( app.controls.boxInFocus );
+    app.deviceBoxMap.poisson_generator_1.connectees.push( app.controls.boxInFocus );
 
     app.controls.deleteDevice();
     expect( app.scene.children.length ).toBe( 4 ); // two points objects, one box, one box handle
@@ -387,7 +387,7 @@ test( 'Test onMouseDown', () => {
     app.controls.getMouseIntersecting = ( cX, cY, objects ) => {
         return [ {
             object: objects[ 0 ]
-        } ]
+        } ];
     };
 
     var makeMouseEvent = () => {
@@ -399,7 +399,7 @@ test( 'Test onMouseDown', () => {
             shiftKey: false,
             clientX: 100,
             clientY: 500
-        }
+        };
     };
 
     // with boxInFocus
@@ -421,7 +421,7 @@ test( 'Test onMouseDown', () => {
     // with shift key
     app.controls.boxInFocus = undefined;
     app.makeStimulationDevice( "poisson_generator" );
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     event.shiftKey = true;
     app.controls.drag_objects = app.circle_objects;
     app.controls.onMouseDown( event );
@@ -429,7 +429,7 @@ test( 'Test onMouseDown', () => {
 
     // selecting box
     app.controls.boxInFocus = undefined;
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseDown( event );
     expect( app.controls.boxInFocus ).toBeInstanceOf( app.SelectionBox );
 } );
@@ -445,7 +445,7 @@ test( 'Test onMouseMove', () => {
             shiftKey: false,
             clientX: 100,
             clientY: 500
-        }
+        };
     };
 
     // make mock functions of target functions
@@ -474,7 +474,7 @@ test( 'Test onMouseMove', () => {
     // with resizeSideInFocus
     app.controls.make_selection_box = false;
     app.controls.resizeSideInFocus = "lowerLeft";
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseMove( event );
     expect( app.controls.updateMarquee.mock.calls.length ).toBe( 0 );
     expect( app.controls.resizeBox.mock.calls[ 0 ] ).toEqual( [ 100, 500 ] );
@@ -485,7 +485,7 @@ test( 'Test onMouseMove', () => {
     // with make_connection
     app.controls.resizeSideInFocus = undefined;
     app.controls.make_connection = true;
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseMove( event );
     expect( app.controls.updateMarquee.mock.calls.length ).toBe( 0 );
     expect( app.controls.resizeBox.mock.calls.length ).toBe( 0 );
@@ -497,7 +497,7 @@ test( 'Test onMouseMove', () => {
     app.controls.make_connection = false;
     app.controls.deviceInFocus = true;
     app.controls.mouseDown = true;
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseMove( event );
     expect( app.controls.updateMarquee.mock.calls.length ).toBe( 0 );
     expect( app.controls.resizeBox.mock.calls.length ).toBe( 0 );
@@ -516,7 +516,7 @@ test( 'Test onMouseUp', () => {
             shiftKey: false,
             clientX: 100,
             clientY: 500
-        }
+        };
     };
 
     // make mock functions of target functions
@@ -549,7 +549,7 @@ test( 'Test onMouseUp', () => {
     // with resizeSideInFocus
     app.controls.make_selection_box = false;
     app.controls.resizeSideInFocus = "lowerLeft";
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseUp( event );
     expect( app.controls.boxInFocus.checkFlip.mock.calls.length ).toBe( 1 );
     expect( app.controls.boxInFocus.updateColors.mock.calls.length ).toBe( 1 );
@@ -559,7 +559,7 @@ test( 'Test onMouseUp', () => {
     // with make_connection
     app.controls.resizeSideInFocus = undefined;
     app.controls.make_connection = true;
-    var event = makeMouseEvent();
+    event = makeMouseEvent();
     app.controls.onMouseUp( event );
     expect( app.controls.boxInFocus.checkFlip.mock.calls.length ).toBe( 0 );
     expect( app.controls.boxInFocus.updateColors.mock.calls.length ).toBe( 0 );
@@ -604,6 +604,6 @@ test( 'Test onWindowResize', () => {
     app.renderer.setSize = jest.fn();
     app.controls.onWindowResize();
     expect( app.camera.aspect ).toBe( 5 / 3 );
-    expect( app.renderer.setSize.mock.calls[ 0 ] ).toEqual( [ 1000, 600 ] )
+    expect( app.renderer.setSize.mock.calls[ 0 ] ).toEqual( [ 1000, 600 ] );
 
 } );
