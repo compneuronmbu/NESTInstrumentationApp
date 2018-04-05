@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# define_Potjans_-Diesmann.py
+# define_Potjans_Diesmann.py
 #
 # This file is part of the NEST Instrumentation App.
 #
@@ -33,11 +33,150 @@ from math import sqrt
 import numpy as np
 import sobol_lib as sl
 
+def get_mean_delays(mean_delay_exc, mean_delay_inh, number_of_pop):
+    """ Creates matrix containing the delay of all connections.
+
+    Arguments
+    ---------
+    mean_delay_exc
+        Delay of the excitatory connections.
+    mean_delay_inh
+        Delay of the inhibitory connections.
+    number_of_pop
+        Number of populations.
+
+    Returns
+    -------
+    mean_delays
+        Matrix specifying the mean delay of all connections.
+
+    """
+
+    dim = number_of_pop
+    mean_delays = np.zeros((dim, dim))
+    mean_delays[:, 0:dim:2] = mean_delay_exc
+    mean_delays[:, 1:dim:2] = mean_delay_inh
+    return mean_delays
+
+def get_std_delays(std_delay_exc, std_delay_inh, number_of_pop):
+    """ Creates matrix containing the standard deviations of all delays.
+
+    Arguments
+    ---------
+    std_delay_exc
+        Standard deviation of excitatory delays.
+    std_delay_inh
+        Standard deviation of inhibitory delays.
+    number_of_pop
+        Number of populations in the microcircuit.
+
+    Returns
+    -------
+    std_delays
+        Matrix specifying the standard deviation of all delays.
+
+    """
+
+    dim = number_of_pop
+    std_delays = np.zeros((dim, dim))
+    std_delays[:, 0:dim:2] = std_delay_exc
+    std_delays[:, 1:dim:2] = std_delay_inh
+    return std_delays
+
+
+def get_weight(PSP_val, Param):
+    """ Computes weight to elicit a change in the membrane potential.
+
+    This function computes the weight which elicits a change in the membrane
+    potential of size PSP_val. To implement this, the weight is calculated to
+    elicit a current that is high enough to implement the desired change in the
+    membrane potential.
+
+    Parameters
+    ----------
+    PSP_val
+        Evoked postsynaptic potential.
+    net_dict
+        Dictionary containing parameters of the microcircuit.
+
+    Returns
+    -------
+    PSC_e
+        Weight value(s).
+
+    """
+    C_m = Param.neuron_params['C_m']
+    tau_m = Param.neuron_params['tau_m']
+    tau_syn_ex = Param.neuron_params['tau_syn_ex']
+
+    PSC_e_over_PSP_e = (((C_m) ** (-1) * tau_m * tau_syn_ex / (
+        tau_syn_ex - tau_m) * ((tau_m / tau_syn_ex) ** (
+            - tau_m / (tau_m - tau_syn_ex)) - (tau_m / tau_syn_ex) ** (
+                - tau_syn_ex / (tau_m - tau_syn_ex)))) ** (-1))
+    PSC_e = (PSC_e_over_PSP_e * PSP_val)
+    return PSC_e
+
+def get_mean_PSP_matrix(PSP_e, g, number_of_pop):
+    """ Creates a matrix of the mean evoked postsynaptic potential.
+
+    The function creates a matrix of the mean evoked postsynaptic
+    potentials between the recurrent connections of the microcircuit.
+    The weight of the connection from L4E to L23E is doubled.
+
+    Arguments
+    ---------
+    PSP_e
+        Mean evoked potential.
+    g
+        Relative strength of the inhibitory to excitatory connection.
+    number_of_pop
+        Number of populations in the microcircuit.
+
+    Returns
+    -------
+    weights
+        Matrix of the weights for the recurrent connections.
+
+    """
+    dim = number_of_pop
+    weights = np.zeros((dim, dim))
+    exc = PSP_e
+    inh = PSP_e * g
+    weights[:, 0:dim:2] = exc
+    weights[:, 1:dim:2] = inh
+    weights[0, 2] = exc * 2
+    return weights
+
+def get_std_PSP_matrix(PSP_rel, number_of_pop):
+    """ Relative standard deviation matrix of postsynaptic potential created.
+
+    The relative standard deviation matrix of the evoked postsynaptic potential
+    for the recurrent connections of the microcircuit is created.
+
+    Arguments
+    ---------
+    PSP_rel
+        Relative standard deviation of the evoked postsynaptic potential.
+    number_of_pop
+        Number of populations in the microcircuit.
+
+    Returns
+    -------
+    std_mat
+        Matrix of the standard deviation of postsynaptic potentials.
+
+    """
+    dim = number_of_pop
+    std_mat = np.zeros((dim, dim))
+    std_mat[:, :] = PSP_rel
+    return std_mat
+
 class Parameters:
     """ 
     Define model parameters.
     """
 
+    K_scaling = 0.1
     n_scaling = 0.1
     print('The number of neurons is scaled by a factor of: %.2f'
          % n_scaling)
@@ -84,6 +223,21 @@ class Parameters:
                   [0.0548, 0.0269, 0.0257, 0.0022, 0.06, 0.3158, 0.0086, 0.],
                   [0.0156, 0.0066, 0.0211, 0.0166, 0.0572, 0.0197, 0.0396, 0.2252],
                   [0.0364, 0.001, 0.0034, 0.0005, 0.0277, 0.008, 0.0658, 0.1443]]
+
+    mean_delay_exc = 1.5
+    mean_delay_inh = 0.75
+    rel_std_delay = 0.5
+    g = -4
+    PSP_e =  0.15
+    PSP_sd = 0.1
+
+    mean_delay_matrix = get_mean_delays(mean_delay_exc, mean_delay_inh,
+                                        len(populations))
+    std_delay_matrix = get_std_delays(mean_delay_exc * rel_std_delay,
+                                      mean_delay_inh * rel_std_delay,
+                                      len(populations))
+    PSP_mean_matrix = get_mean_PSP_matrix(PSP_e, g, len(populations))
+    PSP_std_matrix = get_std_PSP_matrix(PSP_sd, len(populations))
 
 
 def seed():
@@ -433,478 +587,43 @@ def make_connections():
     P = Parameters
 
     conn_probs = P.conn_probs
-    
-    projections = [('L23E', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][0],
-                     'delays': {'normal':{'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23E', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L23E', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 555.34967492091107, 'sigma': 55.534967492091113, 'min': 0.0}}
-                    }),
-                   ('L23E', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L23E', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23E', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L23E', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23E', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[0][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L23I', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23I', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                     }),
-                   ('L23I', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                     }),
-                   ('L23I', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                                      }),
-                   ('L23I', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23I', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L23I', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L23I', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[1][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4E', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4E', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4E', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4E', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4E', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4E', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4E', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4E', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[2][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}}),
-                   ('L4I', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.6748374, 'sigma': 27.767483746045556, 'min': 0.0}}
-                   }),
-                   ('L4I', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4I', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4I', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4I', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4I', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L4I', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L4I', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[3][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5E', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5E', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5E', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5E', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5E', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5E', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5E', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5E', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[4][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5I', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556}}
-                    }),
-                   ('L5I', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5I', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5I', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5I', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5I', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L5I', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L5I', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[5][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6E', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6E', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6E', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6E', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6E', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6E', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6E', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6E', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[6][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6I', 'L23E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][0],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6I', 'L23I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][1],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6I', 'L4E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][2],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6I', 'L4I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][3],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6I', 'L5E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][4],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556, 'min': 0.0}}
-                    }),
-                   ('L6I', 'L5I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][5],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    }),
-                   ('L6I', 'L6E',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][6],
-                     'delays': {'normal': {'mean': 1.5, 'sigma': 0.75, 'min': 0.1}},
-                     'weights': {'normal': {'mean': 277.67483746045554, 'sigma': 27.767483746045556}}
-                    }),
-                   ('L6I', 'L6I',
-                    {'connection_type': 'convergent',
-                     'synapse_model': 'static_synapse',
-                     'kernel': conn_probs[7][7],
-                     'delays': {'normal': {'mean': 0.75, 'sigma': 0.375, 'min': 0.1}},
-                     'weights': {'normal': {'mean': -1110.6993498418221, 'max': 0.0, 'sigma': 111.06993498418223}}
-                    })]
 
+    K_scaling = P.K_scaling    # multiply with conn_probs??
+    #synapses = get_total_number_of_synapses(self.net_dict)
+    #synapses_scaled = synapses * K_scaling
+    weight_mat = get_weight(P.PSP_mean_matrix, P)
+    weight_mat_std = P.PSP_std_matrix
 
-                    #[('Excitatory', 'Excitatory',
-                    #{'connection_type{'normal': ': 'converpse_model': 'static_synapse'},
-                    # 'kernel': {'normal': P.epsilon,
-                           # 'delays': P.delay}),
-                   #('Excitatory', 'Inhibitory',
-                   # {'connection_type': 'convergent',
-                   #  'synapse_model': 'static_synapse',
-                    # 'kernel': P.epsilon,
-                    # 'weights': P.J_ex,
-                    # 'delays': P.delay}),
-                   #('Inhibitory', 'Excitatory',
-                   # {'connection_type': 'convergent',
-                   #  'synapse_model': 'static_synapse',
-                   #  'kernel': P.epsilon,
-                   #  'weights': P.J_in,
-                   #  'delays': P.delay}),
-                   #('Inhibitory', 'Excitatory',
-                   # {'connection_type': 'convergent',
-                   #  'synapse_model': 'static_synapse',
-                   # 'kernel': P.epsilon,
-                   # 'weights': P.J_in,
-                   #  'delays': P.delay})]
+    sim_resolution = 1
+
+    mean_delays = P.mean_delay_matrix
+    std_delays = P.std_delay_matrix
+
+    pops = ['L23E', 'L23I', 'L4E', 'L4I', 'L5E', 'L5I', 'L6E', 'L6I']
+
+    projections = []
+
+    for i, target_pop in enumerate(pops):
+        for j, source_pop in enumerate(pops):
+            weight = weight_mat[i][j]
+            w_sd = abs(weight * weight_mat_std[i][j])
+            conn_dict = {'connection_type': 'convergent',
+                         'synapse_model': 'static_synapse',
+                         'kernel': conn_probs[i][j],
+                         'delays': {'normal':{'mean': mean_delays[i][j],
+                                              'sigma': std_delays[i][j],
+                                              'min': sim_resolution}},
+                         'weights': {'normal': {'mean': weight,
+                                                'sigma': w_sd}}
+                        }
+            if weight < 0:
+                conn_dict['weights']['normal']['max'] = 0.0
+            else:
+                conn_dict['weights']['normal']['min'] = 0.0
+
+            conn_list = (source_pop, target_pop, conn_dict)
+            projections.append(conn_list)
+
 
     return projections
 
