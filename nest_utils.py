@@ -142,7 +142,6 @@ class NESTInterface(object):
 
         self.observe_slot_ready.start()
         self.observe_slot_nconnections.start()
-        # self.observe_slot_gids.start()
         self.observe_slot_device_results.start()
         self.observe_slot_status_message.start()
 

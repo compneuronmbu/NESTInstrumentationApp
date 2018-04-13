@@ -64,7 +64,6 @@ class GuiButtons extends React.Component{
                 button_id='rectangleButton' text="&#x25FC;" function={function () {app.makeRectangularShape();}} />
                 <SelectionsButton button_class ='selectionsButton'
                 button_id='ellipticalButton' text="&#x2b2c;" 
-                    //disabled={app.is3DLayer+1}
                     function={function () {app.makeEllipticalShape();}} />
                 <br/>
                 {app.is3DLayer ? (
@@ -193,7 +192,6 @@ class GuiButtons extends React.Component{
 class DropDown extends React.Component {
     constructor(props) {
       super(props);
-      //this.items = props.items;
       this.state = {};
       if (props.items.length != 0)
       {

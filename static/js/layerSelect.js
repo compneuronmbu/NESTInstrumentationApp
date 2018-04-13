@@ -188,15 +188,12 @@ class App
         this.axisRenderer = new this.THREE.WebGLRenderer( { antialias: true, alpha: true } );
         this.axisRenderer.setSize( 100, 100 );
         this.axisRenderer.setClearColor( 0x000000, 0 );
-        // this.axisRenderer.setClearAlpha(0);
         container2.appendChild( this.axisRenderer.domElement );
 
         // Scene
         this.axisScene = new this.THREE.Scene();
-        // this.axisScene.background = new THREE.Color( 0xffffff );
 
         // Camera
-        //this.axisCamera = new this.THREE.PerspectiveCamera( 45, 1, 0.5, 1000 );
         this.axisCamera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, 0.0, 1000);
         this.axisCamera.up = this.camera.up; // Important!
 
@@ -346,7 +343,7 @@ class App
     {
         var startIndx = name.lastIndexOf('/');
         var endIndx = name.search('.json');
-        if (endIndx == -1)  // If the filename doesn't end with '.json'.
+        if (endIndx == -1)  // If the file name doesn't end with '.json'.
         {
             endIndx = name.length;
         }
@@ -694,7 +691,7 @@ class App
         this.hideLoadingOverlay();
         this.$("#infoconnected").html( "Simulating | " + time.toString() + " ms" );
 
-        // Color results:
+        // Colour results:
         var spiked = this.colorFromSpike(recordedData);
         this.colorFromVm(recordedData, spiked);
 
@@ -959,7 +956,6 @@ class App
                     colors[ point.pointIndex ] = colorSpike[ 0 ];
                     colors[ point.pointIndex + 1 ] = colorSpike[ 1 ];
                     colors[ point.pointIndex + 2 ] = colorSpike[ 2 ];
-                    //points.geometry.attributes.customColor.needsUpdate = true;
                     spikedGIDs.push( gid );
                 }
             }
@@ -1031,8 +1027,6 @@ class App
     makeProjections( convertToRoomCoordinates=false )
     {
         var projections = {};
-        // projections['internal'] = this.modelParameters.projections;
-        // this.$( "#infoconnected" ).html( "Gathering selections to be connected ..." );
         for ( var device in this.deviceBoxMap )
         {
             projections[ device ] = {

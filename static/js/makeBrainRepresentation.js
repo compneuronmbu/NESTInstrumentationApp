@@ -146,8 +146,6 @@ class Brain
             return window.setTimeout(timeoutCb, Math.max(targetTime + 16, currentTime) - currentTime);
           };
         }
-
-        // requestAnimationFrame( app.render.bind(app) );
     }
 
     /**
@@ -283,18 +281,6 @@ class Brain
         {
             if ( app.layer_points.hasOwnProperty( layer_name ) )
             {
-                // center = app.layer_points[ layer_name ].points.geometry.boundingSphere.center;
-                // bounding_radius = app.layer_points[ layer_name ].points.geometry.boundingSphere.radius;
-
-                // name_pos = {
-                    // x: center.x,
-                    // y: center.y + bounding_radius - 0.1,
-                    // z: center.z
-                // };
-
-                // screenCenter = app.toScreenXY( name_pos );
-                // screenCenter.y = app.container.clientHeight - screenCenter.y;
-
                 var text = document.createElement( 'div' );
                 text.className = 'unselectable';
                 text.id = layer_name + '_label';
@@ -304,10 +290,7 @@ class Brain
                 text.style.color = "white";
                 text.style.fontSize = 18 + 'px';
                 text.innerHTML = layer_name;
-                // text.style.top = screenCenter.y + 'px';
                 document.body.appendChild( text );
-                // adjust the position to align the center with the center of the layer
-                // text.style.left = screenCenter.x - parseFloat( app.$( '#' + text.id ).width() ) / 2.0 + 'px';
                 this.updateLayerNamePosition(text);
             }
         }
@@ -337,17 +320,7 @@ class Brain
         screenCenter = app.toScreenXY( name_pos );
         screenCenter.y = app.container.clientHeight - screenCenter.y;
 
-        // var text = document.createElement( 'div' );
-        // text.className = 'unselectable';
-        // text.id = layer_name + '_label';
-        // text.style.position = 'absolute';
-        // text.style.width = 100;
-        // text.style.height = 100;
-        // text.style.color = "white";
-        // text.style.fontSize = 18 + 'px'
-        // text.innerHTML = layer_name;
         layerNameNode.style.top = screenCenter.y + 'px';
-        // document.body.appendChild( text );
 
         // adjust the position to align the center with the center of the layer
         layerNameNode.style.left = screenCenter.x - parseFloat( app.$( '#' + layerNameNode.id ).width() ) / 2.0 + 'px';

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import pprint
 import subprocess as sp
 import gevent
 import gevent.wsgi

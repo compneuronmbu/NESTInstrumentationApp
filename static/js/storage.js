@@ -24,10 +24,6 @@ function hbpStorage()
   {
     storage_this.token = auth.access_token;
     getCollabId();
-    // getCollabUuid();
-
-    // accessStorage(auth.access_token,
-    //               saveDataToNewFile(filename, data));
   } else
   {
     console.log("data-source: Not Authenticated");
@@ -183,7 +179,6 @@ function hbpStorage()
     {
       // TODO: If we only use uuid as input (not filename), don't use nested function.
       getFileContent(filename);
-      // queryPath(`${storage_this.id}/${filename}.json`, (data)=>{getFileContent(data.uuid)})
     } else
     {
       console.log("data-source: Not Authenticated");
