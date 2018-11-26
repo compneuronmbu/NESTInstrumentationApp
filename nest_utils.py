@@ -207,6 +207,7 @@ class NESTInterface(object):
         Marks the current observing threads as obsolete, so they will stop at
         the first available opportunity.
         """
+        threads_before_cease = len(threading.enumerate())
         threads = [self.observe_slot_ready, self.observe_slot_nconnections,
                    self.observe_slot_device_results,
                    self.observe_slot_status_message]
@@ -218,7 +219,12 @@ class NESTInterface(object):
         for thread in threads:
             thread.join()
         # Should be only the main thread now.
-        assert len(threading.enumerate()) == 1
+        threads_after_cease = len(threading.enumerate())
+        expected_num_threads = threads_before_cease - len(threads)
+	if threads_after_cease != expected_num_threads:
+           raise RuntimeError('Did not stop all threads! '
+                              '(Threads: {}; Expected: {})'.format(
+               threads_after_cease, expected_num_threads))
 
     def handle_complete(self, msg):
         """

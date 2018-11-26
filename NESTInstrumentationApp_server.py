@@ -26,7 +26,7 @@ def emit_exception(exception, user_id):
     print('An exception was raised:', exception)
     socketio.emit('message',
                   {'message': "{}: {}".format(type(exception).__name__,
-                                              exception.args[0])},
+                                              exception.args[0] if exception.args else '')},
                   namespace='/message/{}'.format(user_id))
 
 
@@ -54,6 +54,7 @@ def make_network():
     """
     data = flask.request.json
     user_id = int(data['userID'])
+    print('User ID: {}'.format(user_id))
     global interface
 
     try:
@@ -68,6 +69,7 @@ def make_network():
     except Exception as exception:
         emit_exception(exception, user_id)
 
+    print(interface)
     return flask.Response(status=204)
 
 
