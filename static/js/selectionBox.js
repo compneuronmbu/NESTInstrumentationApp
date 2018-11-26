@@ -92,7 +92,6 @@ class ConnectionLine
 
         for ( var i = 0; i <= this.CURVE_SEGMENTS; ++i )
         {
-            // console.log(this.curve.getPoint( i / ( this.CURVE_SEGMENTS ) ));
             this.curveObject.geometry.vertices[ i ].copy( this.curve.getPoint( i / ( this.CURVE_SEGMENTS ) ) );
         }
         this.curveObject.geometry.verticesNeedUpdate = true;
@@ -157,7 +156,7 @@ class ConnectionLine
 
 /* ----------------------------------------------------------------------------
  * SELECTION BOX IN 2D   
- *---------------------------------------------------------------------------*/ 
+ *---------------------------------------------------------------------------*/
 
 
 /**
@@ -1169,7 +1168,7 @@ class SelectionBox3D
         this.updateColors();
         this.makeConnectionHandle();
 
-        this.box.rotation.order = "ZYX"; //"YZX";
+        this.box.rotation.order = "ZYX";
     }
 
     /**
@@ -1320,8 +1319,7 @@ class SelectionBox3D
     {
         this.updateWidthHeightDeptCenter();
         this.updateLLAndUR();
-        //this.updateAzimuthAndPolarAngle();
-        
+
         if ( this.lines.length !== 0 )
         {
             this.updateLineStart();
@@ -1461,8 +1459,6 @@ class SelectionBox3D
                 else
                 {
                     if ( p.x > this.box.position.x )
-                        //&& p.y > this.box.position.y
-                        //&& p.z > this.box.position.z )
                     {
                         visibility[i / 3] = 1.0;
                     }

@@ -2,6 +2,9 @@
  *
  * TRANSFORM CONTROLS
  *
+ * This file is a modified copy of TransformControls.js from the
+ * three.js library.
+ *
  */
 
 var TransformerMaterial = function ( parameters )

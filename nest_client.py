@@ -404,7 +404,7 @@ class NESTClient(object):
             if isinstance(dict_to_floatify[d], dict):
                 self.floatify_dictionary(dict_to_floatify[d])
             elif isinstance(dict_to_floatify[d], numbers.Number):
-                    dict_to_floatify[d] = float(dict_to_floatify[d])
+                dict_to_floatify[d] = float(dict_to_floatify[d])
         return dict_to_floatify
 
     def connect_to_devices(self):
@@ -459,8 +459,13 @@ class NESTClient(object):
     def connect_to_poisson(self):
         net_dict = {'bg_rate': 8.,
                     'poisson_delay': 1.5,
-                    'K_ext': np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100]),
-                    'K_scaling': 0.1, 'C_m': 250.0, 'tau_m': 10.0, 'tau_syn_ex': 0.5, 'PSP_e': 0.15}
+                    'K_ext': np.array([1600, 1500, 2100, 1900, 2000, 1900,
+                                       2900, 2100]),
+                    'K_scaling': 0.1,
+                    'C_m': 250.0,
+                    'tau_m': 10.0,
+                    'tau_syn_ex': 0.5,
+                    'PSP_e': 0.15}
         K_ext = net_dict['K_ext'] * net_dict['K_scaling']
 
         C_m = net_dict['C_m']
@@ -489,12 +494,12 @@ class NESTClient(object):
                 'model': 'static_synapse',
                 'weight': w_ext,
                 'delay': net_dict['poisson_delay']
-                }
+            }
             nest.Connect(
                 poisson[i], nest.GetNodes(self.layers[target_pop])[0],
                 conn_spec=conn_dict_poisson,
                 syn_spec=syn_dict_poisson
-                )
+            )
 
     def connect_to_lfp(self):
         print('Setting up LFP model...')
@@ -755,11 +760,6 @@ class NESTClient(object):
             ``['L23pyr', 2, 'L23in', 1]`` or ``['Relay', 'Inter']``
         :param numberOfPositions: number of selected neuron positions
         """
-        # models can for instance be of the form
-        # ['L23pyr', 2, 'L23in', 1, 'L4pyr', 2,
-        #  'L4in', 1, 'L56pyr', 2, 'L56in', 1]
-        # or
-        # ['Relay', 'Inter']
 
         # We count number of elements. So Relay will set counter to 1, while
         # L23pyr will set counter to 2.

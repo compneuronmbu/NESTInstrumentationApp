@@ -350,7 +350,6 @@ class Controls
         var selectedBox;
         if ( boxIntersects.length > 0 )
         {
-            //console.log(pointIntersects[ 0 ].object);
             for ( var i in app.selectionBoxArray )
             {
                 if (app.selectionBoxArray[ i ].box === boxIntersects[ 0 ].object )
@@ -901,7 +900,7 @@ class Controls
                 console.log("shift down");
                 this.shiftDown = true;
                 break;
-            case 82:
+            case 82:  // R key
                 this.boxInFocus &&
                 this.boxInFocus.transformControls &&
                 this.boxInFocus.transformControls.setMode( "rotate" );
